@@ -1,6 +1,14 @@
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
+    @font-face {
+    font-family: "SUIT";
+    src: url("/fonts/SUIT-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    }
+    
     *,
     *::before,
     *::after {

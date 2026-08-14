@@ -1,8 +1,5 @@
 import { useRef, useState } from "react";
-
-import Header from "../components/Header";
 import RoutineCard from "../components/RoutineCard";
-import Footer from "../components/Footer";
 
 import { routineData } from "../data/routineData";
 
@@ -34,10 +31,6 @@ function LandingPage() {
 
         {/* HERO */}
         <S.HeroSection>
-          <Header
-            onRoutineClick={scrollToRoutine}
-            onInsightClick={scrollToInsight}
-          />
 
           <S.HeroContent>
             <S.HeroText>
@@ -171,8 +164,7 @@ function LandingPage() {
             </S.InsightResult>
           </S.InsightSection>
         </S.MainContent>
-
-        <Footer />
+\
       </S.LandingPage>
     </S.PageViewport>
   );

@@ -13,7 +13,6 @@ export const routineData = [
         description:
             "간단한 움직임을 따라가며 하나의 활동에 집중해요. 수동적인 콘텐츠 소비에서 잠시 벗어나 주의를 전환해보세요.",
         status: "미완료",
-        duration: "3분",
         image: "/images/brain-reset.png",
         featured: true,
     },
