@@ -1,0 +1,221 @@
+import styled from "styled-components";
+
+export const Card = styled.article`
+  position: relative;
+
+  flex-grow: 1;
+  flex-basis: 0;
+  min-width: 0;
+
+  height: 320px;
+
+  border-radius: 18px;
+  overflow: hidden;
+
+  background-image: ${({ $image }) => `url(${$image})`};
+  background-size: cover;
+  background-position: center;
+
+  color: #ffffff;
+
+  transition:
+    flex-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:hover button {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+`;
+
+export const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.28),
+    rgba(0, 0, 0, 0.72)
+  );
+`;
+
+export const Content = styled.div`
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+
+  box-sizing: border-box;
+
+  padding: 28px;
+
+  display: flex;
+  flex-direction: column;
+`;
+
+export const Top = styled.div`
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 12pxpx;
+`;
+
+export const TitleArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 0;
+`;
+
+export const Title = styled.h3`
+  margin: 0;
+
+  color: #fff;
+
+  font-family: SUIT;
+  font-size: 46px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+  letter-spacing: -0.69px;
+
+  white-space: nowrap;
+
+  /* 이 두 개 삭제 */
+  overflow: visible;
+  text-overflow: clip;
+`;
+
+export const Duration = styled.span`
+  flex-shrink: 0;
+
+  display: flex;
+  padding: 8px 8px 6px;
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 4px;
+  border: 1px solid #fff;
+
+  color: #fff;
+
+  text-align: center;
+
+  font-family: Poppins;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+
+  white-space: nowrap;
+`;
+
+export const Description = styled.p`
+  margin: 28px 0 0;
+
+  max-width: 92%;
+
+  color: #fff;
+
+  font-family: Poppins;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.24px;
+
+  word-break: keep-all;
+`;
+
+export const ArrowButton = styled.button`
+  flex-shrink: 0;
+
+  width: 55px;
+  height: 55px;
+
+  padding: 15px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  border: 2px solid #fff;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform: scale(0.8);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
+
+  svg {
+    width: 25px;
+    height: 25px;
+    transform: none;
+  }
+`;
+
+export const Divider = styled.div`
+  width: 100%;
+  height: 1px;
+
+  margin-top: auto;
+
+  flex-shrink: 0;
+
+  background: rgba(255, 255, 255, 0.28);
+`;
+
+export const Status = styled.span`
+  width: 91px;
+
+  margin-top: 12px;
+  padding: 12px 40px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 30px;
+
+  background: rgba(255, 255, 255, 0.2);
+
+  box-shadow: 0 4px 8px 0 rgba(27, 27, 27, 0.16);
+  backdrop-filter: blur(8px);
+
+  color: #fff;
+
+  text-align: center;
+
+  font-family: Poppins;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+
+  white-space: nowrap;
+`;
