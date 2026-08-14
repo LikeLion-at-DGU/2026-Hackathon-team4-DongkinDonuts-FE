@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import Header from "../components/Header";
 import RoutineCard from "../components/RoutineCard";
@@ -11,13 +11,33 @@ import * as S from "./LandingPage.styled";
 function LandingPage() {
   const [activeTab, setActiveTab] = useState("routine");
 
+  const routineRef = useRef(null);
+  const insightRef = useRef(null);
+
+  const scrollToRoutine = () => {
+    routineRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const scrollToInsight = () => {
+    insightRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <S.PageViewport>
       <S.LandingPage>
 
         {/* HERO */}
         <S.HeroSection>
-          <Header />
+          <Header
+            onRoutineClick={scrollToRoutine}
+            onInsightClick={scrollToInsight}
+          />
 
           <S.HeroContent>
             <S.HeroText>
@@ -88,7 +108,7 @@ function LandingPage() {
           </S.TabMenu>
 
           {/* ROUTINE */}
-          <S.RoutineSection>
+          <S.RoutineSection ref={routineRef}>
             <S.SectionHeader>
               <S.SectionLabel>
                 Today's Routine
@@ -110,7 +130,7 @@ function LandingPage() {
           </S.RoutineSection>
 
           {/* AI INSIGHT */}
-          <S.InsightSection>
+          <S.InsightSection ref={insightRef}>
             <S.InsightHeader>
               <S.InsightTitle>
                 AI INSIGHT
