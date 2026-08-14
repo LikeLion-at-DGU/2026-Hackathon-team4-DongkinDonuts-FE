@@ -9,17 +9,15 @@ export const PageViewport = styled.div`
 `;
 
 export const LandingPage = styled.main`
-    width: 1440px;
-    min-width: 1440px;
+    width: 100%;
 
     background: #ffffff;
 
-    zoom: min(calc(100vw / 1440px), 1.3);
 `;
 
 export const HeroSection = styled.section`
     width: 1440px;
-    height: 784px;
+    height: 692px;
 
     margin: 0;
     padding: 40px 56px 70px;
