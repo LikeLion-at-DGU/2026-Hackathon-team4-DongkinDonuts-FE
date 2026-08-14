@@ -1,7 +1,9 @@
 import styled from "styled-components";
 
 export const Footer = styled.footer`
-    width: 1440px;
+    width: 100%;
+    max-width: 1440px;
+
     margin: 0 auto;
     padding: 32px 161px 21px;
     
@@ -12,8 +14,6 @@ export const Footer = styled.footer`
 
 export const FooterInner = styled.div`
     width: 100%;
-    max-width: 1118px;
-    margin: 0 auto;
 
     display: flex;
     flex-direction: column;
@@ -106,9 +106,8 @@ export const StoreButton = styled.button`
 
 export const FooterBottom = styled.div`
     width: 100%;
-    max-width: 1118px;
 
-    margin: 28px auto 0;
+    margin: 28px 0 0;
     padding-top: 24px;
     display: flex;
     align-items: center;
