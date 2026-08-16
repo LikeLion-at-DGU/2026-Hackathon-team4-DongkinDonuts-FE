@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import RoutineCard from "../components/RoutineCard";
 import RoutineModal from "../components/RoutineModal";
 import { routineData } from "../data/routineData.jsx";
+import Footer from "../components/Footer";
 
 import * as S from "./LandingPage.styled";
 
@@ -194,6 +195,7 @@ function LandingPage() {
           </S.DigitalSection>
 
         </S.MainContent>
+        <Footer />
 
         {/* ROUTINE MODAL */}
         {showRoutineModal && (
