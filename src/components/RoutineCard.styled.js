@@ -11,16 +11,27 @@ export const Card = styled.article`
 
   border-radius: 18px;
   overflow: hidden;
-
-  background-image: ${({ $image }) => `url(${$image})`};
-  background-size: cover;
-  background-position: center;
-
   color: #ffffff;
 
   transition:
     flex-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.25s ease;
+
+    /* 배경 이미지만 흑백 처리 */
+  &::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background-image: ${({ $image }) => `url(${$image})`};
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: center 42%;
+
+    filter: grayscale(80%) brightness(0.9) contrast(0.85);
+    opacity: 0.9;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -39,8 +50,8 @@ export const Overlay = styled.div`
 
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.28),
-    rgba(0, 0, 0, 0.72)
+    rgba(84, 84, 84, 0.15),
+    rgba(40, 40, 40, 0.42)
   );
 `;
 
@@ -83,9 +94,9 @@ export const Title = styled.h3`
   color: #fff;
 
   font-family: "SUIT", sans-serif;
-  font-size: 46px;
+  font-size: 42px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 600;
   line-height: normal;
   letter-spacing: -0.69px;
 
@@ -96,12 +107,10 @@ export const Title = styled.h3`
 export const Description = styled.p`
   margin: 28px 0 0;
 
-  max-width: 92%;
-
   color: #fff;
 
   font-family: Poppins;
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -178,7 +187,7 @@ export const Status = styled.span`
   background: rgba(255, 255, 255, 0.2);
 
   box-shadow: 0 4px 8px 0 rgba(27, 27, 27, 0.16);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
 
   color: #fff;
 
