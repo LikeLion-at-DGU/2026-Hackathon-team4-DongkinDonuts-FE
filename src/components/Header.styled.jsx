@@ -57,27 +57,37 @@ export const NavButton = styled.button`
 
 export const MyPageButton = styled.button`
   display: flex;
-  width: 168px;
-  height: 60px;
-  padding: 20px 40px;
+  width: 155px;
+  height: 55px;
+  padding: 18px 37px;
+  box-sizing: border-box;
 
   justify-content: center;
   align-items: center;
-  border-radius: 60px;
-  border: 1px solid #FFF;
+  gap: 9px;
+  flex-shrink: 0;
+
+  border-radius: 55px;
+  border: 1px solid #fff;
 
   background: transparent;
-  color: #ffffff;
+  color: #fff;
 
-  font-size: 18px;
+  font-family: Poppins;
+  font-size: 16px;
   font-weight: 500;
   line-height: normal;
-  letter-spacing: -0.27px;
-  font-family: Poppins;
+  letter-spacing: -0.24px;
 
   cursor: pointer;
 
+  svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
   &:hover {
-    border-color: #ffffff;
+    opacity: 0.7;
   }
 `;
