@@ -2,21 +2,25 @@ import styled from "styled-components";
 
 export const Header = styled.header`
   width: 100%;
-  height: 40px;
+  height: 92px;
+
+  padding: 0 56px;
+  box-sizing: border-box;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  background: #000000;
 `;
 
 export const LeftGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 60px;
 `;
 
 export const Logo = styled.div`
-  width: 155px;
   color: #FFF;
   font-family: Poppins;
   font-size: 32px;
@@ -33,7 +37,6 @@ export const Nav = styled.nav`
   align-items: center;
 
   gap: 62px;
-  margin-left: 30px;
 `;
 
 export const NavButton = styled.button`

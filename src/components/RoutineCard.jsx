@@ -16,10 +16,6 @@ function RoutineCard({
                 <S.Top>
                     <S.TitleArea>
                         <S.Title>{title}</S.Title>
-
-                        {duration && (
-                            <S.Duration>{duration}</S.Duration>
-                        )}
                     </S.TitleArea>
 
                     <S.ArrowButton

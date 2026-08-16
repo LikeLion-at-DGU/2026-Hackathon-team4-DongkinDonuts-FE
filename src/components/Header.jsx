@@ -1,6 +1,9 @@
 import * as S from "./Header.styled";
 
-function Header() {
+function Header({
+    onRoutineClick,
+    onInsightClick,
+}) {
     return (
         <S.Header>
             <S.LeftGroup>

@@ -1,16 +1,25 @@
 import styled from "styled-components";
 
+export const PageViewport = styled.div`
+    width: 100%;
+    overflow-x: hidden;
+
+    display: flex;
+    justify-content: center;
+`;
+
 export const LandingPage = styled.main`
     width: 100%;
-    min-height: 100vh;
+
     background: #ffffff;
+
 `;
 
 export const HeroSection = styled.section`
     width: 1440px;
-    height: 784px;
+    height: 692px;
 
-    margin: 0 auto;
+    margin: 0;
     padding: 40px 56px 70px;
     box-sizing: border-box;
 
@@ -39,7 +48,7 @@ export const HeroContent = styled.div`
 export const MainContent = styled.main`
     width: 1440px;
 
-    margin: 0 auto;
+    margin: 0;
     padding: 75px 56px 80px;
 
     box-sizing: border-box;

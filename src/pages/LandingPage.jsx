@@ -1,10 +1,8 @@
-import { useState } from "react";
-
-import Header from "../components/Header";
+import { useRef, useState } from "react";
 import RoutineCard from "../components/RoutineCard";
 import RoutineModal from "../components/RoutineModal";
 import { routineData } from "../data/routineData.jsx";
-import Footer from "../components/Footer";
+
 
 import * as S from "./LandingPage.styled";
 
@@ -31,12 +29,28 @@ function LandingPage() {
     console.log(`${index + 1}번째 루틴 시작`);
   };
 
+  const routineRef = useRef(null);
+  const insightRef = useRef(null);
+
+  const scrollToRoutine = () => {
+    routineRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const scrollToInsight = () => {
+    insightRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
       <S.LandingPage>
 
         {/* HERO */}
         <S.HeroSection>
-          <Header />
 
           <S.HeroContent>
             <S.HeroText>
@@ -195,7 +209,6 @@ function LandingPage() {
           </S.DigitalSection>
 
         </S.MainContent>
-        <Footer />
 
         {/* ROUTINE MODAL */}
         {showRoutineModal && (

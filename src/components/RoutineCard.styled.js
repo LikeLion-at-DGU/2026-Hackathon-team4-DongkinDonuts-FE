@@ -101,36 +101,8 @@ export const Title = styled.h3`
   letter-spacing: -0.69px;
 
   white-space: nowrap;
-
-  /* 이 두 개 삭제 */
-  overflow: visible;
-  text-overflow: clip;
 `;
 
-export const Duration = styled.span`
-  flex-shrink: 0;
-
-  display: flex;
-  padding: 8px 8px 6px;
-
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  border-radius: 4px;
-  border: 1px solid #fff;
-
-  color: #fff;
-
-  text-align: center;
-
-  font-family: Poppins;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-
-  white-space: nowrap;
-`;
 
 export const Description = styled.p`
   margin: 28px 0 0;
