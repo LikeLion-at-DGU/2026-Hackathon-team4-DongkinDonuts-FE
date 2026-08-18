@@ -1,18 +1,19 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RoutineCard from "../components/RoutineCard";
-import RoutineModal from "../components/RoutineModal";
+import RoutineCard from "../components/landingpage/RoutineCard.jsx";
+import RoutineModal from "../components/landingpage/RoutineModal.jsx";
 import { routineData } from "../data/routineData.jsx";
-import WhyBrainfit from "../components/WhyBrainfit";
-import YourHistory from "../components/YourHistory";
-import DigitalState from "../components/DigitalState";
+import WhyBrainfit from "../components/landingpage/WhyBrainfit.jsx";
+import YourHistory from "../components/landingpage/YourHistory.jsx";
+import DigitalState from "../components/landingpage/DigitalState.jsx";
+import SetupModal from "../components/SetupModal";
 
 
 import * as S from "./LandingPage.styled";
 
 function LandingPage() {
   const navigate = useNavigate();
-
+  const [showSetupModal, setShowSetupModal] = useState(true);
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
 
@@ -200,7 +201,11 @@ function LandingPage() {
           />
         )
       }
-
+      {showSetupModal && (
+        <SetupModal
+          onClose={() => setShowSetupModal(false)}
+        />
+      )}
     </S.LandingPage >
   );
 }

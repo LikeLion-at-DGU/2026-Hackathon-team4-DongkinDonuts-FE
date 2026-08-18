@@ -11,7 +11,7 @@ export const Section = styled.section`
 `;
 
 export const Header = styled.div`
-    width: 100%;
+    width: 1280px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -58,14 +58,12 @@ export const TableHead = styled.thead`
         padding: 16px;
 
         font-size: 16px;
-        font-weight: 500;
+        font-weight: 600;
         color: #4F5459;
 
         text-align: left;
     }
 `;
-
-/* 피그마 비율 맞춘 column width */
 
 export const TimeHeader = styled.th`
     width: 162px;

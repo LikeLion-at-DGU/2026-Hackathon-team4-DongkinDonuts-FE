@@ -4,15 +4,13 @@ import styled from "styled-components";
 
 export const DigitalSection = styled.section`
     width: 100%;
-
-    padding-top: 40px;
-
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 `;
 
 export const DigitalHeader = styled.div`
+    margin-top: 26px;
     display: flex;
     align-items: flex-start;
     height: 145px;
