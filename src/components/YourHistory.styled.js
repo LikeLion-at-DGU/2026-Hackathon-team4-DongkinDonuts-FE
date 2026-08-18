@@ -6,7 +6,7 @@ export const Section = styled.section`
     flex-direction: column;
     align-items: center;
     align-self: center;
-    margin-top: 60px;
+    margin-top: 66px;
     margin-bottom: 62px;
 `;
 
@@ -15,7 +15,7 @@ export const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 20px;
     margin-bottom: 60px;
 `;
 
