@@ -1,14 +1,42 @@
 import styled from "styled-components";
 
-export const Footer = styled.footer`
+
+export const FooterContainer = styled.footer`
+    width: 100%;
+    padding: 20px 0;
+    /* $isDark 값에 따른 배경색 및 글자색 분기 */
+    background-color: ${(props) => (props.$isDark ? "#17181d" : "#ffffff")};
+
+    transition: background-color 0.3s ease;
+
+    ${(props) =>
+        props.$isDark &&
+        `
+        ${Logo}, ${MenuTitle}, ${MenuItem}, ${FooterBottom} {
+            color: #ffffff;
+        }
+    
+        ${MenuItem}:hover {
+            color: #a0a0a0;
+        }
+
+        ${Locale} span {
+            color: #ffffff;
+        }
+
+        ${Locale} svg path {
+            fill: #ffffff;
+        }
+    `}
+`;
+
+export const Footer = styled.div`
     width: 100%;
     max-width: 1440px;
 
     margin: 0 auto;
     padding: 32px 161px 21px;
     
-    background: #F4F5F6;
-
     box-sizing: border-box;
 `;
 
