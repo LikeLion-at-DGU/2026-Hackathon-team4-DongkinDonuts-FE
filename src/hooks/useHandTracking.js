@@ -71,24 +71,67 @@ export const useHandTracking = () => {
 
   const startCamera = async () => {
     try {
+      setCameraReady(false);
+
+      // 기존에 우리가 사용하던 카메라가 있다면 완전히 종료
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+
+        streamRef.current = null;
       }
 
+      // 기존 video 연결도 제거
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.srcObject = null;
+      }
+
+      // 종료 직후 다시 요청하면서 충돌하는 경우 방지
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
         audio: false,
       });
-      streamRef.current = stream;
 
-      if (!videoRef.current) return;
+      // 컴포넌트가 사라진 경우 새 스트림도 바로 종료
+      if (!videoRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      streamRef.current = stream;
       videoRef.current.srcObject = stream;
 
-      await new Promise(resolve => { videoRef.current.onloadedmetadata = resolve; });
       await videoRef.current.play();
+
       setCameraReady(true);
+
+      console.log("카메라 연결 성공");
     } catch (error) {
       console.error("카메라 시작 실패", error);
+
+      setCameraReady(false);
+
+      if (error.name === "NotAllowedError") {
+        console.error("카메라 권한이 허용되지 않았습니다.");
+      }
+
+      if (error.name === "NotReadableError") {
+        console.error(
+          "카메라가 다른 앱에서 사용 중이거나 장치를 사용할 수 없습니다."
+        );
+      }
+
+      if (error.name === "NotFoundError") {
+        console.error("사용 가능한 카메라를 찾을 수 없습니다.");
+      }
     }
   };
 

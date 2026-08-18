@@ -16,7 +16,6 @@ import SessionControls from "../components/handpage/SessionControls";
 import MissionInstruction from "../components/handpage/MissionInstruction";
 import ProgressBar from "../components/handpage/ProgressBar";
 import QuitConfirmModal from "../components/handpage/QuitConfirmModal";
-
 import {
   HandRoutineGlobalStyle,
   RoutineContainer,

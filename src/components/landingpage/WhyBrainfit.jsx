@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { whyBrainfitData } from "../data/whybrainfitData";
+import { whyBrainfitData } from "../../data/whybrainfitData";
 
 import * as S from "./WhyBrainfit.styled";
 
