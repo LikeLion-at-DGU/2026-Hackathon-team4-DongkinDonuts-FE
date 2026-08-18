@@ -40,6 +40,70 @@ export const Title = styled.h2`
     letter-spacing: -0.295px;
 `;
 
+export const TableTop = styled.div`
+    width: 1280px;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    margin-bottom: 18px;
+`;
+
+export const DateSelector = styled.div`
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 12px;
+
+    border: 1px solid #d8d8d8;
+    border-radius: 24px;
+
+    background: #ffffff;
+`;
+
+export const DateButton = styled.button`
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    font-family: Poppins;
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1;
+
+    color: #9a9a9a;
+
+    cursor: pointer;
+
+    &:hover {
+        color: #222222;
+    }
+`;
+
+export const DateText = styled.span`
+    min-width: 190px;
+
+    text-align: center;
+
+    font-family: Poppins;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #333333;
+`;
+
 export const Table = styled.table`
     width: 1280px;
     table-layout: fixed;
