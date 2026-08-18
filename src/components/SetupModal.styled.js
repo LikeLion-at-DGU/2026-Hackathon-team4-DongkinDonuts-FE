@@ -11,9 +11,10 @@ export const Overlay = styled.div`
     padding-top: 150px;
     box-sizing: border-box;
 
-    background: rgba(255, 255, 255, 0.2);
+     /* 피그마처럼 밝은 회색 반투명 */
+    background: rgba(36, 39, 42, 0.35);
+    background: rgba(255, 255, 255, 0.50);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
 
     z-index: 9999;
 `;

@@ -326,19 +326,21 @@ export const EmptyTitle = styled.p`
     margin: 0;
 
     font-family: Poppins;
-    font-size: 14px;
-    font-weight: 500;
-
-    color: #555555;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 29.247px; 
+    letter-spacing: -0.2px;
+    color: #646464;
 `;
 
 export const EmptyDescription = styled.p`
     margin: 20px 0 0;
 
     font-family: Poppins;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 1.7;
+    line-height: 23px;
+    letter-spacing: -0.14px;
 
     color: #aaaaaa;
 `;
