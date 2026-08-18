@@ -24,7 +24,7 @@ const QuitConfirmModal = ({ isOpen, onClose, }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <img src={WarningIcon} />
+        <img src={WarningIcon} width={70} />
         <ModalTitle>
           지금 종료하면<br />
           다음 세션으로 넘어갈 수 없어요

@@ -25,7 +25,7 @@ const SessionEndModal = ({ isMissionComplete, isTerminated, resetGame, onClose, 
       {isMissionComplete && !isTerminated && (
         <ModalOverlay>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <img src={StreamLineIcon} />
+            <img src={StreamLineIcon} width={77} />
             <ModalTitle>
               이번 세션을 완료했어요<br />
               다음 루틴으로 이어갈까요?

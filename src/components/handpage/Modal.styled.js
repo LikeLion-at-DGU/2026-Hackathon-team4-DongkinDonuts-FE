@@ -16,64 +16,60 @@ export const ModalOverlay = styled.div`
 
 export const ModalContent = styled.div`
   background-color: #ffffff;
-  border-radius: 20px;
-  padding: 32px 36px;
-  width: 340px;
+  border-radius: 17.7px;
+  padding: 32px 44px;
+  width: 370px;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 `;
 
-export const ModalIcon = styled.div`
-  width: 44px;
-  height: 44px;
-  background-color: #f1f5f9;
-  color: #64748b;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: bold;
-  margin: 0 auto 16px auto;
-`;
-
 export const ModalTitle = styled.h2`
-  font-size: 17px;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 21px;
+  font-weight: 600;
+  font-family: Poppins;
+  font-style: normal;
+  color: #000;
   line-height: 1.45;
-  margin-bottom: 8px;
+  margin-top: 20.5px;
+  margin-bottom: 19.5px;
 `;
 
 export const ModalDescription = styled.p`
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: Poppins;
+  font-style: normal;
+  color: #949494;
+  margin-bottom: 36px;
 `;
 
 export const ModalButtons = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 13px;
 `;
 
 // 버튼 공통 스타일 Base
 const ButtonBase = styled.button`
   flex: 1;
-  padding: 12px 0;
-  border-radius: 10px;
+  width: 134px;
+  height: 45px;
+  padding: 12px 53.5px;
+  border-radius: 8.8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: Poppins;
+  font-style: normal;
   cursor: pointer;
 `;
 
 export const CloseButton = styled(ButtonBase)`
   background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #334155;
+  border: 0.5px solid #cbd5e1;
+  color: #191919;
 `;
 
 export const ConfirmButton = styled(ButtonBase)`
-  background-color: #1e1e1e;
+  background-color: #191919;
   border: none;
   color: #ffffff;
 `;
