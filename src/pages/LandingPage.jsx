@@ -1,13 +1,18 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import RoutineCard from "../components/RoutineCard";
 import RoutineModal from "../components/RoutineModal";
 import { routineData } from "../data/routineData.jsx";
 import WhyBrainfit from "../components/WhyBrainfit";
+import YourHistory from "../components/YourHistory";
+import DigitalState from "../components/DigitalState";
 
 
 import * as S from "./LandingPage.styled";
 
 function LandingPage() {
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
 
@@ -68,7 +73,7 @@ function LandingPage() {
             </S.Description>
 
             <S.ButtonGroup>
-              <S.StartButton>
+              <S.StartButton onClick={() => navigate("/handroutine")}>
                 회복 루틴 시작하기
               </S.StartButton>
 
@@ -145,7 +150,7 @@ function LandingPage() {
             $active={activeTab === "progress"}
             onClick={() => setActiveTab("progress")}
           >
-            Why Brainfit ?
+            Why Brainfit
           </S.TabButton>
         </S.TabMenu>
 
@@ -180,58 +185,23 @@ function LandingPage() {
 
 
         {activeTab === "digital" && (
-          <div>
-            Your History 컴포넌트 들어갈 자리
-          </div>
+          < YourHistory />
         )}
 
-        {/* DIGITAL STATE */}
-        <S.DigitalSection>
-          <S.DigitalHeader>
-            <S.DigitalTitle>
-              My Digital State
-            </S.DigitalTitle>
-
-            <S.DigitalDescription>
-              어쩌고어쩌고
-            </S.DigitalDescription>
-          </S.DigitalHeader>
-
-          <S.DigitalResult>
-            <S.BlurredDigitalText>
-              오늘의 움직임 분석 결과 집중도와 반응 속도는 안정적인 흐름을 보였어요.
-              <br />
-              손의 움직임은 이전 루틴보다 부드러워졌으며 시선 유지 시간도 증가했어요.
-              <br />
-              오늘은 짧은 집중 루틴과 호흡 루틴을 함께 진행하는 것을 추천해요.
-            </S.BlurredDigitalText>
-
-            <S.ResultTitle>
-              디지털 사용 데이터를 입력해주세요
-            </S.ResultTitle>
-
-            <S.ResultDescription>
-              데이터를 입력하면
-              <br />
-              맞춤 타이머를 세팅할 수 있어요
-            </S.ResultDescription>
-
-            <S.ResultButton>
-              입력하기
-            </S.ResultButton>
-          </S.DigitalResult>
-        </S.DigitalSection>
+        <DigitalState />
 
       </S.MainContent>
 
       {/* ROUTINE MODAL */}
-      {showRoutineModal && (
-        <RoutineModal
-          onClose={() => setShowRoutineModal(false)}
-        />
-      )}
+      {
+        showRoutineModal && (
+          <RoutineModal
+            onClose={() => setShowRoutineModal(false)}
+          />
+        )
+      }
 
-    </S.LandingPage>
+    </S.LandingPage >
   );
 }
 

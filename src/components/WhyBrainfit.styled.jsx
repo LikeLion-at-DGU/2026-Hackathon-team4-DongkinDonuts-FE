@@ -1,25 +1,31 @@
 import styled from "styled-components";
 
 export const Container = styled.section`
-    width: 100%;
-    padding: 70px 0 100px;
+    width: calc(100% + 88px);
+    margin-left: -44px;
+
+    padding: 60px 44px 33px;
     box-sizing: border-box;
-    background: #ffffff;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.30) 0%, rgba(115, 115, 115, 0.12) 100%);
 `;
 
+/* Routine 영역과 동일한 1040px 기준 */
 export const Header = styled.div`
+    width: 1352px;
+    margin: 6px auto 90px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    gap: 18px;
-    margin-bottom: 64px;
+    gap: 20px;
 `;
 
 export const Label = styled.p`
     margin: 0;
 
     color: #000;
+    text-align: center;
 
     font-family: Poppins;
     font-size: 24px;
@@ -30,179 +36,255 @@ export const Label = styled.p`
 export const Title = styled.h2`
     margin: 0;
 
-    color: #000000;
+    color: #000;
+    text-align: center;
 
     font-family: Poppins;
     font-size: 32px;
     font-weight: 700;
-    line-height: 36px;
-    text-align: center;
+    line-height: 40px;
 `;
 
 export const SlideArea = styled.div`
-    width: 100%;
+    position: relative;
+
+    width: 1352px;
+    height: 240px;
+    margin: 0 auto;
 
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
 
-    gap: 70px;
+    column-gap: 30px;
 `;
 
 export const TextArea = styled.div`
+    width: 464px;
+    height: 245px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 `;
 
 export const Step = styled.span`
-    color: #3355FA;
+    color: #3355fa;
+
     font-family: Poppins;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
-    line-height: 29.489px;
-    letter-spacing: -0.24px;
+    line-height: 29px;
+    letter-spacing: -0.2px;
 `;
 
 export const SlideTitle = styled.h3`
-    margin: 16px 0 0;
+    width: 520px;
+    min-height: 64px;
+
+    margin: 10px 0 0;
 
     color: #000;
+
     font-family: Poppins;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
-    line-height: 30px;
+    line-height: 32px;
 
     word-break: keep-all;
 `;
 
 export const Description = styled.p`
-    margin: 38px 0 0;
-    color: #7E7E7E;
+    margin: 20px 0 0;
+
+    color: #7e7e7e;
+
     font-family: Poppins;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
-    line-height: 30px;
+    line-height: 26px;
 
     word-break: keep-all;
 `;
 
 export const InfoCard = styled.div`
-  width: 430px;
-  min-height: 230px;
+    width: 530px;
+    height: 240px;
 
-  padding: 32px;
+    padding: 20px 8px;
+    box-sizing: border-box;
 
-  box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 30px;
 
-  display: flex;
-  flex-direction: column;
+    border-radius: 26px;
+    background: #f7f7f7;
+`;
 
-  border-radius: 20px;
+export const CardImage = styled.img`
+    width: 214px;
+    height: 167px;
 
-  background: #f4f4f4;
+    flex-shrink: 0;
+
+    background: #f7f7f7;
+`;
+
+export const CardContent = styled.div`
+    width: 258px;
+    height: 168px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 `;
 
 export const CardCategory = styled.span`
-  color: #777777;
+    margin: 0;
 
-  font-family: Poppins;
-  font-size: 12px;
-  font-weight: 500;
+    color: #000;
+
+    font-family: Poppins;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
+
+    white-space: nowrap;
 `;
 
 export const CardTitle = styled.h4`
-  margin: 12px 0 0;
+    margin: 4px 0 0;
 
-  color: #111111;
+    color: #000;
 
-  font-family: "SUIT", sans-serif;
-  font-size: 24px;
-  font-weight: 700;
+    font-family: Poppins;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 28px;
+
+    white-space: nowrap;
 `;
 
 export const CardDescription = styled.p`
-  margin: 14px 0 0;
+    margin: 12px 0 0;
 
-  color: #666666;
+    min-height: 44px;
 
-  font-family: "SUIT", sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 22px;
+    color: #484848;
+
+    font-family: Poppins;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 22px;
+
+    word-break: keep-all;
 `;
 
 export const Tags = styled.div`
-  margin-top: auto;
+    margin-top: 16px;
 
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 `;
 
 export const Tag = styled.span`
-  padding: 7px 12px;
+    padding: 0 10px;
 
-  border: 1px solid #cccccc;
-  border-radius: 999px;
+    border: 0.775px solid #000;
+    border-radius: 30px;
+    
 
-  color: #555555;
+    color: #000;
 
-  font-family: Poppins;
-  font-size: 12px;
-  font-weight: 400;
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 28px;
+
+    white-space: nowrap;
 `;
 
 export const Navigation = styled.div`
-  margin-top: 42px;
+    width: 1352px;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    margin: 42px auto 0;
 
-  gap: 18px;
-`;
-
-export const ArrowButton = styled.button`
-  width: 42px;
-  height: 42px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 1px solid #d0d0d0;
-  border-radius: 50%;
-
-  background: #ffffff;
-  color: #111111;
-
-  font-size: 20px;
-
-  cursor: pointer;
-
-  &:hover {
-    background: #f4f4f4;
-  }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 
 export const Dots = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
 `;
 
 export const Dot = styled.button`
-  width: ${({ $active }) => ($active ? "26px" : "8px")};
-  height: 8px;
+    width: ${({ $active }) => ($active ? "60px" : "15px")};
+    height: 15px;
 
-  padding: 0;
-  border: none;
-  border-radius: 999px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
 
-  background: ${({ $active }) => ($active ? "#111111" : "#dddddd")};
+    background: ${({ $active }) =>
+        $active ? "#C3C3C3" : "#e5e7eb"};
 
-  cursor: pointer;
+    cursor: pointer;
 
-  transition: 0.2s ease;
+    transition:
+        width 0.2s ease,
+        background 0.2s ease;
+`;
+
+export const ArrowButton = styled.button`
+    position: absolute;
+    top: 50%;
+
+    ${({ $left }) => $left && `left: 0;`}
+    ${({ $right }) => $right && `right: 0;`}
+
+    transform: translateY(-50%);
+
+    width: 44px;
+    height: 44px;
+
+    padding: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: ${({ disabled }) =>
+        disabled ? "#cfcfcf" : "#9D9D9D"};
+
+    box-shadow: ${({ disabled }) =>
+        disabled
+            ? "0 3px 10px rgba(0, 0, 0, 0.06)"
+            : "0 4px 14px rgba(0, 0, 0, 0.14)"};
+
+    font-size: 23px;
+    line-height: 1;
+
+    cursor: ${({ disabled }) =>
+        disabled ? "default" : "pointer"};
+
+    opacity: ${({ disabled }) =>
+        disabled ? 0.55 : 1};
+
+    z-index: 3;
+
+    transition: 0.2s ease;
+
+    &:hover {
+        background: ${({ disabled }) =>
+            disabled ? "#ffffff" : "#f5f5f5"};
+    }
 `;
