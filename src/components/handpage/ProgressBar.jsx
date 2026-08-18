@@ -15,10 +15,9 @@ const ProgressBar = ({ missionType, sequenceIndex, missionProgress }) => {
         <ProgressFill style={{ width: `${progressPercent}%` }} />
       </ProgressBarContainer>
       <Steps>
-        <span>STEP 1</span>
-        <span>STEP 2</span>
-        <span>STEP 3</span>
-        <span>STEP 4</span>
+        <span>0%</span>
+        <span>50%</span>
+        <span>100%</span>
       </Steps>
     </ProgressSection>
   );

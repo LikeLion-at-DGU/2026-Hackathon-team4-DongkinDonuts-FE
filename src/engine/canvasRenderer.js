@@ -1,5 +1,5 @@
 import { BALL_TYPES } from "../config/ballTypes";
-import { getDistance } from "../utils/utils";
+import { getDistance } from "../utils/handUtils";
 
 // 공 그리기
 export const drawBall = (ctx, ball, width, height) => {

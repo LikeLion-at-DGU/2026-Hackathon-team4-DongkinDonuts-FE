@@ -35,12 +35,6 @@ export const DataArea = styled.div`
   flex-direction: column;
   gap: 10px;
   z-index: 20;
-
-  @media (max-width: 750px) {
-    top: 20px;
-    right: 20px;
-    width: 155px;
-  }
 `;
 
 export const DataCard = styled.div`

@@ -6,7 +6,7 @@ import {
   createSameColorBalls,
   createMovingTargetBalls,
   createTimeAttackBalls,
-} from "../utils/utils";
+} from "../utils/handUtils";
 
 export const setupMission = ({
   nextMission,

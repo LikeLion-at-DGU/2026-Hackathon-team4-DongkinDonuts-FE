@@ -1,5 +1,5 @@
 import React from "react";
-import { formatTime } from "../../utils/utils";
+import { formatTime } from "../../utils/handUtils";
 import {
   LiveTime,
   LiveDot,

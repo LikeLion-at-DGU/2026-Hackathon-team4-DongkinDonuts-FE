@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import { CONFIG } from "../config/handRoutineConfig";
-import { getDistance, lerp } from "../utils/utils";
+import { getDistance, lerp } from "../utils/handUtils";
 
 export const useHandTracking = () => {
   const videoRef = useRef(null);
