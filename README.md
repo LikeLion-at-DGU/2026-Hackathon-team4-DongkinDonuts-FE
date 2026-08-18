@@ -27,5 +27,6 @@ AI Hand·Face Tracking을 활용하여 사용자의 움직임을 분석하고
 
 ```bash
 npm install
+npm install @mediapipe/tasks-vision
 npm run dev
 ```
