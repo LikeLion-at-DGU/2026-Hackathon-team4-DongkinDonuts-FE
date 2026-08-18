@@ -8,7 +8,7 @@ export const Overlay = styled.div`
     align-items: flex-start;
     justify-content: center;
 
-    padding-top: 245px;
+    padding-top: 150px;
     box-sizing: border-box;
 
     background: rgba(255, 255, 255, 0.2);
@@ -27,25 +27,30 @@ export const Modal = styled.div`
     padding: 32px 50px 24px;
 
     box-sizing: border-box;
+
     background: #f5f5f5;
     border-radius: 56px;
 
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+
     display: flex;
     flex-direction: column;
 `;
 
 export const CloseButton = styled.button`
     position: absolute;
+
     top: 33px;
     right: 30px;
-    aspect-ratio: 1/1;
+
+    aspect-ratio: 1 / 1;
 
     border: none;
     background: transparent;
 
     font-size: 25px;
     color: #484848;
+
     cursor: pointer;
 `;
 
@@ -55,11 +60,10 @@ export const SmallLabel = styled.p`
     font-family: Poppins;
     font-size: 14px;
     font-weight: 500;
-    font-weight: 500;
-    line-height: 26.6px; 
+    line-height: 26.6px;
     letter-spacing: 0.28px;
 
-    color: rgba(122, 121, 121, 0.60);
+    color: rgba(122, 121, 121, 0.6);
 `;
 
 export const Title = styled.h2`
@@ -70,6 +74,7 @@ export const Title = styled.h2`
     font-weight: 500;
     line-height: 30px;
     letter-spacing: 0.56px;
+
     color: #000;
 `;
 
@@ -81,36 +86,42 @@ export const Description = styled.p`
     font-weight: 400;
     line-height: 23px;
     letter-spacing: 0.32px;
+
     color: #777;
 `;
 
 export const SectionLabel = styled.p`
     margin: ${({ $marginTop }) =>
         $marginTop ? "22px 0 0" : "0"};
+
     justify-content: center;
     align-self: stretch;
 
     font-family: Poppins;
     font-size: 18px;
     font-weight: 500;
-    line-height: 26.6px; 
+    line-height: 26.6px;
     letter-spacing: 0.364px;
+
     color: #2e2e2e;
 `;
 
 export const OptionGroup = styled.div`
     display: flex;
-    margin-top: 10px;
     flex-wrap: wrap;
-    gap: 20px;
     align-items: center;
     align-content: center;
+
+    margin-top: 10px;
+
+    gap: 20px;
 `;
 
 export const OptionButton = styled.button`
     height: 55px;
 
     padding: 17px 25px;
+
     border: 1px solid #5b5b5b;
     border-radius: 56px;
 
@@ -122,13 +133,48 @@ export const OptionButton = styled.button`
     font-family: Poppins;
     font-size: 21px;
     font-weight: 500;
-    line-height: 21px; 
+    line-height: 21px;
     letter-spacing: 0.63px;
 
     cursor: pointer;
 
     &:hover {
-    background: #eeeeee;
+        background: #eeeeee;
+    }
+`;
+
+export const CustomInputSlot = styled.div`
+    width: 145px;
+    height: 55px;
+    flex: 0 0 145px;
+`;
+
+export const CustomInput = styled.input`
+    width: 145px;
+    height: 55px;
+
+    padding: 17px 25px;
+    box-sizing: border-box;
+
+    border: 1px solid #5b5b5b;
+    border-radius: 56px;
+    outline: none;
+
+    background: #ffffff;
+    color: #000;
+
+    font-family: Poppins;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 21px;
+    letter-spacing: 0.63px;
+
+    &::placeholder {
+        color: #949191;
+    }
+
+    &:focus {
+        border: 1px solid #2e2e2e;
     }
 `;
 
@@ -150,8 +196,9 @@ export const BottomArea = styled.div`
 
 export const StepDots = styled.div`
     display: flex;
-    gap: 7px;
     align-items: center;
+
+    gap: 7px;
 
     transform: translateY(-23px);
 `;
@@ -169,15 +216,20 @@ export const Dot = styled.div`
 export const ButtonGroup = styled.div`
     display: flex;
     align-items: center;
+
     gap: 19px;
+
+    margin-left: auto;
 `;
 
 export const SkipButton = styled.button`
-    border: none;
-    background: transparent;
-    display: flex;
     width: 83.3px;
     height: 21.035px;
+
+    display: flex;
+
+    border: none;
+    background: transparent;
 
     color: #949191;
 
@@ -185,7 +237,7 @@ export const SkipButton = styled.button`
     font-size: 18px;
     font-style: normal;
     font-weight: 500;
-    line-height: 35.569px; 
+    line-height: 35.569px;
     letter-spacing: 0.379px;
 
     text-decoration: underline;
@@ -198,7 +250,7 @@ export const SecondaryButton = styled.button`
     width: 145px;
     height: 55px;
 
-    border: 0.3px solid #2E2E2E;
+    border: 0.3px solid #2e2e2e;
     border-radius: 56px;
 
     background: #ffffff;
@@ -207,7 +259,7 @@ export const SecondaryButton = styled.button`
     font-family: Poppins;
     font-size: 21px;
     font-weight: 500;
-    line-height: 21px; /* 100% */
+    line-height: 21px;
     letter-spacing: 0.42px;
 
     cursor: pointer;
@@ -230,6 +282,6 @@ export const PrimaryButton = styled.button`
     cursor: pointer;
 
     &:hover {
-    background: #111111;
+        background: #111111;
     }
 `;

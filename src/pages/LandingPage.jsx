@@ -14,6 +14,7 @@ import * as S from "./LandingPage.styled";
 function LandingPage() {
   const navigate = useNavigate();
   const [showSetupModal, setShowSetupModal] = useState(true);
+  const [setupModalMode, setSetupModalMode] = useState("initial");
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
 
@@ -78,7 +79,12 @@ function LandingPage() {
                 회복 루틴 시작하기
               </S.StartButton>
 
-              <S.ResetButton>
+              <S.ResetButton
+                onClick={() => {
+                  setSetupModalMode("reset");
+                  setShowSetupModal(true);
+                }}
+              >
                 내 계획 다시 설정
               </S.ResetButton>
             </S.ButtonGroup>
@@ -203,6 +209,7 @@ function LandingPage() {
       }
       {showSetupModal && (
         <SetupModal
+          mode={setupModalMode}
           onClose={() => setShowSetupModal(false)}
         />
       )}
