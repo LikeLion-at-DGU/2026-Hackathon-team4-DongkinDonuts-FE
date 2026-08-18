@@ -9,15 +9,15 @@ function WhyBrainfit() {
     const current = whyBrainfitData[currentIndex];
 
     const handlePrev = () => {
-        setCurrentIndex((prev) =>
-            prev === 0 ? whyBrainfitData.length - 1 : prev - 1
-        );
+        if (currentIndex > 0) {
+            setCurrentIndex((prev) => prev - 1);
+        }
     };
 
     const handleNext = () => {
-        setCurrentIndex((prev) =>
-            prev === whyBrainfitData.length - 1 ? 0 : prev + 1
-        );
+        if (currentIndex < whyBrainfitData.length - 1) {
+            setCurrentIndex((prev) => prev + 1);
+        }
     };
 
     return (
@@ -28,6 +28,16 @@ function WhyBrainfit() {
             </S.Header>
 
             <S.SlideArea>
+                <S.ArrowButton
+                    $left
+                    onClick={handlePrev}
+                    disabled={currentIndex === 0}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="24" viewBox="0 0 14 24" fill="none">
+                        <path d="M11.6665 21.667L1.6665 11.667L11.6665 1.66699" stroke="#9D9D9D" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </S.ArrowButton>
+
                 <S.TextArea>
                     <S.Step>
                         {current.number} {current.label}
@@ -43,31 +53,44 @@ function WhyBrainfit() {
                 </S.TextArea>
 
                 <S.InfoCard>
-                    <S.CardCategory>
-                        {current.cardCategory}
-                    </S.CardCategory>
+                    <S.CardImage
+                        src={current.image}
+                        alt={current.cardTitle}
+                    />
 
-                    <S.CardTitle>
-                        {current.cardTitle}
-                    </S.CardTitle>
+                    <S.CardContent>
+                        <S.CardCategory>
+                            {current.cardCategory}
+                        </S.CardCategory>
 
-                    <S.CardDescription>
-                        {current.cardDescription}
-                    </S.CardDescription>
+                        <S.CardTitle>
+                            {current.cardTitle}
+                        </S.CardTitle>
 
-                    <S.Tags>
-                        {current.tags.map((tag) => (
-                            <S.Tag key={tag}>{tag}</S.Tag>
-                        ))}
-                    </S.Tags>
+                        <S.CardDescription>
+                            {current.cardDescription}
+                        </S.CardDescription>
+
+                        <S.Tags>
+                            {current.tags.map((tag) => (
+                                <S.Tag key={tag}>{tag}</S.Tag>
+                            ))}
+                        </S.Tags>
+                    </S.CardContent>
                 </S.InfoCard>
+
+                <S.ArrowButton
+                    $right
+                    onClick={handleNext}
+                    disabled={currentIndex === whyBrainfitData.length - 1}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <path d="M15 30L25 20L15 10" stroke="#9D9D9D" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </S.ArrowButton>
             </S.SlideArea>
 
             <S.Navigation>
-                <S.ArrowButton onClick={handlePrev}>
-                    ←
-                </S.ArrowButton>
-
                 <S.Dots>
                     {whyBrainfitData.map((item, index) => (
                         <S.Dot
@@ -77,10 +100,6 @@ function WhyBrainfit() {
                         />
                     ))}
                 </S.Dots>
-
-                <S.ArrowButton onClick={handleNext}>
-                    →
-                </S.ArrowButton>
             </S.Navigation>
         </S.Container>
     );

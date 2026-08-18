@@ -49,7 +49,7 @@ export const MainContent = styled.main`
     width: 1440px;
 
     margin: 0;
-    padding: 75px 56px 80px;
+    padding: 75px 44px 80px;
 
     box-sizing: border-box;
 `;
@@ -87,6 +87,7 @@ export const Description = styled.p`
 export const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
+  margin-top: 15px;
   gap: 17px;
 `;
 
@@ -154,7 +155,7 @@ export const ReportBox = styled.div`
     gap: 3px;
     margin-top: 50px;
 
-    padding: 40px;
+    padding: 40px 40px 30px;
 
     box-sizing: border-box;
 
@@ -288,7 +289,7 @@ export const ChangeTimeButton = styled.button`
     width: 100%;
     height: 55px;
 
-    margin-top: 19px;
+    margin-top: 24px;
 
     display: flex;
     align-items: center;
@@ -546,32 +547,40 @@ export const BlurredDigitalText = styled.p`
     pointer-events: none;
 `;
 
+
 export const LockIcon = styled.div`
     position: relative;
     z-index: 2;
 
-    width: 51px;
-    height: 51px;
+    width: 47px;
+    height: 47px;
 
     display: flex;
     justify-content: center;
     align-items: center;
 
-    margin: 0;
+    margin-bottom: 15px;
 
     svg {
         width: 42px;
         height: 42px;
+        display: block;
     }
 `;
 
 export const ResultTitle = styled.h3`
-    margin: 26px 0 0;
-    z-index: 2;
+    margin: 0;
+
     position: relative;
+    z-index: 2;
+
+    color: #000;
+    text-align: center;
+
+    font-family: Poppins;
     font-size: 32px;
     font-weight: 700;
-    line-height: 40px; 
+    line-height: 40px;
     letter-spacing: -0.32px;
 `;
 
