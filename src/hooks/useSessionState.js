@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { CONFIG } from "../config/handRoutineConfig";
-import { getRandomMission } from "../utils/utils";
+import { getRandomMission } from "../utils/handUtils";
 import { setupMission } from "../engine/missionManager";
 
 export const useSessionState = () => {

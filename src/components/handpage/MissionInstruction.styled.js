@@ -14,14 +14,6 @@ export const Instruction = styled.div`
   white-space: nowrap;
   z-index: 15;
   font-size: 15px;
-
-  @media (max-width: 750px) {
-    bottom: 72px;
-    padding: 0 15px;
-    white-space: normal;
-    line-height: 1.5;
-    font-size: 12px;
-  }
 `;
 
 export const MissionText = styled.span`

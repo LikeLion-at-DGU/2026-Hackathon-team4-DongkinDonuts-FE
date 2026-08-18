@@ -10,13 +10,6 @@ export const CameraPreviewContainer = styled.div`
   border-radius: 22px;
   background: #111;
   z-index: 100;
-
-  @media (max-width: 750px) {
-    left: 20px;
-    top: 20px;
-    width: 230px;
-    height: 138px;
-  }
 `;
 
 export const CameraVideo = styled.video`

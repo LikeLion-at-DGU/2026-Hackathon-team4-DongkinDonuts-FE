@@ -11,15 +11,15 @@ import { useSessionState } from "../hooks/useSessionState";
 
 import CameraPreview from "../components/handpage/CameraPreview";
 import SessionDataPanel from "../components/handpage/SessionDataPanel";
-import SessionOverlay from "../components/handpage/SessionOverlay";
+import SessionEndModal from "../components/handpage/SessionEndModal";
 import SessionControls from "../components/handpage/SessionControls";
 import MissionInstruction from "../components/handpage/MissionInstruction";
 import ProgressBar from "../components/handpage/ProgressBar";
 import QuitConfirmModal from "../components/handpage/QuitConfirmModal";
 import {
   HandRoutineGlobalStyle,
-  RoutineGameContainer,
-  GameContainer,
+  RoutineContainer,
+  PlayContainer,
   PlayArea,
 } from "./HandRoutinePage.styled";
 
@@ -216,14 +216,14 @@ const HandRoutinePage = () => {
   return (
     <>
       <HandRoutineGlobalStyle />
-      <RoutineGameContainer>
+      <RoutineContainer>
         <QuitConfirmModal
           isOpen={isQuitModalOpen}
           onClose={handleCloseModal}
           onConfirm={handleConfirmQuit}
         />
 
-        <GameContainer>
+        <PlayContainer>
           {isUIOverlayVisible && (
             <>
               <CameraPreview
@@ -255,19 +255,19 @@ const HandRoutinePage = () => {
             <canvas ref={canvasRef} />
           </PlayArea>
 
-          <SessionOverlay
+          <SessionEndModal
             isMissionComplete={isMissionComplete}
             isTerminated={isTerminated}
             resetGame={resetGame}
           />
-        </GameContainer>
+        </PlayContainer>
 
         <SessionControls
           handleStopGame={handleStopGame}
           resetGame={resetGame}
           isTerminated={isTerminated}
         />
-      </RoutineGameContainer>
+      </RoutineContainer>
     </>
   );
 };

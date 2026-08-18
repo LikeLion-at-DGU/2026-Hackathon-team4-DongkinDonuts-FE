@@ -1,4 +1,4 @@
-import { getDistance, lerp } from "../utils/utils";
+import { getDistance, lerp } from "../utils/handUtils";
 import { CONFIG } from "../config/handRoutineConfig";
 
 // 헬퍼: 0.05 ~ 0.95 범위 제한
