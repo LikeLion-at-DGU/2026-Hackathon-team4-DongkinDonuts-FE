@@ -43,7 +43,7 @@ function LandingPage() {
   // 닫아주고, 카드 쪽에 로딩 상태만 보여준다(사용자를 모달에 가둬두지 않음).
   const handleGenerateRecoveryPlan = () => {
     setGeneratingPlan(true);
-    generateAIRecoveryPlan(true)
+    generateAIRecoveryPlan({ notificationEnabled: true })
       .then(() => refreshNextReset())
       .catch((error) => {
         console.error("AI 회복 계획 생성 실패:", error);
