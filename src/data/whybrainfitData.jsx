@@ -1,5 +1,3 @@
-const publicAsset = (path) => `${import.meta.env.BASE_URL}${path}`;
-
 export const whyBrainfitData = [
     {
         id: 1,
@@ -15,7 +13,7 @@ export const whyBrainfitData = [
                 소비하는 '디지털 피로의 역설'이 발생하고 있습니다.
             </>
         ),
-        image: publicAsset("images/problem.png"),
+        image: "/images/problem.png",
         cardCategory: "CONTENTS CONSUMPTION",
         cardTitle: "콘텐츠 소비",
         cardDescription:(
@@ -48,7 +46,7 @@ export const whyBrainfitData = [
                 반응하고, 감각을 깨우는 방식을 택합니다.
             </>
         ),
-        image: publicAsset("images/interaction.png"),
+        image: "/images/interaction.png",
         cardCategory: "ACTIVE INTERACTION",
         cardTitle: "능동적인 상호작용",
         cardDescription: (
