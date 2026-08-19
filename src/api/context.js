@@ -39,15 +39,46 @@ export function timeLabelToMinutes(label) {
 }
 
 /**
+ * 오늘 등록된 상태 스냅샷 중 최신 1건 조회. 오늘 등록된 게 없으면 404가 나는데,
+ * 그 경우 null을 반환한다("내 계획 다시 설정"에서 오늘 스냅샷이 있는지 미리
+ * 확인할 때 씀 — 없으면 AI 생성이 "오늘의 상태 스냅샷이 필요합니다"로 항상
+ * 실패하기 때문).
+ */
+export async function getTodayContextSnapshot() {
+  try {
+    return await apiClient.get("/context/context-snapshots/today/");
+  } catch (error) {
+    if (error?.code === "NotFound") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
  * "지금 내 상태" 스냅샷 생성. SetupModal 1단계(상태 선택) 결과를 보낸다.
  * @param {string[]} stateCodes - StateOption.code 배열 (예: ["EYE_TIRED"])
  * @param {string} [note]
  */
-export function createContextSnapshot(stateCodes, note = "") {
-  return apiClient.post("/context/context-snapshots/", {
-    state_options: stateCodes,
-    note,
-  });
+export function createContextSnapshot(
+  stateCodes,
+  note = ""
+) {
+  console.log(
+    "context snapshot 서버 요청:",
+    {
+      state_options: stateCodes,
+      note,
+    }
+  );
+
+  return apiClient.post(
+    "/context/context-snapshots/",
+    {
+      state_options: stateCodes,
+      note,
+    }
+  );
 }
 
 /**
@@ -67,4 +98,40 @@ export function createNextActivityPlan({
     expected_activity_minutes: expectedActivityMinutes,
     context_snapshot: contextSnapshotId,
   });
+}
+
+/**
+ * 오늘 등록된 이후 활동 계획 중 최신 1건 조회. 오늘 등록된 게 없으면 404가 나는데,
+ * 그 경우 null을 반환한다.
+ */
+export async function getTodayNextActivityPlan() {
+  try {
+    return await apiClient.get("/context/next-activity-plans/today/");
+  } catch (error) {
+    if (error?.code === "NotFound") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * AI 회복 계획 생성(POST /plans/recovery-plans/today/ai-generate/)은 오늘 날짜의
+ * 상태 스냅샷 + 이후 활동 계획이 "둘 다" 이미 있어야만 성공한다(하나라도 없으면
+ * 백엔드가 ValidationError로 거부). "내 계획 다시 설정"이나 "PC 사용 패턴으로
+ * 휴식 타이머 생성"처럼, 정식 온보딩(SetupModal 1~2단계)을 거치지 않고도 AI
+ * 생성을 트리거할 수 있는 진입점이 여러 곳이라, 그 앞에서 항상 이 함수를 먼저
+ * 불러서 없는 것만 중립값으로 채워둔다.
+ */
+export async function ensureTodayGenerationInputs() {
+  let contextSnapshot = await getTodayContextSnapshot();
+  if (!contextSnapshot) {
+    const fallbackStateCode = CONDITION_LABEL_TO_STATE_CODE["아직 괜찮아요"];
+    contextSnapshot = await createContextSnapshot([fallbackStateCode]);
+  }
+
+  const nextActivityPlan = await getTodayNextActivityPlan();
+  if (!nextActivityPlan) {
+    await createNextActivityPlan({ contextSnapshotId: contextSnapshot.id });
+  }
 }
