@@ -105,15 +105,15 @@ export const Title = styled.h3`
 
 
 export const Description = styled.p`
-  margin: 28px 0 0;
+  margin: 18px 0 0;
 
   color: #fff;
 
   font-family: Poppins;
-  font-size: 14px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.7;
   letter-spacing: -0.24px;
 
   word-break: keep-all;
