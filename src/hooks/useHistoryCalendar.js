@@ -6,7 +6,8 @@ import {
 } from "../utils/dateUtils";
 
 export const useHistoryCalendar = () => {
-    const initialDate = new Date(2026, 7, 20);
+    // 목업 시절엔 고정 날짜(2026-08-20)였는데, 실제 데이터를 붙이면서 오늘 날짜로 되돌림.
+    const initialDate = new Date();
 
     const [currentDate, setCurrentDate] = useState(initialDate);
     const [calendarDate, setCalendarDate] = useState(initialDate);

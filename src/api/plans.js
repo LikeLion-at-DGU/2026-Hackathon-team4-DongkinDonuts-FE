@@ -101,3 +101,13 @@ export function createWebPushSubscription({ endpoint, keys, userAgent = "" }) {
     user_agent: userAgent,
   });
 }
+
+/**
+ * 특정 날짜의 회복 슬롯 기록("Your History" 표) 조회.
+ * date는 "YYYY-MM-DD" 문자열이어야 한다.
+ */
+export function getRecoverySlotHistory(date) {
+  return apiClient.get("/plans/recovery-slots/history/", {
+    params: { date },
+  });
+}

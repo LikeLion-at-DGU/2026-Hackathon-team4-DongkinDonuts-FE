@@ -1,10 +1,11 @@
-import { historyData } from "../../data/historyData";
 import { useHistoryCalendar } from "../../hooks/useHistoryCalendar";
+import { useHistoryData } from "../../hooks/useHistoryData";
 
 import * as S from "./YourHistory.styled";
 
 function YourHistory() {
     const {
+        currentDate,
         calendarOpen,
         year,
         month,
@@ -16,6 +17,8 @@ function YourHistory() {
         toggleCalendar,
         isActiveDate,
     } = useHistoryCalendar();
+
+    const { rows: historyData, loading } = useHistoryData(currentDate);
 
     return (
         <S.Section>
@@ -123,46 +126,53 @@ function YourHistory() {
                         <S.StatusHeader>
                             상태
                         </S.StatusHeader>
-                        <S.NoteHeader>
-                            비고
-                        </S.NoteHeader>
                     </tr>
                 </S.TableHead>
 
                 <tbody>
-                    {historyData.map((history) => (
-                        <S.TableRow key={history.id}>
-                            <S.TimeCell>
-                                {history.time}
-                            </S.TimeCell>
-
-                            <S.ActivityCell>
-                                {history.activity}
+                    {loading ? (
+                        <tr>
+                            <S.ActivityCell colSpan={4}>
+                                불러오는 중...
                             </S.ActivityCell>
+                        </tr>
+                    ) : historyData.length === 0 ? (
+                        <tr>
+                            <S.ActivityCell colSpan={4}>
+                                이 날짜엔 기록이 없어요
+                            </S.ActivityCell>
+                        </tr>
+                    ) : (
+                        historyData.map((history) => (
+                            <S.TableRow key={history.id}>
+                                <S.TimeCell>
+                                    {history.time}
+                                </S.TimeCell>
 
-                            <S.RoutineCell>
-                                {history.routine === "-" ? (
-                                    "-"
-                                ) : (
-                                    <S.RoutineBadge>
-                                        {history.routine}
-                                    </S.RoutineBadge>
-                                )}
-                            </S.RoutineCell>
+                                <S.ActivityCell>
+                                    {history.activity}
+                                </S.ActivityCell>
 
-                            <S.StatusCell>
-                                <S.StatusBadge
-                                    $status={history.status}
-                                >
-                                    {history.status}
-                                </S.StatusBadge>
-                            </S.StatusCell>
+                                <S.RoutineCell>
+                                    {history.routine ? (
+                                        <S.RoutineBadge>
+                                            {history.routine}
+                                        </S.RoutineBadge>
+                                    ) : (
+                                        "-"
+                                    )}
+                                </S.RoutineCell>
 
-                            <S.NoteCell>
-                                {history.note}
-                            </S.NoteCell>
-                        </S.TableRow>
-                    ))}
+                                <S.StatusCell>
+                                    <S.StatusBadge
+                                        $status={history.status}
+                                    >
+                                        {history.status}
+                                    </S.StatusBadge>
+                                </S.StatusCell>
+                            </S.TableRow>
+                        ))
+                    )}
                 </tbody>
             </S.Table>
         </S.Section>
