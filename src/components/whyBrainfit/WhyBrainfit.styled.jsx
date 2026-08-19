@@ -97,14 +97,14 @@ export const SlideTitle = styled.h3`
 `;
 
 export const Description = styled.p`
-    margin: 20px 0 0;
+    margin: 15px 0 0;
 
     color: #7e7e7e;
 
     font-family: Poppins;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 500;
-    line-height: 26px;
+    line-height: 32px;
 
     word-break: keep-all;
 `;
@@ -156,7 +156,7 @@ export const CardCategory = styled.span`
 `;
 
 export const CardTitle = styled.h4`
-    margin: 4px 0 0;
+    margin: 8px 0 0;
 
     color: #000;
 

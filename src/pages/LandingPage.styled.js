@@ -76,7 +76,7 @@ export const Description = styled.p`
     margin: 10px 0 0;
 
     font-size: 24px;
-    line-height: 32px;
+    line-height: 1.7;
     font-family: Poppins;
     font-style: normal;
     font-weight: 400;
