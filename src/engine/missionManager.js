@@ -186,7 +186,6 @@ export const handleBallRelease = ({
     setMissionProgress,
     setSequenceIndex,
     completeMission,
-    failMission,
   } = callbacks;
 
   const insideTarget = isInsideTarget(ball, target);

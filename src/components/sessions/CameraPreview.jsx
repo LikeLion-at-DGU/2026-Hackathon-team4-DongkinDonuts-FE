@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import {
   CameraPreviewContainer,
   CameraVideo,
@@ -16,4 +16,4 @@ const CameraPreview = ({ videoRef, cameraReady, isTerminated }) => {
   );
 };
 
-export default CameraPreview;
+export default memo(CameraPreview);

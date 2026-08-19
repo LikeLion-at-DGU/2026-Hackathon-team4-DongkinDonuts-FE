@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { CONFIG } from "../config/handRoutineConfig";
 import { getRandomMission } from "../utils/handUtils";
 import { setupMission } from "../engine/missionManager";
@@ -25,20 +25,22 @@ export const useSessionState = () => {
   const [isMissionComplete, setIsMissionComplete] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const initializeMission = () => {
+  const refs = useMemo(() => ({
+    ballsRef,
+    missionRef,
+    missionProgressRef,
+    sequenceIndexRef,
+    sequenceOrderRef,
+    missionStartTimeRef,
+    movingTargetRef,
+    sameColorTargetTypeRef,
+    staticTargetsRef,
+  }), []);
+
+  const initializeMission = useCallback(() => {
     setupMission({
       nextMission: mission,
-      refs: {
-        missionRef,
-        missionProgressRef,
-        sequenceIndexRef,
-        sequenceOrderRef,
-        missionStartTimeRef,
-        movingTargetRef,
-        sameColorTargetTypeRef,
-        staticTargetsRef,
-        ballsRef,
-      },
+      refs,
       setMissionProgress,
       setSequenceIndex,
       setMissionRemaining,
@@ -47,20 +49,10 @@ export const useSessionState = () => {
       setIsMissionComplete,
       setIsTerminated,
     });
-  };
+  }, [mission, refs]);
 
   return {
-    refs: {
-      ballsRef,
-      missionRef,
-      missionProgressRef,
-      sequenceIndexRef,
-      sequenceOrderRef,
-      missionStartTimeRef,
-      movingTargetRef,
-      sameColorTargetTypeRef,
-      staticTargetsRef,
-    },
+    refs,
     state: {
       isRunning,
       elapsedTime,
