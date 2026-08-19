@@ -14,7 +14,6 @@ const conditionOptions = [
 const activityOptions = [
     "#코딩",
     "#과제",
-    "#작업",
     "#업무",
 ];
 

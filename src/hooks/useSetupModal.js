@@ -22,6 +22,10 @@ export const useSetupModal = () => {
     };
 
     const openActivityInput = () => {
+        if (customActivity.startsWith("#")) {
+            setCustomActivity(customActivity.slice(1));
+        }
+
         setIsActivityInputOpen(true);
     };
 
@@ -33,7 +37,12 @@ export const useSetupModal = () => {
             return;
         }
 
-        setSelectedActivity(value);
+        const activityWithHash = value.startsWith("#")
+            ? value
+            : `#${value}`;
+
+        setCustomActivity(activityWithHash);
+        setSelectedActivity(activityWithHash);
         setIsActivityInputOpen(false);
     };
 
