@@ -49,7 +49,7 @@ export const MainContent = styled.main`
     width: 1440px;
 
     margin: 0;
-    padding: 75px 44px 80px;
+    padding: 75px 75px 80px;
 
     box-sizing: border-box;
 `;
