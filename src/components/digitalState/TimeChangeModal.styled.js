@@ -1,14 +1,25 @@
 import styled from "styled-components";
 
 export const Overlay = styled.div`
-    position: fixed;
-    inset: 0;
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    /* 랜딩 전체 길이보다 충분히 길게 */
+    height: 5000px;
+
     z-index: 9999;
 
     background: rgba(0, 0, 0, 0.38);
-    backdrop-filter: blur(3px);
 
-    overflow-x: hidden;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+
+    /* 페이지 스크롤 허용 */
+    pointer-events: auto;
 `;
 
 export const ModalPositioner = styled.div`
@@ -19,38 +30,62 @@ export const ModalPositioner = styled.div`
 
     margin: 0 auto;
 
+    /* 모달 위치 잡기 */
+    display: flex;
+    justify-content: flex-end;
+
+    padding-top: 270px;
+    padding-right: 90px;
 
     box-sizing: border-box;
 `;
 
-export const Modal = styled.div`
-    position: absolute;
-
-    top: 270px;
-    right: 90px;
+export const ModalFrame = styled.div`
+    position: relative;
 
     width: 410px;
-    height: calc(100vh - 280px);
+    height: 680px;
 
-    padding: 30px 30px 22px;
+    flex-shrink: 0;
 
     box-sizing: border-box;
-    transform: scale(1.1);
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    /* 여기 중요 */
-    height: auto;
-    max-height: none;
-    overflow: visible;
 
     background: #262626;
     border-radius: 24px;
 
-    color: #fff;
+    color: #ffffff;
 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+    overflow: hidden;
+
+    transform: scale(1.1);
+    transform-origin: top right;
+`;
+
+export const ModalScroll = styled.div`
+    width: 100%;
+    height: 100%;
+
+    padding: 30px 30px 22px;
+    box-sizing: border-box;
+
+    /* 여기만 스크롤 */
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    /* Firefox */
+    scrollbar-width: none;
+
+    /* IE / old Edge */
+    -ms-overflow-style: none;
+
+    /* Chrome / Edge / Safari */
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+    }
 `;
 
 export const CloseButton = styled.button`
@@ -61,6 +96,8 @@ export const CloseButton = styled.button`
 
     width: 24px;
     height: 24px;
+
+    z-index: 10;
 
     display: flex;
     align-items: center;
