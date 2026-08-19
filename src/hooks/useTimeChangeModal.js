@@ -5,9 +5,9 @@ import {
     ITEM_HEIGHT,
 } from "../config/timeChangeConfig";
 
-export const useTimeChangeModal = (currentTime, onSave, onClose) => {
+export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) => {
     const [selectedTime, setSelectedTime] = useState(currentTime);
-    const [repeat, setRepeat] = useState(true);
+    const [repeat, setRepeat] = useState(currentRepeat);
 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);

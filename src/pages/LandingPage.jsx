@@ -275,6 +275,7 @@ function LandingPage() {
       {showTimeModal && (
   <TimeChangeModal
     currentTime={resetTime}
+    currentRepeat={repeatAlarm}
     onClose={() => setShowTimeModal(false)}
     onSave={(time, repeat) => {
       setResetTime(time);

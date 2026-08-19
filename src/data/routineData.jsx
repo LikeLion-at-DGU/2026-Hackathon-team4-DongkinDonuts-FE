@@ -1,3 +1,5 @@
+const publicAsset = (path) => `${import.meta.env.BASE_URL}${path}`;
+
 export const routineData = [
     {
         id: 1,
@@ -10,7 +12,7 @@ export const routineData = [
             </>
         ),
         status: "완료",
-        image: "/images/brain-reset.png",
+        image: publicAsset("images/brain-reset.png"),
     },
     {
         id: 2,
@@ -25,7 +27,7 @@ export const routineData = [
             </>
         ),
         status: "미완료",
-        image: "/images/brain-reset.png",
+        image: publicAsset("images/brain-reset.png"),
         featured: true,
     },
     {
@@ -39,6 +41,6 @@ export const routineData = [
             </>
         ),
         status: "완료",
-        image: "/images/brain-reset.png",
+        image: publicAsset("images/brain-reset.png"),
     },
 ];
