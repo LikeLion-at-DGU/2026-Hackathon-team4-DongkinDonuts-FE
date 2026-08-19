@@ -34,6 +34,7 @@ function LandingPage() {
     hasPlan,
     recoverySlotId,
     resetTimeLabel,
+    countdownLabel,
     refresh: refreshNextReset,
   } = useNextReset();
 
@@ -49,65 +50,6 @@ function LandingPage() {
       })
       .finally(() => setGeneratingPlan(false));
   };
-
-  const [countdown, setCountdown] = useState("--:--");
-
-  useEffect(() => {
-    if (!hasPlan || !resetTimeLabel) {
-      setCountdown("--:--");
-      return;
-    }
-
-    const updateCountdown = () => {
-      const now = new Date();
-
-      // "17:00" → 17, 0
-      const [hour, minute] = resetTimeLabel
-        .split(":")
-        .map(Number);
-
-      const target = new Date();
-
-      target.setHours(
-        hour,
-        minute,
-        0,
-        0
-      );
-
-      const diff = target.getTime() - now.getTime();
-
-      // 이미 시간이 지난 경우
-      if (diff <= 0) {
-        setCountdown("00:00");
-        return;
-      }
-
-      const totalSeconds = Math.floor(diff / 1000);
-
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-
-      setCountdown(
-        `${String(minutes).padStart(2, "0")}:${String(
-          seconds
-        ).padStart(2, "0")}`
-      );
-    };
-
-    // 처음 렌더링하자마자 바로 계산
-    updateCountdown();
-
-    // 이후 1초마다 다시 계산
-    const timer = setInterval(
-      updateCountdown,
-      1000
-    );
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, [hasPlan, resetTimeLabel]);
 
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
@@ -261,7 +203,7 @@ function LandingPage() {
               </S.ReportBottomText>
 
               <S.Countdown>
-                {hasPlan ? countdown : "--:--"}
+                {hasPlan ? countdownLabel : "--:--"}
               </S.Countdown>
             </S.ReportBottom>
 
@@ -364,7 +306,8 @@ function LandingPage() {
 
       {showTimeModal && (
         <TimeChangeModal
-          currentTime={hasPlan ? resetTimeLabel : ""}
+          currentTime={hasPlan ? resetTimeLabel : "15:00"}
+          currentRepeat={repeatAlarm}
           onClose={() => setShowTimeModal(false)}
           onSave={async (time, repeat) => {
             if (!recoverySlotId) {

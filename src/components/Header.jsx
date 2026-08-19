@@ -4,10 +4,6 @@ import * as S from "./Header.styled";
 function Header() {
     const navigate = useNavigate();
 
-        const handleLogoClick = () => {
-        navigate("/");
-    };
-
     const handleRoutineClick = () => {
         navigate("/", {
             state: { scrollTo: "routine" },

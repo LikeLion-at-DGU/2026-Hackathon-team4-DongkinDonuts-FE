@@ -84,13 +84,11 @@ export const useMultiTracking = (trackingType = "HAND") => {
       // 홍채/눈동자 x, y 위치
       const pupil = { x: 1 - face[468].x, y: face[468].y };
       parsedMetrics = { isBlinking, pupil, raw: face };
-    } 
-    else if (trackingType === "POSE" && res.poseLandmarks?.[0]) {
+    } else if (trackingType === "POSE" && res.poseLandmarks?.[0]) {
       const pose = res.poseLandmarks[0];
       const nose = pose[0];
       const leftEar = pose[7];
       const leftShoulder = pose[11];
-      const rightShoulder = pose[12];
 
       // 목 기울기 각도 (신전 감지)
       const neckAngle = Math.atan2(nose.y - leftShoulder.y, nose.x - leftShoulder.x) * (180 / Math.PI);
@@ -99,8 +97,7 @@ export const useMultiTracking = (trackingType = "HAND") => {
       const isShoulderRaised = shoulderElevation < 0.12;
 
       parsedMetrics = { neckAngle, isShoulderRaised, raw: pose };
-    } 
-    else if (res.landmarks?.[0]) {
+    } else if (res.landmarks?.[0]) {
       const hand = res.landmarks[0];
       // 엄지(4)와 검지(8) 거리 (핀치 감지)
       const pinchDist = Math.hypot(hand[4].x - hand[8].x, hand[4].y - hand[8].y);
