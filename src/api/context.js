@@ -43,11 +43,25 @@ export function timeLabelToMinutes(label) {
  * @param {string[]} stateCodes - StateOption.code 배열 (예: ["EYE_TIRED"])
  * @param {string} [note]
  */
-export function createContextSnapshot(stateCodes, note = "") {
-  return apiClient.post("/context/context-snapshots/", {
-    state_options: stateCodes,
-    note,
-  });
+export function createContextSnapshot(
+  stateCodes,
+  note = ""
+) {
+  console.log(
+    "context snapshot 서버 요청:",
+    {
+      state_options: stateCodes,
+      note,
+    }
+  );
+
+  return apiClient.post(
+    "/context/context-snapshots/",
+    {
+      state_options: stateCodes,
+      note,
+    }
+  );
 }
 
 /**
