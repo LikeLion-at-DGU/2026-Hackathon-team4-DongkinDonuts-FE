@@ -20,6 +20,7 @@ function formatCountdown(ms) {
 // hasPlan=false로 내려주고, 화면은 "아직 계획이 없어요" 같은 안내를 보여주면 된다.
 export function useNextReset() {
     const [nextResetAt, setNextResetAt] = useState(null);
+    const [recoverySlotId, setRecoverySlotId] = useState(null);
     const [isOverdue, setIsOverdue] = useState(false);
     const [loading, setLoading] = useState(true);
     const [now, setNow] = useState(() => new Date());
@@ -30,14 +31,17 @@ export function useNextReset() {
             const result = await getNextResetTime();
             if (result) {
                 setNextResetAt(new Date(result.next_reset_time));
+                setRecoverySlotId(result.recovery_slot);
                 setIsOverdue(result.is_overdue);
             } else {
                 setNextResetAt(null);
+                setRecoverySlotId(null);
                 setIsOverdue(false);
             }
         } catch (error) {
             console.error("다음 리셋 시간 조회 실패:", error);
             setNextResetAt(null);
+            setRecoverySlotId(null);
         } finally {
             setLoading(false);
         }
@@ -55,6 +59,7 @@ export function useNextReset() {
     return {
         loading,
         hasPlan: nextResetAt !== null,
+        recoverySlotId,
         resetTimeLabel: nextResetAt ? formatClock(nextResetAt) : "--:--",
         countdownLabel: nextResetAt ? formatCountdown(nextResetAt.getTime() - now.getTime()) : "--:--",
         isOverdue,
