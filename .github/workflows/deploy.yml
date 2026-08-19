@@ -93,10 +93,27 @@ jobs:
           set -euo pipefail
 
           mkdir -p ~/.ssh
-          printf '%s' "${GABIA_SSH_PRIVATE_KEY}" > ~/.ssh/gabia_deploy_key
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "${GABIA_SSH_PRIVATE_KEY}" \
+            | tr -d '\r' \
+            > ~/.ssh/gabia_deploy_key
+
           chmod 600 ~/.ssh/gabia_deploy_key
 
-          ssh-keyscan -p "${GABIA_SSH_PORT:-22}" "${GABIA_HOST}" >> ~/.ssh/known_hosts
+          echo "Validating SSH private key..."
+
+          if ! ssh-keygen -y -f ~/.ssh/gabia_deploy_key > /dev/null; then
+            echo "::error::GABIA_SSH_PRIVATE_KEY is not a valid SSH private key."
+            exit 1
+          fi
+
+          ssh-keyscan \
+            -p "${GABIA_SSH_PORT:-22}" \
+            "${GABIA_HOST}" \
+            >> ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Upload and release
         shell: bash
@@ -107,9 +124,25 @@ jobs:
           REMOTE_ARCHIVE="/tmp/frontend-dist-${GITHUB_SHA}.tar.gz"
 
           tar -czf frontend-dist.tar.gz -C dist .
-          scp -i ~/.ssh/gabia_deploy_key -P "${PORT}" frontend-dist.tar.gz "${GABIA_USER}@${GABIA_HOST}:${REMOTE_ARCHIVE}"
-          ssh -i ~/.ssh/gabia_deploy_key -p "${PORT}" "${GABIA_USER}@${GABIA_HOST}" \
-            "mkdir -p '${GABIA_DEPLOY_PATH}' && tar -xzf '${REMOTE_ARCHIVE}' -C '${GABIA_DEPLOY_PATH}' && rm -f '${REMOTE_ARCHIVE}'"
+
+          scp \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -i ~/.ssh/gabia_deploy_key \
+            -P "${PORT}" \
+            frontend-dist.tar.gz \
+            "${GABIA_USER}@${GABIA_HOST}:${REMOTE_ARCHIVE}"
+
+          ssh \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -i ~/.ssh/gabia_deploy_key \
+            -p "${PORT}" \
+            "${GABIA_USER}@${GABIA_HOST}" \
+            "mkdir -p '${GABIA_DEPLOY_PATH}' && \
+            find '${GABIA_DEPLOY_PATH}' -mindepth 1 -maxdepth 1 -exec rm -rf {} + && \
+            tar -xzf '${REMOTE_ARCHIVE}' -C '${GABIA_DEPLOY_PATH}' && \
+            rm -f '${REMOTE_ARCHIVE}'"
 
       - name: Run post deploy command
         if: ${{ env.GABIA_POST_DEPLOY_COMMAND != '' }}
