@@ -1,4 +1,5 @@
 import * as S from "./YourHistory.styled";
+import { useState } from "react";
 
 const historyData = [
     {
@@ -60,6 +61,23 @@ const historyData = [
 ];
 
 function YourHistory() {
+    const [currentDate, setCurrentDate] = useState(
+        new Date(2026, 7, 20)
+    );
+
+    const changeDate = (amount) => {
+        const nextDate = new Date(currentDate);
+        nextDate.setDate(nextDate.getDate() + amount);
+        setCurrentDate(nextDate);
+    };
+
+    const formattedDate = `${currentDate.getFullYear()}년 ${String(
+        currentDate.getMonth() + 1
+    ).padStart(2, "0")}월 ${String(currentDate.getDate()).padStart(
+        2,
+        "0"
+    )}일 (${["일", "월", "화", "수", "목", "금", "토"][currentDate.getDay()]})`;
+
     return (
         <S.Section>
             <S.Header>
@@ -67,47 +85,69 @@ function YourHistory() {
                 <S.Title>나의 사용 기록을 확인해보세요</S.Title>
             </S.Header>
 
-                <S.Table>
-                    <S.TableHead>
-                        <tr>
-                            <S.TimeHeader>시간</S.TimeHeader>
-                            <S.ActivityHeader>상황 / 업무내용</S.ActivityHeader>
-                            <S.RoutineHeader>추천 루틴</S.RoutineHeader>
-                            <S.StatusHeader>상태</S.StatusHeader>
-                            <S.NoteHeader>비고</S.NoteHeader>
-                        </tr>
-                    </S.TableHead>
+            <S.TableTop>
+                <S.DateSelector>
+                    <S.DateButton
+                        type="button"
+                        onClick={() => changeDate(-1)}
+                    >
+                        ‹
+                    </S.DateButton>
 
-                    <tbody>
-                        {historyData.map((history) => (
-                            <S.TableRow key={history.id}>
-                                <S.TimeCell>{history.time}</S.TimeCell>
+                    <S.DateText>
+                        {formattedDate}
+                    </S.DateText>
 
-                                <S.ActivityCell>
-                                    {history.activity}
-                                </S.ActivityCell>
+                    <S.DateButton
+                        type="button"
+                        onClick={() => changeDate(1)}
+                    >
+                        ›
+                    </S.DateButton>
+                </S.DateSelector>
+            </S.TableTop>
 
-                                <S.RoutineCell>
-                                    {history.routine === "-" ? (
-                                        "-"
-                                    ) : (
-                                        <S.RoutineBadge>
-                                            {history.routine}
-                                        </S.RoutineBadge>
-                                    )}
-                                </S.RoutineCell>
+            <S.Table>
+                <S.TableHead>
+                    <tr>
+                        <S.TimeHeader>시간</S.TimeHeader>
+                        <S.ActivityHeader>상황 / 업무내용</S.ActivityHeader>
+                        <S.RoutineHeader>추천 루틴</S.RoutineHeader>
+                        <S.StatusHeader>상태</S.StatusHeader>
+                        <S.NoteHeader>비고</S.NoteHeader>
+                    </tr>
+                </S.TableHead>
 
-                                <S.StatusCell>
-                                    <S.StatusBadge $status={history.status}>
-                                        {history.status}
-                                    </S.StatusBadge>
-                                </S.StatusCell>
+                <tbody>
+                    {historyData.map((history) => (
+                        <S.TableRow key={history.id}>
+                            <S.TimeCell>{history.time}</S.TimeCell>
 
-                                <S.NoteCell>{history.note}</S.NoteCell>
-                            </S.TableRow>
-                        ))}
-                    </tbody>
-                </S.Table>
+                            <S.ActivityCell>
+                                {history.activity}
+                            </S.ActivityCell>
+
+                            <S.RoutineCell>
+                                {history.routine === "-" ? (
+                                    "-"
+                                ) : (
+                                    <S.RoutineBadge>
+                                        {history.routine}
+                                    </S.RoutineBadge>
+                                )}
+                            </S.RoutineCell>
+
+                            <S.StatusCell>
+                                <S.StatusBadge $status={history.status}>
+                                    {history.status}
+                                </S.StatusBadge>
+                            </S.StatusCell>
+
+                            <S.NoteCell>{history.note}</S.NoteCell>
+                        </S.TableRow>
+                    ))}
+                </tbody>
+            </S.Table>
         </S.Section>
     );
 }
