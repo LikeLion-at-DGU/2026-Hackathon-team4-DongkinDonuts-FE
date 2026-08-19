@@ -1,162 +1,102 @@
 import styled from "styled-components";
 
-
 export const FooterContainer = styled.footer`
     width: 100%;
-    padding: 20px 0;
-    background-color: ${(props) => (props.$isDark ? "#17181d" : "#F4F5F6")};
 
-    transition: background-color 0.3s ease;
+    background: ${({ $isDark }) =>
+        $isDark ? "#17181d" : "#f4f5f6"};
 
-    ${(props) =>
-        props.$isDark &&
-        `
-        ${Logo}, ${MenuTitle}, ${MenuItem}, ${FooterBottom} {
-            color: #ffffff;
-        }
-    
-        ${MenuItem}:hover {
-            color: #a0a0a0;
-        }
-
-        ${Locale} span {
-            color: #ffffff;
-        }
-
-        ${Locale} svg path {
-            fill: #ffffff;
-        }
-    `}
+    transition: background 0.3s ease;
 `;
 
 export const Footer = styled.div`
     width: 100%;
     max-width: 1440px;
 
+    height: 410px;
+
     margin: 0 auto;
-    padding: 32px 161px 21px;
-    
+
+    padding: 90px 135px 50px;
+
     box-sizing: border-box;
 `;
 
-export const FooterInner = styled.div`
+export const FooterContent = styled.div`
     width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        1.3fr
+        1fr
+        1fr
+        1fr;
+
+    align-items: flex-start;
+
+    column-gap: 80px;
+`;
+
+export const BrandArea = styled.div`
+    height: 240px;
 
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-
-    gap: 20px;
+    justify-content: space-between;
 `;
 
 export const Logo = styled.h3`
-    width: 118px;
-
-    margin: 0 0 12px;
+    margin: 0;
 
     color: #141416;
-    font-family: Rubik;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 28px;
+
+    font-family: Poppins;
+    font-size: 45px;
+    font-weight: 600;
+    line-height: 1;
 `;
 
-export const FooterMenu = styled.div`
-    width: 100%;
+export const Copyright = styled.span`
+    color: #95a1bb;
 
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    font-family: Poppins;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 20px;
 `;
 
 export const MenuGroup = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
 
-    gap: 12px;
+    align-items: flex-start;
 `;
 
 export const MenuTitle = styled.h4`
-    width: 166px;
+    margin: 0 0 20px;
 
-    margin: 0 0 12px;
-
-    color: #3B5266;
+    color: #3b5266;
 
     font-family: Poppins;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 24px;
 `;
 
 export const MenuItem = styled.span`
-    width: 166px;
+    margin-bottom: 12px;
 
     color: #353945;
 
-    font-family: Lato;
-    font-size: 17px;
+    font-family: Poppins;
+    font-size: 15px;
     font-weight: 400;
-    line-height: 25px;
+    line-height: 22px;
 
     cursor: pointer;
 
     &:hover {
         color: #000000;
-    }
-`;
-
-export const StoreButton = styled.button`
-    width: 165px;
-    height: 45px;
-
-    padding: 0;
-    border: none;
-    border-radius: 5px;
-
-    background: #141416;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-
-    svg {
-        display: block;
-        max-width: 100%;
-        max-height: 100%;
-    }
-`;
-
-export const FooterBottom = styled.div`
-    width: 100%;
-
-    margin: 28px 0 0;
-    padding-top: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    box-sizing: border-box;
-
-    font-family: Rubik;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 22px;
-
-    color: #95A1BB;
-`;
-
-export const Locale = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    svg {
-        width: 21px;
-        height: 20px;
     }
 `;
