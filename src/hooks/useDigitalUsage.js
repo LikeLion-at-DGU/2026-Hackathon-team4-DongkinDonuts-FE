@@ -27,6 +27,21 @@ export function useDigitalUsage({
         }));
     };
 
+    const convertSelectedToPatterns = (selected) => {
+        return Object.entries(selected)
+            .filter(([, isSelected]) => isSelected)
+            .map(([key]) => {
+                const [rowIndex, colIndex] = key
+                    .split("-")
+                    .map(Number);
+
+                return {
+                    day_of_week: colIndex,
+                    hour: rowIndex,
+                };
+            });
+    };
+
     // 한 시간대의 일~토 전체 선택/취소
     const toggleRow = (rowIndex) => {
         if (isResult) return;
@@ -73,8 +88,16 @@ export function useDigitalUsage({
         try {
             setIsSaving(true);
 
+            const patterns =
+                convertSelectedToPatterns(selected);
+
+            console.log(
+                "변환 후 서버로 보내는 데이터:",
+                patterns
+            );
+
             const result =
-                await saveDigitalPatterns(selected);
+                await saveDigitalPatterns(patterns);
 
             console.log(
                 "PC 사용 패턴 저장 성공:",
