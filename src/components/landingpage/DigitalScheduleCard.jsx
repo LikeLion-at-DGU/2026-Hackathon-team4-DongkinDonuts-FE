@@ -1,11 +1,10 @@
 import ClockIcon from "../../assets/icons/ClockIcon.svg";
 
-import { SCHEDULES } from "../../config/digitalUsageConfig";
-
 import * as S from "./DigitalUsage.styled";
 
 function DigitalScheduleCard({
     isResult,
+    schedules = [],
     alarmStates,
     onToggleAlarm,
 }) {
@@ -51,34 +50,40 @@ function DigitalScheduleCard({
                     </S.ScheduleDescription>
 
                     <S.ScheduleList>
-                        {SCHEDULES.map((schedule) => (
-                            <S.ScheduleItem key={schedule.id}>
-                                <S.TimeArea>
-                                    <S.Circle />
-                                    <span>{schedule.time}</span>
-                                </S.TimeArea>
+                        {schedules.length > 0 ? (
+                            schedules.map((schedule) => (
+                                <S.ScheduleItem key={schedule.id}>
+                                    <S.TimeArea>
+                                        <S.Circle />
+                                        <span>{schedule.time}</span>
+                                    </S.TimeArea>
 
-                                <S.AlarmArea>
-                                    <span>자동 알림</span>
+                                    <S.AlarmArea>
+                                        <span>자동 알림</span>
 
-                                    <S.Toggle
-                                        type="button"
-                                        $active={
-                                            alarmStates[schedule.id]
-                                        }
-                                        onClick={() =>
-                                            onToggleAlarm(schedule.id)
-                                        }
-                                    >
-                                        <S.ToggleCircle
+                                        <S.Toggle
+                                            type="button"
                                             $active={
-                                                alarmStates[schedule.id]
+                                                alarmStates?.[schedule.id]
                                             }
-                                        />
-                                    </S.Toggle>
-                                </S.AlarmArea>
-                            </S.ScheduleItem>
-                        ))}
+                                            onClick={() =>
+                                                onToggleAlarm(schedule.id)
+                                            }
+                                        >
+                                            <S.ToggleCircle
+                                                $active={
+                                                    alarmStates?.[schedule.id]
+                                                }
+                                            />
+                                        </S.Toggle>
+                                    </S.AlarmArea>
+                                </S.ScheduleItem>
+                            ))
+                        ) : (
+                            <S.EmptyDescription>
+                                오늘 생성된 추천 휴식 일정이 없어요.
+                            </S.EmptyDescription>
+                        )}
                     </S.ScheduleList>
 
                     <S.Caption>

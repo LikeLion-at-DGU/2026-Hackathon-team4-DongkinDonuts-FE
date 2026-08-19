@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
 
 export function useDigitalUsage({
@@ -9,23 +11,15 @@ export function useDigitalUsage({
 }) {
     const [isSaving, setIsSaving] = useState(false);
 
+    const [alarmStates, setAlarmStates] = useState({});
+
     const isResult = mode === "result";
 
-    const [alarmStates, setAlarmStates] = useState({
-        first: true,
-        second: true,
-        third: true,
-    });
-
-    const toggleAlarm = (key) => {
-        setAlarmStates((prev) => ({
-            ...prev,
-            [key]: !prev[key],
-        }));
-    };
-
-    const toggleCell = (key) => {
+    // 개별 칸 선택
+    const toggleCell = (rowIndex, colIndex) => {
         if (isResult) return;
+
+        const key = `${rowIndex}-${colIndex}`;
 
         setSelected((prev) => ({
             ...prev,
@@ -33,15 +27,23 @@ export function useDigitalUsage({
         }));
     };
 
-    const toggleRow = (rowKeys) => {
+    // 한 시간대의 일~토 전체 선택/취소
+    const toggleRow = (rowIndex) => {
         if (isResult) return;
 
         setSelected((prev) => {
-            const isAllSelected = rowKeys.every(
-                (key) => prev[key]
+            const rowKeys = DAYS.map(
+                (_, colIndex) =>
+                    `${rowIndex}-${colIndex}`
             );
 
-            const next = { ...prev };
+            const isAllSelected = rowKeys.every(
+                (key) => !!prev[key]
+            );
+
+            const next = {
+                ...prev,
+            };
 
             rowKeys.forEach((key) => {
                 next[key] = !isAllSelected;
@@ -51,19 +53,28 @@ export function useDigitalUsage({
         });
     };
 
+    // 전체 초기화
     const resetAll = () => {
         if (isResult) return;
 
         setSelected({});
     };
 
+    // 알람 ON/OFF
+    const toggleAlarm = (id) => {
+        setAlarmStates((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
+
+    // 서버 저장
     const savePatterns = async () => {
         try {
             setIsSaving(true);
 
-            const result = await saveDigitalPatterns(
-                selected
-            );
+            const result =
+                await saveDigitalPatterns(selected);
 
             console.log(
                 "PC 사용 패턴 저장 성공:",
@@ -83,10 +94,12 @@ export function useDigitalUsage({
         }
     };
 
+    // 임시 저장
     const handleTemporarySave = async () => {
         await savePatterns();
     };
 
+    // 저장 후 결과 화면
     const handleCreate = async () => {
         const success = await savePatterns();
 
@@ -98,11 +111,14 @@ export function useDigitalUsage({
     return {
         isResult,
         isSaving,
+
         alarmStates,
-        toggleAlarm,
+
         toggleCell,
         toggleRow,
         resetAll,
+        toggleAlarm,
+
         handleTemporarySave,
         handleCreate,
     };

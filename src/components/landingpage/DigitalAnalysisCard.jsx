@@ -2,7 +2,10 @@ import LockIcon from "../../assets/icons/LockIcon.svg";
 
 import * as S from "./DigitalUsage.styled";
 
-function DigitalAnalysisCard({ isResult }) {
+function DigitalAnalysisCard({
+    isResult,
+    analysis,
+}) {
     return (
         <S.InfoCard>
             <S.CardTitle>
@@ -42,17 +45,23 @@ function DigitalAnalysisCard({ isResult }) {
                 <S.ResultContent>
                     <S.StatRow>
                         <S.StatBox>
-                            <strong>8</strong>
+                            <strong>
+                                {analysis?.weekly_pc_usage_hours ?? 0}
+                            </strong>
                             <span>주간 사용(h)</span>
                         </S.StatBox>
 
                         <S.StatBox>
-                            <strong>2/7</strong>
+                            <strong>
+                                {analysis?.weekly_pc_usage_day_count ?? 0}/7
+                            </strong>
                             <span>활성 요일</span>
                         </S.StatBox>
 
                         <S.StatBox>
-                            <strong>29%</strong>
+                            <strong>
+                                {analysis?.weekly_activity_rate ?? 0}%
+                            </strong>
                             <span>주간 활동률</span>
                         </S.StatBox>
                     </S.StatRow>
@@ -60,7 +69,9 @@ function DigitalAnalysisCard({ isResult }) {
                     <S.AnalysisBox>
                         <p>
                             <strong>
-                                평소 16:00 ~ 22:00에
+                                평소{" "}
+                                {analysis?.most_used_patterns?.time_pattern ?? "-"}
+                                에
                             </strong>{" "}
                             PC를
                             <br />
@@ -68,7 +79,9 @@ function DigitalAnalysisCard({ isResult }) {
                         </p>
 
                         <p>
-                            특히 오후 시간대에 집중적인 사용이 예상돼요.
+                            특히{" "}
+                            {analysis?.most_used_patterns?.time_of_day_pattern ?? "-"}{" "}
+                            시간대에 집중적인 사용이 예상돼요.
                         </p>
                     </S.AnalysisBox>
 

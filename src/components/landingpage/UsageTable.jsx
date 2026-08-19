@@ -12,7 +12,8 @@ function UsageTable({
     resetAll,
     readOnly = false,
 }) {
-    const selectedCount = Object.values(selected).filter(Boolean).length;
+    const selectedCount =
+        Object.values(selected).filter(Boolean).length;
 
     return (
         <>
@@ -54,7 +55,8 @@ function UsageTable({
                                 <th
                                     key={day}
                                     className={
-                                        day === "일" || day === "토"
+                                        day === "일" ||
+                                            day === "토"
                                             ? "weekend"
                                             : ""
                                     }
@@ -68,61 +70,70 @@ function UsageTable({
                     </thead>
 
                     <tbody>
-                        {TIME_SLOTS.map((time, rowIndex) => {
-                            const isRowSelected = DAYS.every(
-                                (_, colIndex) =>
-                                    selected[
-                                        `${rowIndex}-${colIndex}`
-                                    ]
-                            );
+                        {TIME_SLOTS.map(
+                            (time, rowIndex) => {
+                                const isRowSelected =
+                                    DAYS.every(
+                                        (_, colIndex) =>
+                                            !!selected[
+                                            `${rowIndex}-${colIndex}`
+                                            ]
+                                    );
 
-                            return (
-                                <tr key={time}>
-                                    <td>{time}</td>
+                                return (
+                                    <tr key={time}>
+                                        <td>{time}</td>
 
-                                    {DAYS.map((day, colIndex) => {
-                                        const key =
-                                            `${rowIndex}-${colIndex}`;
+                                        {DAYS.map(
+                                            (day, colIndex) => {
+                                                const key =
+                                                    `${rowIndex}-${colIndex}`;
 
-                                        return (
-                                            <td key={day}>
-                                                <S.Checkbox
-                                                    type="checkbox"
-                                                    checked={
-                                                        !!selected[key]
-                                                    }
-                                                    disabled={readOnly}
-                                                    onChange={() =>
-                                                        toggleCell(
-                                                            rowIndex,
-                                                            colIndex
-                                                        )
-                                                    }
-                                                />
-                                            </td>
-                                        );
-                                    })}
-
-                                    <td>
-                                        {!readOnly && (
-                                            <S.RowButton
-                                                type="button"
-                                                $selected={
-                                                    isRowSelected
-                                                }
-                                                onClick={() =>
-                                                    toggleRow(rowIndex)
-                                                }
-                                            >
-                                                {isRowSelected
-                                                    ? "취소"
-                                                    : "선택"}
-                                            </S.RowButton>
+                                                return (
+                                                    <td key={day}>
+                                                        <S.Checkbox
+                                                            type="checkbox"
+                                                            checked={
+                                                                !!selected[
+                                                                key
+                                                                ]
+                                                            }
+                                                            disabled={
+                                                                readOnly
+                                                            }
+                                                            onChange={() =>
+                                                                toggleCell(
+                                                                    rowIndex,
+                                                                    colIndex
+                                                                )
+                                                            }
+                                                        />
+                                                    </td>
+                                                );
+                                            }
                                         )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+
+                                        <td>
+                                            {!readOnly && (
+                                                <S.RowButton
+                                                    type="button"
+                                                    $selected={
+                                                        isRowSelected
+                                                    }
+                                                    onClick={() =>
+                                                        toggleRow(rowIndex)
+                                                    }
+                                                >
+                                                    {isRowSelected
+                                                        ? "취소"
+                                                        : "선택"}
+                                                </S.RowButton>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            }
+                        )}
                     </tbody>
                 </S.Table>
             </S.TableScroll>
