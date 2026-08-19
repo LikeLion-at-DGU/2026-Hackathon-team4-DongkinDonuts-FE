@@ -137,7 +137,7 @@ function LandingPage() {
         <S.HeroContent>
           <S.HeroText>
             <S.Title>
-              너를 위한
+              나를 위한
               <br />
               맞춤 회복 루틴, Brainfit
             </S.Title>
