@@ -12,7 +12,6 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
-    analysis,
     schedules,
 }) {
     const {

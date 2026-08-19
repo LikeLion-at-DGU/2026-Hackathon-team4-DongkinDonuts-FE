@@ -109,7 +109,6 @@ function DigitalState() {
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
-                    analysis={analysis}
                 />
             )}
         </S.DigitalSection>
