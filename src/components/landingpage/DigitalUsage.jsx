@@ -12,11 +12,11 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
-    schedules,
 }) {
     const {
         isResult,
         isSaving,
+        schedules,
         alarmStates,
         toggleAlarm,
         toggleCell,

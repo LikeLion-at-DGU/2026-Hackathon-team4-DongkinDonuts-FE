@@ -8,6 +8,18 @@ function DigitalScheduleCard({
     alarmStates,
     onToggleAlarm,
 }) {
+    const formatTime = (dateTime) => {
+        if (!dateTime) return "--:--";
+
+        const date = new Date(dateTime);
+
+        return date.toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        });
+    };
+
     return (
         <S.InfoCard $schedule>
             <S.CardTitle>
@@ -55,24 +67,37 @@ function DigitalScheduleCard({
                                 <S.ScheduleItem key={schedule.id}>
                                     <S.TimeArea>
                                         <S.Circle />
-                                        <span>{schedule.time}</span>
+
+                                        <span>
+                                            {formatTime(
+                                                schedule.effective_time
+                                            )}
+                                        </span>
                                     </S.TimeArea>
 
                                     <S.AlarmArea>
-                                        <span>자동 알림</span>
+                                        <span>
+                                            자동 알림
+                                        </span>
 
                                         <S.Toggle
                                             type="button"
                                             $active={
-                                                alarmStates?.[schedule.id]
+                                                alarmStates?.[
+                                                    schedule.id
+                                                ] ?? false
                                             }
                                             onClick={() =>
-                                                onToggleAlarm(schedule.id)
+                                                onToggleAlarm(
+                                                    schedule.id
+                                                )
                                             }
                                         >
                                             <S.ToggleCircle
                                                 $active={
-                                                    alarmStates?.[schedule.id]
+                                                    alarmStates?.[
+                                                        schedule.id
+                                                    ] ?? false
                                                 }
                                             />
                                         </S.Toggle>

@@ -2,6 +2,17 @@ import { useState } from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
+import { generateTodayRecoveryPlan } from "../api/plans";
+
+const FRONT_TO_BACK_DAY = [
+    "SUN",
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT",
+];
 
 export function useDigitalUsage({
     mode,
@@ -10,12 +21,13 @@ export function useDigitalUsage({
     onCreate,
 }) {
     const [isSaving, setIsSaving] = useState(false);
-
     const [alarmStates, setAlarmStates] = useState({});
+
+    // AI가 생성한 오늘의 회복 슬롯
+    const [schedules, setSchedules] = useState([]);
 
     const isResult = mode === "result";
 
-    // 개별 칸 선택
     const toggleCell = (rowIndex, colIndex) => {
         if (isResult) return;
 
@@ -27,32 +39,6 @@ export function useDigitalUsage({
         }));
     };
 
-    const FRONT_TO_BACK_DAY = [
-        "SUN",
-        "MON",
-        "TUE",
-        "WED",
-        "THU",
-        "FRI",
-        "SAT",
-    ];
-
-    const convertSelectedToPatterns = (selected) => {
-        return Object.entries(selected)
-            .filter(([, isSelected]) => isSelected)
-            .map(([key]) => {
-                const [rowIndex, colIndex] = key
-                    .split("-")
-                    .map(Number);
-
-                return {
-                    day_of_week: FRONT_TO_BACK_DAY[colIndex],
-                    hour: rowIndex,
-                    is_used: true,
-                };
-            });
-    };
-    // 한 시간대의 일~토 전체 선택/취소
     const toggleRow = (rowIndex) => {
         if (isResult) return;
 
@@ -66,9 +52,7 @@ export function useDigitalUsage({
                 (key) => !!prev[key]
             );
 
-            const next = {
-                ...prev,
-            };
+            const next = { ...prev };
 
             rowKeys.forEach((key) => {
                 next[key] = !isAllSelected;
@@ -78,14 +62,12 @@ export function useDigitalUsage({
         });
     };
 
-    // 전체 초기화
     const resetAll = () => {
         if (isResult) return;
 
         setSelected({});
     };
 
-    // 알람 ON/OFF
     const toggleAlarm = (id) => {
         setAlarmStates((prev) => ({
             ...prev,
@@ -93,7 +75,23 @@ export function useDigitalUsage({
         }));
     };
 
-    // 서버 저장
+    const convertSelectedToPatterns = (selected) => {
+        return Object.entries(selected)
+            .filter(([, isSelected]) => isSelected)
+            .map(([key]) => {
+                const [rowIndex, colIndex] = key
+                    .split("-")
+                    .map(Number);
+
+                return {
+                    day_of_week:
+                        FRONT_TO_BACK_DAY[colIndex],
+                    hour: rowIndex,
+                    is_used: true,
+                };
+            });
+    };
+
     const savePatterns = async () => {
         try {
             setIsSaving(true);
@@ -127,24 +125,64 @@ export function useDigitalUsage({
         }
     };
 
-    // 임시 저장
     const handleTemporarySave = async () => {
         await savePatterns();
     };
 
-    // 저장 후 결과 화면
     const handleCreate = async () => {
-        const success = await savePatterns();
+        try {
+            setIsSaving(true);
 
-        if (!success) return;
+            // 1. PC 패턴 저장
+            const patterns =
+                convertSelectedToPatterns(selected);
 
-        onCreate();
+            await saveDigitalPatterns(patterns);
+
+            // 2. 저장된 PC 패턴 기준으로 AI 회복 계획 생성
+            const recoveryPlan =
+                await generateTodayRecoveryPlan({
+                    notificationEnabled: true,
+                });
+
+            console.log(
+                "AI 오늘 회복 계획:",
+                recoveryPlan
+            );
+
+            const slots =
+                recoveryPlan?.slots ?? [];
+
+            setSchedules(slots);
+
+            // 각 슬롯의 서버 알림 상태를 초기값으로 사용
+            const initialAlarmStates =
+                Object.fromEntries(
+                    slots.map((slot) => [
+                        slot.id,
+                        slot.notification_enabled,
+                    ])
+                );
+
+            setAlarmStates(initialAlarmStates);
+
+            // 3. 결과 화면 전환
+            onCreate();
+        } catch (error) {
+            console.error(
+                "휴식 타이머 생성 실패:",
+                error
+            );
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return {
         isResult,
         isSaving,
 
+        schedules,
         alarmStates,
 
         toggleCell,

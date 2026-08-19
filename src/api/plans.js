@@ -15,3 +15,15 @@ export async function getNextResetTime() {
     throw error;
   }
 }
+
+// 오늘 AI 회복 계획 생성
+export async function generateTodayRecoveryPlan({
+  notificationEnabled = true,
+} = {}) {
+  return await apiClient.post(
+    "/plans/recovery-plans/today/ai-generate/",
+    {
+      notification_enabled: notificationEnabled,
+    }
+  );
+}
