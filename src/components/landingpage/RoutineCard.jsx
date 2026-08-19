@@ -5,7 +5,6 @@ function RoutineCard({
     title,
     description,
     status,
-    duration,
     image,
     onStart,
 }) {

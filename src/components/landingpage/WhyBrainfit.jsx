@@ -1,25 +1,19 @@
-import { useState } from "react";
-import { whyBrainfitData } from "../../data/whybrainfitData";
+import { useWhyBrainfit } from "../../hooks/useWhyBrainfit";
 import ArrowSide from "../../assets/icons/ArrowSide.svg";
 
 import * as S from "./WhyBrainfit.styled";
 
 function WhyBrainfit() {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    const current = whyBrainfitData[currentIndex];
-
-    const handlePrev = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex((prev) => prev - 1);
-        }
-    };
-
-    const handleNext = () => {
-        if (currentIndex < whyBrainfitData.length - 1) {
-            setCurrentIndex((prev) => prev + 1);
-        }
-    };
+    const {
+        current,
+        currentIndex,
+        slides,
+        isFirst,
+        isLast,
+        handlePrev,
+        handleNext,
+        goToSlide,
+    } = useWhyBrainfit();
 
     return (
         <S.Container>
@@ -32,7 +26,7 @@ function WhyBrainfit() {
                 <S.ArrowButton
                     $left
                     onClick={handlePrev}
-                    disabled={currentIndex === 0}
+                    disabled={isFirst}
                 >
                     <img src={ArrowSide} alt="" />
                 </S.ArrowButton>
@@ -72,7 +66,9 @@ function WhyBrainfit() {
 
                         <S.Tags>
                             {current.tags.map((tag) => (
-                                <S.Tag key={tag}>{tag}</S.Tag>
+                                <S.Tag key={tag}>
+                                    {tag}
+                                </S.Tag>
                             ))}
                         </S.Tags>
                     </S.CardContent>
@@ -81,7 +77,7 @@ function WhyBrainfit() {
                 <S.ArrowButton
                     $right
                     onClick={handleNext}
-                    disabled={currentIndex === whyBrainfitData.length - 1}
+                    disabled={isLast}
                 >
                     <img src={ArrowSide} alt="" />
                 </S.ArrowButton>
@@ -89,11 +85,11 @@ function WhyBrainfit() {
 
             <S.Navigation>
                 <S.Dots>
-                    {whyBrainfitData.map((item, index) => (
+                    {slides.map((item, index) => (
                         <S.Dot
                             key={item.id}
                             $active={index === currentIndex}
-                            onClick={() => setCurrentIndex(index)}
+                            onClick={() => goToSlide(index)}
                         />
                     ))}
                 </S.Dots>

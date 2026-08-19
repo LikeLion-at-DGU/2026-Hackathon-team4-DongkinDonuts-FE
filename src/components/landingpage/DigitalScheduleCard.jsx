@@ -1,0 +1,93 @@
+import ClockIcon from "../../assets/icons/ClockIcon.svg";
+
+import { SCHEDULES } from "../../config/digitalUsageConfig";
+
+import * as S from "./DigitalUsage.styled";
+
+function DigitalScheduleCard({
+    isResult,
+    alarmStates,
+    onToggleAlarm,
+}) {
+    return (
+        <S.InfoCard $schedule>
+            <S.CardTitle>
+                <img
+                    src={ClockIcon}
+                    alt=""
+                    width="38"
+                    height="38"
+                />
+                오늘의 추천 휴식 일정
+            </S.CardTitle>
+
+            {!isResult ? (
+                <S.EmptyContent>
+                    <S.EmptyIcon>
+                        <img
+                            src={ClockIcon}
+                            alt=""
+                            width="53"
+                            height="53"
+                        />
+                    </S.EmptyIcon>
+
+                    <S.EmptyTitle>
+                        패턴을 저장하면 오늘의 휴식 일정이 자동 생성돼요
+                    </S.EmptyTitle>
+
+                    <S.EmptyDescription>
+                        입력한 패턴에 따라
+                        <br />
+                        사용 패턴에 맞춰 자동으로 배치됩니다.
+                    </S.EmptyDescription>
+                </S.EmptyContent>
+            ) : (
+                <S.ResultContent>
+                    <S.ScheduleDescription>
+                        자동 알림을 통해
+                        <br />
+                        추천 휴식마다 편하게 알림을 받아보세요.
+                    </S.ScheduleDescription>
+
+                    <S.ScheduleList>
+                        {SCHEDULES.map((schedule) => (
+                            <S.ScheduleItem key={schedule.id}>
+                                <S.TimeArea>
+                                    <S.Circle />
+                                    <span>{schedule.time}</span>
+                                </S.TimeArea>
+
+                                <S.AlarmArea>
+                                    <span>자동 알림</span>
+
+                                    <S.Toggle
+                                        type="button"
+                                        $active={
+                                            alarmStates[schedule.id]
+                                        }
+                                        onClick={() =>
+                                            onToggleAlarm(schedule.id)
+                                        }
+                                    >
+                                        <S.ToggleCircle
+                                            $active={
+                                                alarmStates[schedule.id]
+                                            }
+                                        />
+                                    </S.Toggle>
+                                </S.AlarmArea>
+                            </S.ScheduleItem>
+                        ))}
+                    </S.ScheduleList>
+
+                    <S.Caption>
+                        ※ 추천 시간은 예상입니다. 내 상황에 맞게 조정해 사용하세요.
+                    </S.Caption>
+                </S.ResultContent>
+            )}
+        </S.InfoCard>
+    );
+}
+
+export default DigitalScheduleCard;
