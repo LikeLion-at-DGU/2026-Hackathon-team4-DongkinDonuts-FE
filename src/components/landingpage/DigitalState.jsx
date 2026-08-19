@@ -6,7 +6,6 @@ import { useDigitalState } from "../../hooks/useDigitalState";
 
 import {
     getDigitalPatternStatus,
-    getDigitalPatternAnalysis,
 } from "../../api/digitalState";
 
 import * as S from "./DigitalState.styled";
@@ -22,7 +21,6 @@ function DigitalState() {
     } = useDigitalState();
 
     const [status, setStatus] = useState(null);
-    const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -32,13 +30,6 @@ function DigitalState() {
                     await getDigitalPatternStatus();
 
                 setStatus(statusData);
-
-                if (statusData.has_any_pattern) {
-                    const analysisData =
-                        await getDigitalPatternAnalysis();
-
-                    setAnalysis(analysisData);
-                }
             } catch (error) {
                 console.error(
                     "디지털 상태 조회 실패:",
