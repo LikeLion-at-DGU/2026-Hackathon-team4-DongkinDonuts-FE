@@ -6,8 +6,8 @@ export const ModalOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -53,7 +53,7 @@ const ButtonBase = styled.button`
   flex: 1;
   width: 134px;
   height: 45px;
-  padding: 12px 53.5px;
+  padding: 12px 47px;
   border-radius: 8.8px;
   font-size: 14px;
   font-weight: 500;

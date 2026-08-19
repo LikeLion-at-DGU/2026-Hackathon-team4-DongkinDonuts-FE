@@ -4,8 +4,8 @@ export const CameraPreviewContainer = styled.div`
   position: absolute;
   left: 55px;
   top: 28px;
-  width: 320px;
-  height: 192px;
+  width: 390px;
+  height: 239px;
   overflow: hidden;
   border-radius: 22px;
   background: #111;
@@ -27,5 +27,5 @@ export const CameraLoading = styled.div`
   justify-content: center;
   background: #151515;
   color: #aaa;
-  font-size: 11px;
+  font-size: 20px;
 `;

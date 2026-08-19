@@ -2,21 +2,22 @@ import styled from "styled-components";
 
 // 하단 컨트롤 버튼 영역
 export const ControlArea = styled.div`
-  min-height: 100px;
+  max-width: 1345px;
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  background: #292929;
+  gap: 35px;
+  background: #252525;
 
   button {
-    width: 130px;
-    height: 44px;
-    border-radius: 24px;
+    width: 225px;
+    height: 78px;
+    border-radius: 51.5px;
     background: transparent;
     color: white;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
     cursor: pointer;
 
     &:hover {
@@ -26,8 +27,8 @@ export const ControlArea = styled.div`
 `;
 
 export const StopButton = styled.button`
-  border: 1px solid #9b4c4c;
-  color: #db6b6b !important;
+  border: 1px solid #FF4F4F;
+  color: #FF4F4F !important;
 `;
 
 export const ResetButton = styled.button`

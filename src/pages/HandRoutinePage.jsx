@@ -19,7 +19,9 @@ import QuitConfirmModal from "../components/handpage/QuitConfirmModal";
 import {
   HandRoutineGlobalStyle,
   RoutineContainer,
+  ContentWrapper,
   PlayContainer,
+  ControlsWrapper,
   PlayArea,
 } from "./HandRoutinePage.styled";
 
@@ -85,7 +87,7 @@ const HandRoutinePage = () => {
     if (isQuitModalOpen) {
       videoRef.current.pause();
     } else if (cameraReady && !isTerminated) {
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
     }
   }, [isQuitModalOpen, cameraReady, isTerminated, videoRef]);
 
@@ -160,7 +162,7 @@ const HandRoutinePage = () => {
           mission,
           sequenceOrder: refs.sequenceOrderRef.current,
           sequenceIndex,
-          onInvalidSequence: () => {},
+          onInvalidSequence: () => { },
         });
       }
 
@@ -223,50 +225,54 @@ const HandRoutinePage = () => {
           onConfirm={handleConfirmQuit}
         />
 
-        <PlayContainer>
-          {isUIOverlayVisible && (
-            <>
-              <CameraPreview
-                videoRef={videoRef}
-                cameraReady={cameraReady}
-                isTerminated={isTerminated}
-              />
-              <SessionDataPanel
-                elapsedTime={elapsedTime}
-                successCount={successCount}
-                handCount={handCount}
-                screenDistance={screenDistance}
-              />
-              <MissionInstruction
-                mission={mission}
-                sequenceOrder={refs.sequenceOrderRef.current}
-                sameColorTargetType={refs.sameColorTargetTypeRef.current}
-                missionRemaining={missionRemaining}
-              />
-              <ProgressBar
-                missionType={mission.type}
-                sequenceIndex={sequenceIndex}
-                missionProgress={missionProgress}
-              />
-            </>
-          )}
+        <ContentWrapper>
+          <PlayContainer>
+            {isUIOverlayVisible && (
+              <>
+                <CameraPreview
+                  videoRef={videoRef}
+                  cameraReady={cameraReady}
+                  isTerminated={isTerminated}
+                />
+                <SessionDataPanel
+                  elapsedTime={elapsedTime}
+                  successCount={successCount}
+                  handCount={handCount}
+                  screenDistance={screenDistance}
+                />
+                <MissionInstruction
+                  mission={mission}
+                  sequenceOrder={refs.sequenceOrderRef.current}
+                  sameColorTargetType={refs.sameColorTargetTypeRef.current}
+                  missionRemaining={missionRemaining}
+                />
+                <ProgressBar
+                  missionType={mission.type}
+                  sequenceIndex={sequenceIndex}
+                  missionProgress={missionProgress}
+                />
+              </>
+            )}
 
-          <PlayArea>
-            <canvas ref={canvasRef} />
-          </PlayArea>
+            <PlayArea>
+              <canvas ref={canvasRef} />
+            </PlayArea>
 
-          <SessionEndModal
-            isMissionComplete={isMissionComplete}
-            isTerminated={isTerminated}
-            resetGame={resetGame}
-          />
-        </PlayContainer>
+            <SessionEndModal
+              isMissionComplete={isMissionComplete}
+              isTerminated={isTerminated}
+              resetGame={resetGame}
+            />
+          </PlayContainer>
 
-        <SessionControls
-          handleStopGame={handleStopGame}
-          resetGame={resetGame}
-          isTerminated={isTerminated}
-        />
+          <ControlsWrapper>
+            <SessionControls
+              handleStopGame={handleStopGame}
+              resetGame={resetGame}
+              isTerminated={isTerminated}
+            />
+          </ControlsWrapper>
+        </ContentWrapper>
       </RoutineContainer>
     </>
   );
