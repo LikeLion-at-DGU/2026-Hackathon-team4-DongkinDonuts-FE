@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
+import { ensureTodayGenerationInputs } from "../api/context";
 
 import {
     generateAIRecoveryPlan,
@@ -182,7 +183,14 @@ export function useDigitalUsage({
                 "PC 패턴 저장 완료"
             );
 
-            // 3. AI 회복 계획 생성
+            // 3. AI 생성은 오늘의 상태 스냅샷 + 이후 활동 계획이 둘 다 있어야
+            // 성공한다. 이 화면(My Digital State)은 SetupModal 온보딩을 거치지
+            // 않고도 들어올 수 있는 진입점이라, 둘 중 없는 게 있으면 여기서
+            // 미리 중립값으로 채워둔다(안 그러면 매번 "오늘의 상태 스냅샷이
+            // 필요합니다" 등으로 실패함).
+            await ensureTodayGenerationInputs();
+
+            // 4. AI 회복 계획 생성
             // plans.js의 함수는 boolean을 직접 받음
             const recoveryPlan =
                 await generateAIRecoveryPlan({
@@ -194,14 +202,14 @@ export function useDigitalUsage({
                 recoveryPlan
             );
 
-            // 4. AI가 만든 슬롯 저장
+            // 5. AI가 만든 슬롯 저장
             const slots =
                 recoveryPlan?.slots ??
                 [];
 
             setSchedules(slots);
 
-            // 5. 서버에서 내려준 알림 상태 저장
+            // 6. 서버에서 내려준 알림 상태 저장
             const initialAlarmStates =
                 Object.fromEntries(
                     slots.map((slot) => [
@@ -215,7 +223,7 @@ export function useDigitalUsage({
                 initialAlarmStates
             );
 
-            // 6. 결과 화면으로 전환
+            // 7. 결과 화면으로 전환
             onCreate();
         } catch (error) {
             console.error(
