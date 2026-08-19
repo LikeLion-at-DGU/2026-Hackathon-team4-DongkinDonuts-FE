@@ -369,14 +369,23 @@ function LandingPage() {
           onSave={async (time, repeat) => {
             if (!recoverySlotId) {
               window.alert("변경할 예정된 리셋이 없어요. 먼저 \"내 계획 다시 설정\"으로 계획을 만들어주세요.");
-              return;
+              return false;
+            }
+
+            const [hour, minute] = time.split(":").map(Number);
+            const scheduledAt = new Date();
+            scheduledAt.setHours(hour, minute, 0, 0);
+
+            // 현재 시간보다 이전 시간으로는 리셋 시간을 옮길 수 없다 — 허용하면
+            // next_reset_time이 이미 지난 시각이 되어버려서(is_overdue) "다음
+            // 리셋까지" 카운트다운이 곧바로 00:00에 멈춰버린다.
+            const now = new Date();
+            if (scheduledAt.getTime() < now.getTime()) {
+              window.alert("현재 시간 이전으로는 리셋 시간을 변경할 수 없어요.");
+              return false;
             }
 
             try {
-              const [hour, minute] = time.split(":").map(Number);
-              const scheduledAt = new Date();
-              scheduledAt.setHours(hour, minute, 0, 0);
-
               // 주의: Date.toISOString()은 항상 UTC로 변환한다. 백엔드는
               // USE_TZ=False + TIME_ZONE="Asia/Seoul"라서 naive datetime을
               // "그 시각 그대로"(KST 벽시계 시간)로 저장한다. 여기서 toISOString()을
@@ -397,9 +406,11 @@ function LandingPage() {
 
               setRepeatAlarm(repeat);
               refreshNextReset();
+              return true;
             } catch (error) {
               console.error("리셋 시간 변경 실패:", error);
               window.alert("시간 변경에 실패했어요. 잠시 후 다시 시도해주세요.");
+              return false;
             }
           }}
         />
