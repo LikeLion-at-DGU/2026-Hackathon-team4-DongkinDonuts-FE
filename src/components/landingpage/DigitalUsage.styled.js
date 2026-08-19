@@ -265,7 +265,7 @@ export const ScheduleList = styled.div`
     display: flex;
     flex-direction: column;
 
-    gap: 44px;
+    gap: 56px;
 
     padding-left: 50px;
 
@@ -299,19 +299,19 @@ export const TimeArea = styled.div`
     display: flex;
     align-items: center;
 
-    gap: 22px;
+    gap: 28px;
 
     font-family: Poppins;
-    font-size: 21px;
-    font-weight: 400;
-    line-height: 31px;
+    font-size: 27px;
+    font-weight: 500;
+    line-height: 26px;
 
     color: #949191;
 `;
 
 export const Circle = styled.span`
-    width: 12px;
-    height: 12px;
+    width: 17px;
+    height: 17px;
 
     flex-shrink: 0;
     box-sizing: border-box;
@@ -326,7 +326,7 @@ export const AlarmArea = styled.div`
     display: flex;
     align-items: center;
 
-    gap: 12px;
+    gap: 10px;
 
     font-family: Poppins;
     font-size: 12px;
