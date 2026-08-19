@@ -110,7 +110,7 @@ export function useDigitalUsage({
                 return {
                     day_of_week:
                         DAY_CODE_MAP[
-                            colIndex
+                        colIndex
                         ],
                     hour: rowIndex,
                     is_used: true,
@@ -185,9 +185,9 @@ export function useDigitalUsage({
             // 3. AI 회복 계획 생성
             // plans.js의 함수는 boolean을 직접 받음
             const recoveryPlan =
-                await generateAIRecoveryPlan(
-                    true
-                );
+                await generateAIRecoveryPlan({
+                    notificationEnabled: true,
+                });
 
             console.log(
                 "AI 오늘 회복 계획:",
@@ -207,7 +207,7 @@ export function useDigitalUsage({
                     slots.map((slot) => [
                         slot.id,
                         slot.notification_enabled ??
-                            false,
+                        false,
                     ])
                 );
 
