@@ -138,6 +138,9 @@ export const useMultiTracking = (trackingType = "HAND") => {
     if (trackingType === "FACE_EYE" && res.faceLandmarks?.[0]) {
       const face = res.faceLandmarks[0];
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6fc1dc7d874ea041ed99555ee3cf9f4e98e938c
 
       // EAR (Eye Aspect Ratio): 눈 크기로 정규화되어 카메라 거리와 무관하게 동작
       const earAvg = (getEAR(face, RIGHT_EYE) + getEAR(face, LEFT_EYE)) / 2;
@@ -166,6 +169,7 @@ export const useMultiTracking = (trackingType = "HAND") => {
     }
     else if (trackingType === "POSE" && res.landmarks?.[0]) {
       const pose = res.landmarks[0];
+<<<<<<< HEAD
 =======
       // EAR (Eye Aspect Ratio) 계산으로 눈 감김 감지
       const leftEyeDist = Math.hypot(face[159].x - face[145].x, face[159].y - face[145].y);
@@ -176,16 +180,17 @@ export const useMultiTracking = (trackingType = "HAND") => {
     } else if (trackingType === "POSE" && res.poseLandmarks?.[0]) {
       const pose = res.poseLandmarks[0];
 >>>>>>> f79334dc81bad8d456b0a807d8106275070b79e1
+=======
+>>>>>>> c6fc1dc7d874ea041ed99555ee3cf9f4e98e938c
       const nose = pose[0];
       const leftEye = pose[2];
       const rightEye = pose[5];
       const leftEar = pose[7];
       const rightEar = pose[8];
       const leftShoulder = pose[11];
+      const rightShoulder = pose[12];
 
-      // 목 기울기: 눈-라인과 귀-라인 두 기준을 평균해 어깨-라인과 비교 (귀 한쪽이 머리카락 등에
-      // 가려 흔들려도 눈 기준이 보완해줘서 더 안정적으로 인식됨). 절대 임계값 대신 페이지에서
-      // 세션 시작 시점 기준값과 비교해 판정 (개인차/카메라 각도 보정)
+      // 목 기울기: 눈-라인과 귀-라인 두 기준을 평균해 어깨-라인과 비교
       const eyeAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
       const earAngle = Math.atan2(rightEar.y - leftEar.y, rightEar.x - leftEar.x);
       const shoulderAngle = Math.atan2(rightShoulder.y - leftShoulder.y, rightShoulder.x - leftShoulder.x);
@@ -193,13 +198,18 @@ export const useMultiTracking = (trackingType = "HAND") => {
       const neckTiltDeg = (headAngle - shoulderAngle) * (180 / Math.PI);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       // 어깨 으쓱: 코-어깨중점 거리와 양쪽 귀-어깨 거리를 함께 평균해 어깨너비로 정규화.
       // 점 하나에만 의존하지 않아 한쪽 귀 인식이 흔들려도 값이 급격히 튀지 않음
+=======
+      // 어깨 으쓱: 코-어깨중점 거리와 양쪽 귀-어깨 거리를 함께 평균해 어깨너비로 정규화
+>>>>>>> c6fc1dc7d874ea041ed99555ee3cf9f4e98e938c
       const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
       const noseToShoulder = getDistance(nose, shoulderMid);
       const earToShoulder = (getDistance(leftEar, leftShoulder) + getDistance(rightEar, rightShoulder)) / 2;
       const shoulderWidth = getDistance(leftShoulder, rightShoulder) || 1e-6;
       const shoulderRatio = ((noseToShoulder + earToShoulder) / 2) / shoulderWidth;
+<<<<<<< HEAD
 =======
       parsedMetrics = { neckAngle, isShoulderRaised, raw: pose };
     } else if (res.landmarks?.[0]) {
@@ -209,6 +219,8 @@ export const useMultiTracking = (trackingType = "HAND") => {
       const isPinching = pinchDist < 0.05;
       const palmCenter = { x: 1 - hand[9].x, y: hand[9].y };
 >>>>>>> f79334dc81bad8d456b0a807d8106275070b79e1
+=======
+>>>>>>> c6fc1dc7d874ea041ed99555ee3cf9f4e98e938c
 
       parsedMetrics = { neckTiltDeg, shoulderRatio, raw: pose };
     }
