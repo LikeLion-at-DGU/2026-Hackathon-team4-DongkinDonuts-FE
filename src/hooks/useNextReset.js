@@ -1,5 +1,45 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getNextResetTime } from "../api/plans";
+
+// 별도 오디오 파일 없이 WebAudio로 짧은 삐 소리를 낸다. 브라우저 자동재생 정책상
+// 사용자가 페이지와 한 번도 상호작용하지 않았으면 소리가 안 날 수 있는데, 그건
+// 브라우저 제약이라 어쩔 수 없다(화면 표시는 그대로 됨).
+function playBeep() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+
+        oscillator.frequency.value = 880;
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.6);
+        oscillator.onended = () => ctx.close();
+    } catch (error) {
+        console.error("알림음 재생 실패:", error);
+    }
+}
+
+// 권한이 이미 허용돼 있으면 브라우저 시스템 알림 팝업도 띄운다(탭이 백그라운드여도 뜸).
+// 권한이 없거나(default/denied) 브라우저가 Notification API를 지원 안 하면 조용히 넘어간다.
+function showBrowserNotification(message) {
+    if (typeof Notification === "undefined") return;
+    if (Notification.permission !== "granted") return;
+
+    try {
+        new Notification("Brainfit", { body: message });
+    } catch (error) {
+        console.error("브라우저 알림 표시 실패:", error);
+    }
+}
 
 function formatClock(date) {
     const hh = String(date.getHours()).padStart(2, "0");
@@ -47,6 +87,12 @@ export function useNextReset() {
     const [loading, setLoading] = useState(true);
     const [now, setNow] = useState(() => new Date());
 
+    // 이번 (슬롯, 목표시각) 조합에 대해 이미 알람을 울렸는지 — 카운트다운이 0
+    // 밑으로 내려간 뒤에도 1초마다 계속 렌더링되니, 한 번만 울리게 막는다.
+    // recoverySlotId만으로 키를 잡으면, "시간 변경하기"로 같은 슬롯의 목표시각만
+    // 바뀌었을 때(슬롯 id는 그대로) 재알림이 안 울리는 버그가 생겨서 시각도 같이 키에 넣는다.
+    const alertedKeyRef = useRef(null);
+
     const refresh = useCallback(async () => {
         setLoading(true);
         try {
@@ -77,6 +123,30 @@ export function useNextReset() {
         const timer = setInterval(() => setNow(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // 탭이 열려있는 동안, 카운트다운이 0이 되는 순간 딱 한 번 알림음 + 브라우저
+    // 알림을 준다(서버 푸시 아니라 클라이언트 타이머 기반 — 탭 닫으면 안 옴).
+    useEffect(() => {
+        if (!nextResetAt || !recoverySlotId) return;
+        if (now.getTime() < nextResetAt.getTime()) return;
+
+        const key = `${recoverySlotId}-${nextResetAt.getTime()}`;
+        if (alertedKeyRef.current === key) return;
+
+        alertedKeyRef.current = key;
+        playBeep();
+        showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?");
+    }, [now, nextResetAt, recoverySlotId]);
+
+    // 계획이 생기는 시점에 자연스럽게 알림 권한을 한 번 물어본다(이미 허용/거부된
+    // 상태면 다시 안 물어봄 — Notification.permission이 "default"일 때만).
+    useEffect(() => {
+        if (!recoverySlotId) return;
+        if (typeof Notification === "undefined") return;
+        if (Notification.permission === "default") {
+            Notification.requestPermission().catch(() => {});
+        }
+    }, [recoverySlotId]);
 
     return {
         loading,
