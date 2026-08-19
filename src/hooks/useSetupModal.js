@@ -4,6 +4,7 @@ import {
     activityLabelToCode,
     createContextSnapshot,
     createNextActivityPlan,
+    getTodayContextSnapshot,
     timeLabelToMinutes,
 } from "../api/context";
 
@@ -76,6 +77,13 @@ export const useSetupModal = () => {
     // - mode === "initial": 상태(있으면) + 활동/시간(있으면) 둘 다 생성
     // - mode === "reset"("내 계획 다시 설정"): 상태는 건드리지 않고 활동/시간만 새로 생성
     //   (지금 상태 스냅샷은 그대로 두고 NextActivityPlan만 새로 쌓는다는 백엔드 설계에 맞춤)
+    //
+    // 단, reset 모드는 상태 선택 UI 자체가 없어서 "오늘 스냅샷이 이미 있다"고 가정하는데,
+    // 실제로는 없을 수 있다(온보딩 모달을 건너뛰었거나, hasSeenSetupModal이 세션에 남아있어
+    // 재방문 시 초기 온보딩이 자동으로 안 뜨는 경우 등). 그 상태로 "내 계획 다시 설정"만
+    // 반복해도 AI 생성이 "오늘의 상태 스냅샷이 필요합니다"로 매번 실패하는 버그가 있었다.
+    // 그래서 reset 모드에선 완료 직전에 오늘 스냅샷 존재 여부를 확인하고, 없으면 중립
+    // 상태("아직 괜찮아요")로 하나 만들어서 AI 생성이 항상 성공하도록 한다.
     const completeSetup = async (mode) => {
         setIsSubmitting(true);
         setSubmitError(null);
@@ -88,6 +96,14 @@ export const useSetupModal = () => {
                 if (stateCode) {
                     const snapshot = await createContextSnapshot([stateCode]);
                     contextSnapshotId = snapshot.id;
+                }
+            } else if (mode === "reset") {
+                const todaySnapshot = await getTodayContextSnapshot();
+                if (!todaySnapshot) {
+                    const fallbackStateCode = CONDITION_LABEL_TO_STATE_CODE["아직 괜찮아요"];
+                    if (fallbackStateCode) {
+                        await createContextSnapshot([fallbackStateCode]);
+                    }
                 }
             }
 
