@@ -50,7 +50,21 @@ function SetupModal({ onClose, mode = "initial" }) {
         setCustomTime,
         openTimeInput,
         submitCustomTime,
+
+        isSubmitting,
+        completeSetup,
     } = useSetupModal();
+
+    const handleComplete = async () => {
+        // completeSetup은 성공 시 null, 실패 시 에러 메시지 문자열을 반환한다.
+        const errorMessage = await completeSetup(mode);
+        if (errorMessage) {
+            // 실패해도 사용자를 모달에 가둬두지 않는다 — 다음 리셋 시간 등은
+            // 다시 "내 계획 다시 설정"으로 재시도 가능하니 일단 닫고 알림으로만 안내.
+            window.alert(errorMessage);
+        }
+        onClose();
+    };
 
     // reset 모드면 무조건 2단계만 보여줌
     const currentStep = mode === "reset" ? 2 : step;
@@ -242,8 +256,8 @@ function SetupModal({ onClose, mode = "initial" }) {
                                     </>
                                 )}
 
-                                <S.PrimaryButton onClick={onClose}>
-                                    완료
+                                <S.PrimaryButton onClick={handleComplete} disabled={isSubmitting}>
+                                    {isSubmitting ? "저장 중..." : "완료"}
                                 </S.PrimaryButton>
                             </S.ButtonGroup>
                         </S.BottomArea>
