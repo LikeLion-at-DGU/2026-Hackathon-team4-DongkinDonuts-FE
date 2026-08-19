@@ -1,10 +1,9 @@
 import { useState } from "react";
 import {
-    CONDITION_LABEL_TO_STATE_CODE,
-    activityLabelToCode,
     createContextSnapshot,
     createNextActivityPlan,
-    getTodayContextSnapshot,
+    CONDITION_LABEL_TO_STATE_CODE,
+    activityLabelToCode,
     timeLabelToMinutes,
 } from "../api/context";
 
@@ -85,17 +84,33 @@ export const useSetupModal = () => {
     // 그래서 reset 모드에선 완료 직전에 오늘 스냅샷 존재 여부를 확인하고, 없으면 중립
     // 상태("아직 괜찮아요")로 하나 만들어서 AI 생성이 항상 성공하도록 한다.
     const completeSetup = async (mode) => {
+        console.log("completeSetup 호출됨");
+        console.log("mode:", mode);
+        console.log("selectedCondition:", selectedCondition);
         setIsSubmitting(true);
         setSubmitError(null);
 
         try {
             let contextSnapshotId = null;
 
-            if (mode !== "reset" && selectedCondition) {
-                const stateCode = CONDITION_LABEL_TO_STATE_CODE[selectedCondition];
+            // 상태가 선택돼 있으면 mode와 상관없이 오늘 상태 스냅샷 생성
+            if (selectedCondition) {
+                const stateCode =
+                    CONDITION_LABEL_TO_STATE_CODE[
+                    selectedCondition
+                    ];
+
+                console.log("선택 상태:", selectedCondition);
+                console.log("변환 상태 코드:", stateCode);
+
                 if (stateCode) {
-                    const snapshot = await createContextSnapshot([stateCode]);
-                    contextSnapshotId = snapshot.id;
+                    const snapshot =
+                        await createContextSnapshot([
+                            stateCode,
+                        ]);
+
+                    contextSnapshotId =
+                        snapshot.id;
                 }
             } else if (mode === "reset") {
                 const todaySnapshot = await getTodayContextSnapshot();
@@ -107,19 +122,43 @@ export const useSetupModal = () => {
                 }
             }
 
-            if (selectedActivity || selectedTime) {
+            // 활동/시간 입력이 있으면 다음 활동 계획 생성
+            if (
+                selectedActivity ||
+                selectedTime
+            ) {
                 await createNextActivityPlan({
-                    activityTags: selectedActivity ? [activityLabelToCode(selectedActivity)] : [],
-                    expectedActivityMinutes: timeLabelToMinutes(selectedTime),
+                    activityTags:
+                        selectedActivity
+                            ? [
+                                activityLabelToCode(
+                                    selectedActivity
+                                ),
+                            ]
+                            : [],
+
+                    expectedActivityMinutes:
+                        timeLabelToMinutes(
+                            selectedTime
+                        ),
+
                     contextSnapshotId,
                 });
             }
 
             return null;
         } catch (error) {
-            console.error("설정 저장 실패:", error);
-            const message = error?.message ?? "설정을 저장하지 못했습니다.";
+            console.error(
+                "설정 저장 실패:",
+                error
+            );
+
+            const message =
+                error?.message ??
+                "설정을 저장하지 못했습니다.";
+
             setSubmitError(message);
+
             return message;
         } finally {
             setIsSubmitting(false);

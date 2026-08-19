@@ -154,9 +154,14 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
         setRepeat((prev) => !prev);
     };
 
-    const handleSave = () => {
-        onSave(selectedTime, repeat);
-        onClose();
+    // onSave가 false를 반환하면(검증 실패/저장 실패) 모달을 닫지 않는다 — 사용자가
+    // alert만 확인하고 바로 다시 시도할 수 있게. onSave가 반환값 없이 끝나면(기존
+    // 동작 유지) 성공으로 간주하고 닫는다.
+    const handleSave = async () => {
+        const result = await onSave(selectedTime, repeat);
+        if (result !== false) {
+            onClose();
+        }
     };
 
     return {
