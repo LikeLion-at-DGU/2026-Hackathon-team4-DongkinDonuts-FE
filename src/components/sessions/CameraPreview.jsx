@@ -5,9 +5,9 @@ import {
   CameraLoading,
 } from "./CameraPreview.styled";
 
-const CameraPreview = ({ videoRef, canvasRef, cameraReady, isTerminated }) => {
+const CameraPreview = ({ videoRef, canvasRef, cameraReady, isTerminated, fullBleed = false }) => {
   return (
-    <CameraPreviewContainer>
+    <CameraPreviewContainer $fullBleed={fullBleed}>
       <CameraVideo ref={videoRef} autoPlay muted playsInline />
       <canvas
         ref={canvasRef}

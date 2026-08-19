@@ -1,15 +1,27 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const CameraPreviewContainer = styled.div`
   position: absolute;
-  left: 55px;
-  top: 28px;
-  width: 390px;
-  height: 239px;
   overflow: hidden;
-  border-radius: 22px;
   background: #111;
-  z-index: 100;
+
+  ${({ $fullBleed }) =>
+    $fullBleed
+      ? css`
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 20px;
+          z-index: 1;
+        `
+      : css`
+          left: 55px;
+          top: 28px;
+          width: 390px;
+          height: 239px;
+          border-radius: 22px;
+          z-index: 100;
+        `}
 `;
 
 export const CameraVideo = styled.video`

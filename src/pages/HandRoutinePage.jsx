@@ -216,7 +216,7 @@ const HandRoutinePage = () => {
       isTerminated={isTerminated}
       resetSession={resetGame}
       onStopSession={handleStopGame}
-      nextSessionPath="/breathroutine"
+      nextSessionPath="/eye-blink"
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={{
         videoRef,
