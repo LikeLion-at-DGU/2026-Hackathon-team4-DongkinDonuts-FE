@@ -12,6 +12,15 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);
 
+    // 추천 시간 클릭 등으로 smooth scroll 애니메이션을 프로그램적으로 실행시키는 동안엔,
+    // 그 애니메이션이 중간중간 발생시키는 onScroll 이벤트가 selectedTime을 엉뚱한
+    // 값으로 계속 덮어써버리는 문제가 있었다(예: "16:00" 클릭했는데 애니메이션 도중
+    // 값이 흔들리다가 "07:00"으로 저장됨). 이 플래그가 켜져있는 동안은 onScroll이
+    // selectedTime을 건드리지 않게 막는다 — 사용자가 직접 휠/드래그로 스크롤할 때는
+    // 이 플래그가 꺼져있으니 정상적으로 onScroll이 값을 갱신한다.
+    const suppressHourScrollRef = useRef(false);
+    const suppressMinuteScrollRef = useRef(false);
+
     const [selectedHour, selectedMinute] = selectedTime.split(":");
 
     useEffect(() => {
@@ -40,18 +49,38 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
         };
     }, []);
 
+    // smooth scroll 애니메이션이 끝나는 시점(scrollend 지원 브라우저는 그 이벤트,
+    // 아니면 애니메이션이 끝날 만한 시간 뒤)에 억제 플래그를 해제한다.
+    const scrollElementTo = (element, top, suppressRef) => {
+        if (!element) return;
+
+        suppressRef.current = true;
+
+        const clearSuppress = () => {
+            suppressRef.current = false;
+            element.removeEventListener("scrollend", clearSuppress);
+        };
+
+        element.addEventListener("scrollend", clearSuppress);
+        // scrollend 미지원 브라우저(Safari 구버전 등)를 위한 안전장치
+        window.setTimeout(clearSuppress, 500);
+
+        element.scrollTo({ top, behavior: "smooth" });
+    };
+
     const scrollToTime = (time) => {
         const [hour, minute] = time.split(":");
 
-        hourRef.current?.scrollTo({
-            top: HOURS.indexOf(hour) * ITEM_HEIGHT,
-            behavior: "smooth",
-        });
-
-        minuteRef.current?.scrollTo({
-            top: MINUTES.indexOf(minute) * ITEM_HEIGHT,
-            behavior: "smooth",
-        });
+        scrollElementTo(
+            hourRef.current,
+            HOURS.indexOf(hour) * ITEM_HEIGHT,
+            suppressHourScrollRef
+        );
+        scrollElementTo(
+            minuteRef.current,
+            MINUTES.indexOf(minute) * ITEM_HEIGHT,
+            suppressMinuteScrollRef
+        );
     };
 
     const handleRecommendedTime = (time) => {
@@ -60,7 +89,7 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     };
 
     const handleHourScroll = () => {
-        if (!hourRef.current) return;
+        if (!hourRef.current || suppressHourScrollRef.current) return;
 
         const index = Math.round(
             hourRef.current.scrollTop / ITEM_HEIGHT
@@ -78,7 +107,7 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     };
 
     const handleMinuteScroll = () => {
-        if (!minuteRef.current) return;
+        if (!minuteRef.current || suppressMinuteScrollRef.current) return;
 
         const index = Math.round(
             minuteRef.current.scrollTop / ITEM_HEIGHT
@@ -96,17 +125,29 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     };
 
     const handleHourChange = (hour) => {
-        hourRef.current?.scrollTo({
-            top: HOURS.indexOf(hour) * ITEM_HEIGHT,
-            behavior: "smooth",
+        // 이전엔 스크롤만 시키고 값 갱신은 onScroll에 전적으로 의존했는데, 이제
+        // onScroll이 애니메이션 도중엔 억제되므로 여기서 직접 값을 확정해준다.
+        setSelectedTime((prev) => {
+            const [, minute] = prev.split(":");
+            return `${hour}:${minute}`;
         });
+        scrollElementTo(
+            hourRef.current,
+            HOURS.indexOf(hour) * ITEM_HEIGHT,
+            suppressHourScrollRef
+        );
     };
 
     const handleMinuteChange = (minute) => {
-        minuteRef.current?.scrollTo({
-            top: MINUTES.indexOf(minute) * ITEM_HEIGHT,
-            behavior: "smooth",
+        setSelectedTime((prev) => {
+            const [hour] = prev.split(":");
+            return `${hour}:${minute}`;
         });
+        scrollElementTo(
+            minuteRef.current,
+            MINUTES.indexOf(minute) * ITEM_HEIGHT,
+            suppressMinuteScrollRef
+        );
     };
 
     const toggleRepeat = () => {

@@ -15,8 +15,4 @@ export const MISSIONS = [
     type: "SAME_COLOR",
     title: "같은 색 3개 모으기",
   },
-  {
-    type: "TIME_ATTACK",
-    title: "20초 동안 공 3개 옮기기",
-  },
 ];

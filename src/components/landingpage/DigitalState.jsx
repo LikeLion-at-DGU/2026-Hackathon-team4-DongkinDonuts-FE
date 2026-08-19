@@ -6,7 +6,6 @@ import { useDigitalState } from "../../hooks/useDigitalState";
 
 import {
     getDigitalPatternStatus,
-    getDigitalPatternAnalysis,
 } from "../../api/digitalState";
 
 import * as S from "./DigitalState.styled";
@@ -22,7 +21,6 @@ function DigitalState() {
     } = useDigitalState();
 
     const [status, setStatus] = useState(null);
-    const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -32,13 +30,6 @@ function DigitalState() {
                     await getDigitalPatternStatus();
 
                 setStatus(statusData);
-
-                if (statusData.has_any_pattern) {
-                    const analysisData =
-                        await getDigitalPatternAnalysis();
-
-                    setAnalysis(analysisData);
-                }
             } catch (error) {
                 console.error(
                     "디지털 상태 조회 실패:",
@@ -59,7 +50,7 @@ function DigitalState() {
     const isLocked =
     digitalStep === "locked" &&
     !status?.has_any_pattern;
-    
+
     return (
         <S.DigitalSection>
             <S.DigitalHeader>
@@ -68,9 +59,9 @@ function DigitalState() {
                 </S.DigitalTitle>
 
                 <S.DigitalDescription>
-                    평소 PC 사용 패턴을 입력하면 Brainfit이 집중시간과 사용 습관을 분석해
+                    PC 사용 패턴을 입력하면
                     <br />
-                    적정 휴식 시간을 추천하고, 나에게 맞는 휴식 일정을 자동으로 설정해줘요.
+                    Brainfit이 나에게 맞는 휴식 일정을 자동으로 설정해줘요.
                 </S.DigitalDescription>
             </S.DigitalHeader>
 
@@ -109,7 +100,6 @@ function DigitalState() {
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
-                    analysis={analysis}
                 />
             )}
         </S.DigitalSection>

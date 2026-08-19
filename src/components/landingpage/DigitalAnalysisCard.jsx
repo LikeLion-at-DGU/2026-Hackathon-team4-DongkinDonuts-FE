@@ -1,8 +1,49 @@
+import { useEffect, useState } from "react";
+
 import LockIcon from "../../assets/icons/LockIcon.svg";
+import { getDigitalPatternAnalysis } from "../../api/digitalState";
 
 import * as S from "./DigitalUsage.styled";
 
 function DigitalAnalysisCard({ isResult }) {
+    const [analysis, setAnalysis] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        // 아직 결과 화면이 아니면 분석 API 호출 X
+        if (!isResult) {
+            setAnalysis(null);
+            return;
+        }
+
+        const fetchAnalysis = async () => {
+            try {
+                setIsLoading(true);
+
+                const data =
+                    await getDigitalPatternAnalysis();
+
+                console.log(
+                    "PC 사용 패턴 분석 결과:",
+                    data
+                );
+
+                setAnalysis(data);
+            } catch (error) {
+                console.error(
+                    "PC 사용 패턴 분석 조회 실패:",
+                    error
+                );
+
+                setAnalysis(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAnalysis();
+    }, [isResult]);
+
     return (
         <S.InfoCard>
             <S.CardTitle>
@@ -38,21 +79,37 @@ function DigitalAnalysisCard({ isResult }) {
                         맞춤 분석을 받아보세요
                     </S.EmptyDescription>
                 </S.EmptyContent>
+            ) : isLoading ? (
+                <S.EmptyContent>
+                    <S.EmptyTitle>
+                        PC 사용 패턴을 분석하고 있어요
+                    </S.EmptyTitle>
+
+                    <S.EmptyDescription>
+                        잠시만 기다려주세요.
+                    </S.EmptyDescription>
+                </S.EmptyContent>
             ) : (
                 <S.ResultContent>
                     <S.StatRow>
                         <S.StatBox>
-                            <strong>8</strong>
+                            <strong>
+                                {analysis?.weekly_pc_usage_hours ?? 0}
+                            </strong>
                             <span>주간 사용(h)</span>
                         </S.StatBox>
 
                         <S.StatBox>
-                            <strong>2/7</strong>
+                            <strong>
+                                {analysis?.weekly_pc_usage_day_count ?? 0}/7
+                            </strong>
                             <span>활성 요일</span>
                         </S.StatBox>
 
                         <S.StatBox>
-                            <strong>29%</strong>
+                            <strong>
+                                {analysis?.weekly_activity_rate?.percent ?? 0}%
+                            </strong>
                             <span>주간 활동률</span>
                         </S.StatBox>
                     </S.StatRow>
@@ -60,7 +117,10 @@ function DigitalAnalysisCard({ isResult }) {
                     <S.AnalysisBox>
                         <p>
                             <strong>
-                                평소 16:00 ~ 22:00에
+                                평소{" "}
+                                {analysis?.most_used_patterns
+                                    ?.time_pattern ?? "-"}
+                                에
                             </strong>{" "}
                             PC를
                             <br />
@@ -68,7 +128,12 @@ function DigitalAnalysisCard({ isResult }) {
                         </p>
 
                         <p>
-                            특히 오후 시간대에 집중적인 사용이 예상돼요.
+                            특히{" "}
+                            <strong>
+                                {analysis?.most_used_patterns
+                                    ?.time_of_day_pattern ?? "-"}
+                            </strong>{" "}
+                            시간대에 집중적인 사용이 예상돼요.
                         </p>
                     </S.AnalysisBox>
 

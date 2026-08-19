@@ -9,6 +9,12 @@ import YourHistory from "../components/landingpage/YourHistory.jsx";
 import DigitalState from "../components/landingpage/DigitalState.jsx";
 import SetupModal from "../components/SetupModal";
 import TimeChangeModal from "../components/landingpage/TimeChangeModal.jsx";
+import { useNextReset } from "../hooks/useNextReset";
+import {
+  generateAIRecoveryPlan,
+  updateRecoverySlotNotification,
+  updateRecoverySlotSchedule,
+} from "../api/plans";
 
 import * as S from "./LandingPage.styled";
 
@@ -21,8 +27,29 @@ function LandingPage() {
   const [setupModalMode, setSetupModalMode] = useState("initial");
 
   const [showTimeModal, setShowTimeModal] = useState(false);
-  const [resetTime, setResetTime] = useState("15:00");
   const [repeatAlarm, setRepeatAlarm] = useState(true);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
+
+  const {
+    hasPlan,
+    recoverySlotId,
+    resetTimeLabel,
+    countdownLabel,
+    refresh: refreshNextReset,
+  } = useNextReset();
+
+  // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
+  // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
+  // 닫아주고, 카드 쪽에 로딩 상태만 보여준다(사용자를 모달에 가둬두지 않음).
+  const handleGenerateRecoveryPlan = () => {
+    setGeneratingPlan(true);
+    generateAIRecoveryPlan(true)
+      .then(() => refreshNextReset())
+      .catch((error) => {
+        console.error("AI 회복 계획 생성 실패:", error);
+      })
+      .finally(() => setGeneratingPlan(false));
+  };
 
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
@@ -151,11 +178,15 @@ function LandingPage() {
             </S.ReportTop>
 
             <S.ReportTime>
-              {resetTime}
+              {generatingPlan ? "생성 중..." : hasPlan ? resetTimeLabel : "계획 없음"}
             </S.ReportTime>
 
             <S.ReportDescription>
-              입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요
+              {generatingPlan
+                ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
+                : hasPlan
+                ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
+                : "\"내 계획 다시 설정\"으로 오늘의 리셋 시간을 만들어보세요"}
             </S.ReportDescription>
 
             <S.ReportDivider />
@@ -172,7 +203,7 @@ function LandingPage() {
               </S.ReportBottomText>
 
               <S.Countdown>
-                47:32
+                {hasPlan ? countdownLabel : "--:--"}
               </S.Countdown>
             </S.ReportBottom>
 
@@ -266,26 +297,56 @@ function LandingPage() {
       {showSetupModal && (
         <SetupModal
           mode={setupModalMode}
-          onClose={() =>
-            setShowSetupModal(false)
-          }
+          onClose={() => {
+            setShowSetupModal(false);
+            handleGenerateRecoveryPlan();
+          }}
         />
       )}
 
       {showTimeModal && (
-  <TimeChangeModal
-    currentTime={resetTime}
-    currentRepeat={repeatAlarm}
-    onClose={() => setShowTimeModal(false)}
-    onSave={(time, repeat) => {
-      setResetTime(time);
-      setRepeatAlarm(repeat);
+        <TimeChangeModal
+          currentTime={hasPlan ? resetTimeLabel : "15:00"}
+          currentRepeat={repeatAlarm}
+          onClose={() => setShowTimeModal(false)}
+          onSave={async (time, repeat) => {
+            if (!recoverySlotId) {
+              window.alert("변경할 예정된 리셋이 없어요. 먼저 \"내 계획 다시 설정\"으로 계획을 만들어주세요.");
+              return;
+            }
 
-      console.log("변경된 리셋 시간:", time);
-      console.log("반복 알림:", repeat);
-    }}
-  />
-)}
+            try {
+              const [hour, minute] = time.split(":").map(Number);
+              const scheduledAt = new Date();
+              scheduledAt.setHours(hour, minute, 0, 0);
+
+              // 주의: Date.toISOString()은 항상 UTC로 변환한다. 백엔드는
+              // USE_TZ=False + TIME_ZONE="Asia/Seoul"라서 naive datetime을
+              // "그 시각 그대로"(KST 벽시계 시간)로 저장한다. 여기서 toISOString()을
+              // 쓰면 KST(UTC+9) 브라우저 기준 "16:00"이 "07:00Z"로 변환되고, 백엔드는
+              // 그 "07:00"을 그대로 저장해버려서 사용자가 고른 시간과 9시간 어긋난
+              // 값이 저장되는 버그가 있었다. UTC 변환 없이 로컬 벽시계 시간을 그대로
+              // 문자열로 만들어서 보낸다.
+              const pad = (n) => String(n).padStart(2, "0");
+              const scheduledAtLocal =
+                `${scheduledAt.getFullYear()}-${pad(scheduledAt.getMonth() + 1)}-${pad(scheduledAt.getDate())}` +
+                `T${pad(scheduledAt.getHours())}:${pad(scheduledAt.getMinutes())}:00`;
+
+              await updateRecoverySlotSchedule(recoverySlotId, scheduledAtLocal);
+              await updateRecoverySlotNotification(recoverySlotId, {
+                notificationEnabled: true,
+                repeatRule: repeat ? "DAILY" : "",
+              });
+
+              setRepeatAlarm(repeat);
+              refreshNextReset();
+            } catch (error) {
+              console.error("리셋 시간 변경 실패:", error);
+              window.alert("시간 변경에 실패했어요. 잠시 후 다시 시도해주세요.");
+            }
+          }}
+        />
+      )}
     </S.LandingPage>
   );
 }

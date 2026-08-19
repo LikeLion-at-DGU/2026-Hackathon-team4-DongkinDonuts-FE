@@ -85,7 +85,7 @@ const HandRoutinePage = () => {
     if (!isRunning || isQuitModalOpen) return;
 
     const timer = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
+      setElapsedTime((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -205,7 +205,7 @@ const HandRoutinePage = () => {
     initializeMission();
   }, [initializeMission]);
 
-  const isUIOverlayVisible = !isMissionComplete && !isTerminated;
+  const isUIOverlayVisible = !isTerminated;
 
   return (
     <SessionPage
@@ -216,6 +216,7 @@ const HandRoutinePage = () => {
       isTerminated={isTerminated}
       resetSession={resetGame}
       onStopSession={handleStopGame}
+      nextSessionPath="/breathroutine"
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={{
         videoRef,
