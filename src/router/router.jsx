@@ -9,6 +9,7 @@ import NeckStretchRoutinePage from "../pages/NeckStretchRoutinePage";
 import ShoulderPmrRoutinePage from "../pages/ShoulderPmrRoutinePage";
 import FocusPinchRoutinePage from "../pages/FocusPinchRoutinePage";
 import DrowsyIceRoutinePage from "../pages/DrowsyIceRoutinePage";
+import SettingsPage from "../pages/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
       {
         path: "/drowsy-ice",
         element: <DrowsyIceRoutinePage key="/drowsy-ice" />,
+      },
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPage />,
       },
     ],
   },

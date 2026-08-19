@@ -80,7 +80,7 @@ export const whyBrainfitData = [
             </>
         ),
         cardCategory: "BLAHBLA",
-        cardTitle: "블라블라",
+        cardTitle: "즉각적인 피드백",
         cardDescription:
             "웹캠 기반 움직임을 활용한 인터랙션",
         tags: ["얼굴인식", "손동작", "상체움직임"],

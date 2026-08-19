@@ -9,9 +9,31 @@ function formatClock(date) {
 
 function formatCountdown(ms) {
     if (ms <= 0) return "00:00";
-    const totalSeconds = Math.floor(ms / 1000);
-    const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-    const ss = String(totalSeconds % 60).padStart(2, "0");
+
+    const totalSeconds =
+        Math.floor(ms / 1000);
+
+    const hours =
+        Math.floor(totalSeconds / 3600);
+
+    const minutes =
+        Math.floor(
+            (totalSeconds % 3600) / 60
+        );
+
+    const seconds =
+        totalSeconds % 60;
+
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+
+    // 1시간 이상 남았을 때
+    if (hours > 0) {
+        return `${hh}:${mm}:${ss}`;
+    }
+
+    // 1시간 미만
     return `${mm}:${ss}`;
 }
 

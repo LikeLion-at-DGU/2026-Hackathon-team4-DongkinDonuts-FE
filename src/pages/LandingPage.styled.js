@@ -17,7 +17,7 @@ export const LandingPage = styled.main`
 
 export const HeroSection = styled.section`
     width: 1440px;
-    height: 692px;
+    height: 660px;
 
     margin: 0;
     padding: 40px 56px 70px;
@@ -49,7 +49,7 @@ export const MainContent = styled.main`
     width: 1440px;
 
     margin: 0;
-    padding: 75px 75px 80px;
+    padding: 68px 75px 80px;
 
     box-sizing: border-box;
 `;
@@ -321,6 +321,7 @@ export const TabMenu = styled.div`
     display: flex;
     align-items: flex-start;
     height: 59px;
+    gap: 5px;
 `;
 
 export const TabButton = styled.button`

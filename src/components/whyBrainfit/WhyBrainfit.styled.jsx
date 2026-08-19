@@ -17,6 +17,7 @@ export const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    transform: translateX(-35px);
 
     gap: 20px;
 `;
@@ -62,6 +63,8 @@ export const SlideArea = styled.div`
 export const TextArea = styled.div`
     width: 464px;
     height: 245px;
+    position: relative;
+    left: -40px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;

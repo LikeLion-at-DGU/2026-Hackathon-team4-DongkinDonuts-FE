@@ -4,10 +4,6 @@ import DigitalUsage from "./DigitalUsage";
 import LockIcon from "../../assets/icons/LockIcon.svg";
 import { useDigitalState } from "../../hooks/useDigitalState";
 
-import {
-    getDigitalPatternStatus,
-} from "../../api/digitalState";
-
 import * as S from "./DigitalState.styled";
 
 function DigitalState() {
@@ -48,8 +44,7 @@ function DigitalState() {
     }
 
     const isLocked =
-    digitalStep === "locked" &&
-    !status?.has_any_pattern;
+    digitalStep === "locked";
 
     return (
         <S.DigitalSection>

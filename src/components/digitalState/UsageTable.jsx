@@ -140,12 +140,15 @@ function UsageTable({
 
             <S.TableFooter>
                 <S.SelectedText>
-                    선택한 시간 {selectedCount}칸 · 주간{" "}
-                    {selectedCount}시간
+                    주간 사용 시간{" "}
+                    <S.SelectedCount>
+                        {selectedCount}
+                    </S.SelectedCount>
+                    칸
                 </S.SelectedText>
 
                 <S.ScrollGuide>
-                    스크롤을 내려 더 많은 시간대를 확인하세요⌄
+                    스크롤을 내려 더 많은 시간대를 확인하세요
                 </S.ScrollGuide>
 
                 {!readOnly && (

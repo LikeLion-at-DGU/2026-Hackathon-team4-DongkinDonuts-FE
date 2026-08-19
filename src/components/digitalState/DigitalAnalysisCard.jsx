@@ -5,14 +5,15 @@ import { getDigitalPatternAnalysis } from "../../api/digitalState";
 
 import * as S from "./DigitalUsage.styled";
 
-function DigitalAnalysisCard({ isResult }) {
+function DigitalAnalysisCard({
+    showResult,
+    resultVersion,
+}) {
     const [analysis, setAnalysis] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        // 아직 결과 화면이 아니면 분석 API 호출 X
-        if (!isResult) {
-            setAnalysis(null);
+        if (!showResult) {
             return;
         }
 
@@ -23,26 +24,19 @@ function DigitalAnalysisCard({ isResult }) {
                 const data =
                     await getDigitalPatternAnalysis();
 
-                console.log(
-                    "PC 사용 패턴 분석 결과:",
-                    data
-                );
-
                 setAnalysis(data);
             } catch (error) {
                 console.error(
                     "PC 사용 패턴 분석 조회 실패:",
                     error
                 );
-
-                setAnalysis(null);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchAnalysis();
-    }, [isResult]);
+    }, [showResult, resultVersion]);
 
     return (
         <S.InfoCard>
@@ -56,7 +50,7 @@ function DigitalAnalysisCard({ isResult }) {
                 분석 결과
             </S.CardTitle>
 
-            {!isResult ? (
+            {!showResult ? (
                 <S.EmptyContent>
                     <S.EmptyIcon $circle>
                         <img

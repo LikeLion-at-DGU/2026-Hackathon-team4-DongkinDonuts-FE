@@ -7,7 +7,7 @@ import {
 
 export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) => {
     const [selectedTime, setSelectedTime] = useState(currentTime);
-    const [repeat, setRepeat] = useState(currentRepeat);
+    const [repeat, setRepeat] = useState(false);
 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);

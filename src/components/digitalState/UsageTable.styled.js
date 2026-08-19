@@ -207,10 +207,32 @@ export const TableFooter = styled.div`
 
 export const SelectedText = styled.span`
     justify-self: start;
+    color: #949191;
+    text-align: center;
+    font-family: Poppins;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    letter-spacing: 0.32px;
+`;
+
+export const SelectedCount = styled.span`
+    color: #bf2b2b;
+    font-weight: 500;
 `;
 
 export const ScrollGuide = styled.span`
     justify-self: center;
+    color: #868383;
+    margin-top: 5px;
+    text-align: center;
+    font-family: Poppins;
+    font-size: 19.646px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 0.196px;
 `;
 
 export const ResetButton = styled.button`
@@ -219,10 +241,15 @@ export const ResetButton = styled.button`
     border: none;
     background: transparent;
 
-    color: #999999;
+    color: #949494;
 
     font-family: Poppins;
-    font-size: 11px;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px; /* 187.5% */
+    letter-spacing: 0.32px;
+    border-bottom: 1px solid #949191;
 
     cursor: pointer;
 `;
