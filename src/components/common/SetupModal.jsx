@@ -111,9 +111,11 @@ function SetupModal({ onClose, mode = "initial" }) {
                                 <S.OptionButton
                                     key={option}
                                     $selected={selectedCondition === option}
-                                    oonClick={() =>
+                                    onClick={() =>
                                         setSelectedCondition(
-                                            selectedCondition === option ? "" : option
+                                            selectedCondition === option
+                                                ? ""
+                                                : option
                                         )
                                     }
                                 >

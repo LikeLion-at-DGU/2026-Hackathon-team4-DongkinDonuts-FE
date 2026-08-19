@@ -123,8 +123,7 @@ export const OptionGroup = styled.div`
 
 export const OptionButton = styled.button`
     height: 55px;
-
-    padding: 17px 25px;
+    padding: 0 25px;
 
     border: 1px solid #5b5b5b;
     border-radius: 56px;
@@ -137,20 +136,8 @@ export const OptionButton = styled.button`
     font-family: Poppins;
     font-size: 21px;
     font-weight: 500;
-    line-height: 21px;
-    letter-spacing: 0.63px;
 
     cursor: pointer;
-
-    &:hover {
-        background: #eeeeee;
-    }
-`;
-
-export const CustomInputSlot = styled.div`
-    width: 145px;
-    height: 55px;
-    flex: 0 0 145px;
 `;
 
 export const CustomInput = styled.input`
