@@ -3,14 +3,18 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { prepareCanvas, drawEyeFog } from "../engine/sessionVisuals";
 
 const SESSION = ROUTINE_SESSIONS["eye-blink"];
+const FOG_RECOVER_STEP = 0.05;
 
 export default function EyeBlinkRoutinePage() {
   const navigate = useNavigate();
-  const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  const wasBlinkingRef = useRef(false);
+  const closedSinceRef = useRef(null);
+  const countedRef = useRef(false);
+  const fogClearRef = useRef(0);
 
   const [blinkCount, setBlinkCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -33,10 +37,26 @@ export default function EyeBlinkRoutinePage() {
     const loop = (t) => {
       const data = detectFrame(t);
       const isBlinking = !!data?.isBlinking;
-      if (isBlinking && !wasBlinkingRef.current && !isMissionComplete) {
-        setBlinkCount((prev) => Math.min(prev + 1, targetCount));
+
+      if (isBlinking) {
+        if (closedSinceRef.current == null) closedSinceRef.current = t;
+        const heldMs = t - closedSinceRef.current;
+        fogClearRef.current = Math.min(1, heldMs / TRACKING_CONFIG.blinkHoldMs);
+        if (heldMs >= TRACKING_CONFIG.blinkHoldMs && !countedRef.current && !isMissionComplete) {
+          countedRef.current = true;
+          setBlinkCount((prev) => Math.min(prev + 1, targetCount));
+        }
+      } else {
+        closedSinceRef.current = null;
+        countedRef.current = false;
+        fogClearRef.current = Math.max(0, fogClearRef.current - FOG_RECOVER_STEP);
       }
-      wasBlinkingRef.current = isBlinking;
+
+      const prepared = prepareCanvas(previewCanvasRef.current);
+      if (prepared) {
+        drawEyeFog(prepared.ctx, prepared.width, prepared.height, { fogClear: fogClearRef.current });
+      }
+
       animId = requestAnimationFrame(loop);
     };
     if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
@@ -52,7 +72,9 @@ export default function EyeBlinkRoutinePage() {
   const handleReset = useCallback(() => {
     setBlinkCount(0);
     setElapsedTime(0);
-    wasBlinkingRef.current = false;
+    closedSinceRef.current = null;
+    countedRef.current = false;
+    fogClearRef.current = 0;
     setIsTerminated(false);
   }, []);
 
@@ -66,12 +88,10 @@ export default function EyeBlinkRoutinePage() {
       resetSession={handleReset}
       onStopSession={() => setIsQuitModalOpen(true)}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }}
+      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated, fullBleed: true }}
       dataPanelProps={{ elapsedTime, successCount: blinkCount }}
       instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
       progressProps={{ progressPercent: (blinkCount / targetCount) * 100 }}
-    >
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
-    </SessionPage>
+    />
   );
 }

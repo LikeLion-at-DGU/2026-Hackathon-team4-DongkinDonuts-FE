@@ -19,6 +19,16 @@ export const Instruction = styled.div`
   margin-bottom: 45px;
 `;
 
+export const InstructionPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  max-width: 90%;
+  padding: 14px 30px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(6px);
+`;
+
 export const MissionText = styled.span`
   color: #DEDEDE;
   font-weight: 700;

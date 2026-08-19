@@ -17,39 +17,39 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <LandingPage />,
+        element: <LandingPage key="/" />,
       },
       {
         path: "/handroutine",
-        element: <HandRoutinePage />
+        element: <HandRoutinePage key="/handroutine" />
       },
       {
         path: "/breathroutine",
-        element: <BreathRoutinePage />
+        element: <BreathRoutinePage key="/breathroutine" />
       },
       {
         path: "/eye-blink",
-        element: <EyeBlinkRoutinePage />,
+        element: <EyeBlinkRoutinePage key="/eye-blink" />,
       },
       {
         path: "/eye-tracking",
-        element: <EyeTrackingRoutinePage />,
+        element: <EyeTrackingRoutinePage key="/eye-tracking" />,
       },
       {
         path: "/neck-stretch",
-        element: <NeckStretchRoutinePage />,
+        element: <NeckStretchRoutinePage key="/neck-stretch" />,
       },
       {
         path: "/shoulder-pmr",
-        element: <ShoulderPmrRoutinePage />,
+        element: <ShoulderPmrRoutinePage key="/shoulder-pmr" />,
       },
       {
         path: "/focus-pinch",
-        element: <FocusPinchRoutinePage />,
+        element: <FocusPinchRoutinePage key="/focus-pinch" />,
       },
       {
         path: "/drowsy-ice",
-        element: <DrowsyIceRoutinePage />,
+        element: <DrowsyIceRoutinePage key="/drowsy-ice" />,
       },
     ],
   },

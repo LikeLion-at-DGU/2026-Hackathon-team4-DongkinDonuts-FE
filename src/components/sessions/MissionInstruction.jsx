@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { BALL_TYPES } from "../../config/ballTypes";
-import { Instruction, MissionText, InstructionSub } from "./MissionInstruction.styled";
+import { Instruction, InstructionPill, MissionText, InstructionSub } from "./MissionInstruction.styled";
 
 const BREATH_TITLES = {
   INHALE: "4초 동안 깊게 들이마시세요",
@@ -98,8 +98,10 @@ const MissionInstruction = ({
 
   return (
     <Instruction>
-      <MissionText>{title}</MissionText>
-      {subText && mission.type !== "BREATH" && <InstructionSub> · {subText}</InstructionSub>}
+      <InstructionPill>
+        <MissionText>{title}</MissionText>
+        {subText && mission.type !== "BREATH" && <InstructionSub> · {subText}</InstructionSub>}
+      </InstructionPill>
     </Instruction>
   );
 };

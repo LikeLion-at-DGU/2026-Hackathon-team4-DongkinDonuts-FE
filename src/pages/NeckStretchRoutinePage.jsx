@@ -3,13 +3,18 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { prepareCanvas, drawNeckJelly, drawPoseLandmarks, drawDebugLabel } from "../engine/sessionVisuals";
 
 const SESSION = ROUTINE_SESSIONS["neck-stretch"];
 
 export default function NeckStretchRoutinePage() {
   const navigate = useNavigate();
-  const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
+  const holdSecRef = useRef(0);
+  const baselineTiltRef = useRef(null);
+  const calibSumRef = useRef(0);
+  const calibCountRef = useRef(0);
 
   const [holdSec, setHoldSec] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -31,9 +36,45 @@ export default function NeckStretchRoutinePage() {
     let animId;
     const loop = (t) => {
       const data = detectFrame(t);
-      if (Math.abs(data?.neckAngle || 0) > 105 && !isMissionComplete) {
-        setHoldSec((prev) => Math.min(prev + 0.02, targetHold));
+
+      let isNeckTilted = false;
+      let deltaDeg = 0;
+      if (data?.neckTiltDeg != null) {
+        if (baselineTiltRef.current == null) {
+          // 초반 프레임 평균으로 "정면 기준 각도"를 보정 (사람/카메라 각도 개인차 흡수)
+          calibSumRef.current += data.neckTiltDeg;
+          calibCountRef.current += 1;
+          if (calibCountRef.current >= TRACKING_CONFIG.calibrationFrames) {
+            baselineTiltRef.current = calibSumRef.current / calibCountRef.current;
+          }
+        } else {
+          deltaDeg = data.neckTiltDeg - baselineTiltRef.current;
+          isNeckTilted = Math.abs(deltaDeg) > TRACKING_CONFIG.neckTiltDeltaThresholdDeg;
+        }
       }
+
+      if (isNeckTilted && !isMissionComplete) {
+        holdSecRef.current = Math.min(holdSecRef.current + 0.02, targetHold);
+        setHoldSec(holdSecRef.current);
+      }
+
+      const side = deltaDeg >= 0 ? "right" : "left";
+      const prepared = prepareCanvas(previewCanvasRef.current);
+      if (prepared) {
+        drawPoseLandmarks(prepared.ctx, prepared.width, prepared.height, { pose: data?.raw });
+        drawNeckJelly(prepared.ctx, prepared.width, prepared.height, {
+          holdRatio: holdSecRef.current / targetHold,
+          side,
+        });
+
+        const statusText = !data?.raw
+          ? "포즈 인식 안 됨 - 어깨까지 화면에 나오게 조정해주세요"
+          : baselineTiltRef.current == null
+            ? `캘리브레이션 중... ${calibCountRef.current}/${TRACKING_CONFIG.calibrationFrames} (정면을 봐주세요)`
+            : `목 기울기 변화: ${deltaDeg.toFixed(1)}° / 기준 ${TRACKING_CONFIG.neckTiltDeltaThresholdDeg}°`;
+        drawDebugLabel(prepared.ctx, prepared.width, prepared.height, statusText);
+      }
+
       animId = requestAnimationFrame(loop);
     };
     if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
@@ -48,6 +89,10 @@ export default function NeckStretchRoutinePage() {
 
   const handleReset = useCallback(() => {
     setHoldSec(0);
+    holdSecRef.current = 0;
+    baselineTiltRef.current = null;
+    calibSumRef.current = 0;
+    calibCountRef.current = 0;
     setElapsedTime(0);
     setIsTerminated(false);
   }, []);
@@ -62,12 +107,10 @@ export default function NeckStretchRoutinePage() {
       resetSession={handleReset}
       onStopSession={() => setIsQuitModalOpen(true)}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }}
+      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated, fullBleed: true }}
       dataPanelProps={{ elapsedTime, successCount: Math.floor(holdSec) }}
       instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
       progressProps={{ progressPercent: (holdSec / targetHold) * 100 }}
-    >
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
-    </SessionPage>
+    />
   );
 }

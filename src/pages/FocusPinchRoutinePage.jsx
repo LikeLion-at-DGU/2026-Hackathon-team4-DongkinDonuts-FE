@@ -3,16 +3,23 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { prepareCanvas, drawPinchRings } from "../engine/sessionVisuals";
 
 const SESSION = ROUTINE_SESSIONS["focus-pinch"];
+
+const randomTargetSize = () => Math.round(10 + Math.random() * 80); // 10~90%
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 export default function FocusPinchRoutinePage() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  const wasPinchingRef = useRef(false);
+  const matchSinceRef = useRef(null);
 
   const [pinchCount, setPinchCount] = useState(0);
+  const [targetSize, setTargetSize] = useState(randomTargetSize);
+  const [handCount, setHandCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
@@ -28,20 +35,52 @@ export default function FocusPinchRoutinePage() {
     return () => cleanup();
   }, [initLandmarker, startCamera, cleanup]);
 
+  // 각 손의 엄지-검지 핀치 거리를 링 크기(%)로 변환, 두 손 모두 목표 크기에 맞춰 2초 유지하면 성공
   useEffect(() => {
     let animId;
     const loop = (t) => {
       const data = detectFrame(t);
-      const isPinching = !!data?.isPinching;
-      if (isPinching && !wasPinchingRef.current && !isMissionComplete) {
-        setPinchCount((prev) => Math.min(prev + 1, targetCount));
+      const hands = data?.hands ?? [];
+      setHandCount(hands.length);
+
+      const { pinchDistMin, pinchDistMax, pinchMatchTolerancePercent, pinchHoldMs } = TRACKING_CONFIG;
+      const rings = hands.map((hand) => ({
+        x: hand.palmCenter.x,
+        y: hand.palmCenter.y,
+        sizePercent: clamp(((hand.pinchDist - pinchDistMin) / (pinchDistMax - pinchDistMin)) * 100, 0, 100),
+      }));
+
+      const allMatched =
+        rings.length > 0 &&
+        rings.every((ring) => Math.abs(ring.sizePercent - targetSize) <= pinchMatchTolerancePercent);
+
+      if (!isMissionComplete) {
+        if (allMatched) {
+          if (matchSinceRef.current == null) matchSinceRef.current = t;
+          if (t - matchSinceRef.current >= pinchHoldMs) {
+            matchSinceRef.current = null;
+            setPinchCount((prev) => Math.min(prev + 1, targetCount));
+            setTargetSize(randomTargetSize());
+          }
+        } else {
+          matchSinceRef.current = null;
+        }
       }
-      wasPinchingRef.current = isPinching;
+
+      const prepared = prepareCanvas(canvasRef.current);
+      if (prepared) {
+        drawPinchRings(prepared.ctx, prepared.width, prepared.height, {
+          rings,
+          targetSizePercent: targetSize,
+          matched: allMatched,
+        });
+      }
+
       animId = requestAnimationFrame(loop);
     };
     if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, detectFrame, targetSize]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -51,8 +90,9 @@ export default function FocusPinchRoutinePage() {
 
   const handleReset = useCallback(() => {
     setPinchCount(0);
+    setTargetSize(randomTargetSize());
     setElapsedTime(0);
-    wasPinchingRef.current = false;
+    matchSinceRef.current = null;
     setIsTerminated(false);
   }, []);
 
@@ -67,8 +107,11 @@ export default function FocusPinchRoutinePage() {
       onStopSession={() => setIsQuitModalOpen(true)}
       nextSessionPath={SESSION.nextSessionPath}
       cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }}
-      dataPanelProps={{ elapsedTime, successCount: pinchCount }}
-      instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
+      dataPanelProps={{ elapsedTime, successCount: pinchCount, handCount }}
+      instructionProps={{
+        missionText: SESSION.title,
+        instructionSub: `${SESSION.guideText} (목표 ${targetSize}%)`,
+      }}
       progressProps={{ progressPercent: (pinchCount / targetCount) * 100 }}
     >
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
