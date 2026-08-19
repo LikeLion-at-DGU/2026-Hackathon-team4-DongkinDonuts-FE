@@ -377,7 +377,19 @@ function LandingPage() {
               const scheduledAt = new Date();
               scheduledAt.setHours(hour, minute, 0, 0);
 
-              await updateRecoverySlotSchedule(recoverySlotId, scheduledAt.toISOString());
+              // 주의: Date.toISOString()은 항상 UTC로 변환한다. 백엔드는
+              // USE_TZ=False + TIME_ZONE="Asia/Seoul"라서 naive datetime을
+              // "그 시각 그대로"(KST 벽시계 시간)로 저장한다. 여기서 toISOString()을
+              // 쓰면 KST(UTC+9) 브라우저 기준 "16:00"이 "07:00Z"로 변환되고, 백엔드는
+              // 그 "07:00"을 그대로 저장해버려서 사용자가 고른 시간과 9시간 어긋난
+              // 값이 저장되는 버그가 있었다. UTC 변환 없이 로컬 벽시계 시간을 그대로
+              // 문자열로 만들어서 보낸다.
+              const pad = (n) => String(n).padStart(2, "0");
+              const scheduledAtLocal =
+                `${scheduledAt.getFullYear()}-${pad(scheduledAt.getMonth() + 1)}-${pad(scheduledAt.getDate())}` +
+                `T${pad(scheduledAt.getHours())}:${pad(scheduledAt.getMinutes())}:00`;
+
+              await updateRecoverySlotSchedule(recoverySlotId, scheduledAtLocal);
               await updateRecoverySlotNotification(recoverySlotId, {
                 notificationEnabled: true,
                 repeatRule: repeat ? "DAILY" : "",
