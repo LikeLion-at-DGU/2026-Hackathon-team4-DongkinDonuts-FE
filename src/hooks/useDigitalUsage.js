@@ -27,6 +27,16 @@ export function useDigitalUsage({
         }));
     };
 
+    const FRONT_TO_BACK_DAY = [
+        "SUN",
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT",
+    ];
+
     const convertSelectedToPatterns = (selected) => {
         return Object.entries(selected)
             .filter(([, isSelected]) => isSelected)
@@ -36,12 +46,12 @@ export function useDigitalUsage({
                     .map(Number);
 
                 return {
-                    day_of_week: colIndex,
+                    day_of_week: FRONT_TO_BACK_DAY[colIndex],
                     hour: rowIndex,
+                    is_used: true,
                 };
             });
     };
-
     // 한 시간대의 일~토 전체 선택/취소
     const toggleRow = (rowIndex) => {
         if (isResult) return;
