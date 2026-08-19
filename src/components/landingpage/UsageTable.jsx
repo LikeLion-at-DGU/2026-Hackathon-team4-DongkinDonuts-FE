@@ -1,33 +1,9 @@
+import {
+    DAYS,
+    TIME_SLOTS,
+} from "../../config/usageTableConfig";
+
 import * as S from "./UsageTable.styled";
-
-const days = ["일", "월", "화", "수", "목", "금", "토"];
-
-const timeSlots = [
-    "00:00 ~ 01:00",
-    "01:00 ~ 02:00",
-    "02:00 ~ 03:00",
-    "03:00 ~ 04:00",
-    "04:00 ~ 05:00",
-    "05:00 ~ 06:00",
-    "06:00 ~ 07:00",
-    "07:00 ~ 08:00",
-    "08:00 ~ 09:00",
-    "09:00 ~ 10:00",
-    "10:00 ~ 11:00",
-    "11:00 ~ 12:00",
-    "12:00 ~ 13:00",
-    "13:00 ~ 14:00",
-    "14:00 ~ 15:00",
-    "15:00 ~ 16:00",
-    "16:00 ~ 17:00",
-    "17:00 ~ 18:00",
-    "18:00 ~ 19:00",
-    "19:00 ~ 20:00",
-    "20:00 ~ 21:00",
-    "21:00 ~ 22:00",
-    "22:00 ~ 23:00",
-    "23:00 ~ 24:00",
-];
 
 function UsageTable({
     selected,
@@ -36,13 +12,16 @@ function UsageTable({
     resetAll,
     readOnly = false,
 }) {
-    const selectedCount = Object.values(selected).filter(Boolean).length;
+    const selectedCount =
+        Object.values(selected).filter(Boolean).length;
 
     return (
         <>
             <S.TopArea>
                 <div>
-                    <S.Title>언제 PC를 주로 사용하시나요?</S.Title>
+                    <S.Title>
+                        언제 PC를 주로 사용하시나요?
+                    </S.Title>
 
                     <S.Description>
                         {readOnly
@@ -58,7 +37,9 @@ function UsageTable({
                     </S.GuideItem>
 
                     <S.GuideItem>
-                        <S.GuideBox $checked>✓</S.GuideBox>
+                        <S.GuideBox $checked>
+                            ✓
+                        </S.GuideBox>
                         <span>사용</span>
                     </S.GuideItem>
                 </S.CheckGuide>
@@ -70,11 +51,12 @@ function UsageTable({
                         <tr>
                             <th>시간대</th>
 
-                            {days.map((day) => (
+                            {DAYS.map((day) => (
                                 <th
                                     key={day}
                                     className={
-                                        day === "일" || day === "토"
+                                        day === "일" ||
+                                            day === "토"
                                             ? "weekend"
                                             : ""
                                     }
@@ -88,62 +70,78 @@ function UsageTable({
                     </thead>
 
                     <tbody>
-                        {timeSlots.map((time, rowIndex) => {
-                            const isRowSelected = days.every(
-                                (_, colIndex) =>
-                                    selected[`${rowIndex}-${colIndex}`]
-                            );
+                        {TIME_SLOTS.map(
+                            (time, rowIndex) => {
+                                const isRowSelected =
+                                    DAYS.every(
+                                        (_, colIndex) =>
+                                            !!selected[
+                                            `${rowIndex}-${colIndex}`
+                                            ]
+                                    );
 
-                            return (
-                                <tr key={time}>
-                                    <td>{time}</td>
+                                return (
+                                    <tr key={time}>
+                                        <td>{time}</td>
 
-                                    {days.map((day, colIndex) => {
-                                        const key = `${rowIndex}-${colIndex}`;
+                                        {DAYS.map(
+                                            (day, colIndex) => {
+                                                const key =
+                                                    `${rowIndex}-${colIndex}`;
 
-                                        return (
-                                            <td key={day}>
-                                                <S.Checkbox
-                                                    type="checkbox"
-                                                    checked={!!selected[key]}
-                                                    disabled={readOnly}
-                                                    onChange={() =>
-                                                        !readOnly &&
-                                                        toggleCell(
-                                                            rowIndex,
-                                                            colIndex
-                                                        )
-                                                    }
-                                                />
-                                            </td>
-                                        );
-                                    })}
-
-                                    <td>
-                                        {!readOnly && (
-                                            <S.RowButton
-                                                type="button"
-                                                $selected={isRowSelected}
-                                                onClick={() =>
-                                                    toggleRow(rowIndex)
-                                                }
-                                            >
-                                                {isRowSelected
-                                                    ? "취소"
-                                                    : "선택"}
-                                            </S.RowButton>
+                                                return (
+                                                    <td key={day}>
+                                                        <S.Checkbox
+                                                            type="checkbox"
+                                                            checked={
+                                                                !!selected[
+                                                                key
+                                                                ]
+                                                            }
+                                                            disabled={
+                                                                readOnly
+                                                            }
+                                                            onChange={() =>
+                                                                toggleCell(
+                                                                    rowIndex,
+                                                                    colIndex
+                                                                )
+                                                            }
+                                                        />
+                                                    </td>
+                                                );
+                                            }
                                         )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+
+                                        <td>
+                                            {!readOnly && (
+                                                <S.RowButton
+                                                    type="button"
+                                                    $selected={
+                                                        isRowSelected
+                                                    }
+                                                    onClick={() =>
+                                                        toggleRow(rowIndex)
+                                                    }
+                                                >
+                                                    {isRowSelected
+                                                        ? "취소"
+                                                        : "선택"}
+                                                </S.RowButton>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            }
+                        )}
                     </tbody>
                 </S.Table>
             </S.TableScroll>
 
             <S.TableFooter>
                 <S.SelectedText>
-                    선택한 시간 {selectedCount}칸 · 주간 {selectedCount}시간
+                    선택한 시간 {selectedCount}칸 · 주간{" "}
+                    {selectedCount}시간
                 </S.SelectedText>
 
                 <S.ScrollGuide>

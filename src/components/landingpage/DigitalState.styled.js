@@ -15,7 +15,7 @@ export const DigitalHeader = styled.div`
     align-items: flex-start;
     height: 145px;
     align-items: flex-end;
-    gap: 71px;
+    gap: 54px;
     align-self: stretch;
 `;
 
@@ -42,13 +42,13 @@ export const DigitalDescription = styled.p`
     justify-content: center;
     align-self: stretch;
 
-    font-size: 18px;
+    font-size: 21px;
     line-height: 1.6;
     font-family: Poppins;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
-    letter-spacing: 0.18px;
+    letter-spacing: 0.21px;
 
     color: #131313;
 `;
