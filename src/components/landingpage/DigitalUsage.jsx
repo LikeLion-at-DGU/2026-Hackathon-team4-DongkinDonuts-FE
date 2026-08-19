@@ -46,7 +46,6 @@ function DigitalUsage({
             <S.CardRow>
                 <DigitalAnalysisCard
                     isResult={isResult}
-                    analysis={analysis}
                 />
 
                 <DigitalScheduleCard
