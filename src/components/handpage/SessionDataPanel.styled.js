@@ -3,26 +3,35 @@ import styled from "styled-components";
 // 실시간 진행 시간 표시
 export const LiveTime = styled.div`
   position: absolute;
-  top: 30px;
+  top: 38px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
+
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 15px;
-  border-radius: 20px;
-  background: #4b4b4b;
-  color: #eee;
-  font-size: 12px;
-  font-weight: 600;
+  justify-content: center;
+  
+  height: 59px;
+  padding: 16px 23px;
+  gap: 9px;
+
+  border-radius: 41.67px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0px 7.75px 15.5px 0px rgba(0, 0, 0, 0.15);
+  
+  color: #FFFFFF;
+  font-family: SUIT;
+  font-size: 23px;
+  font-weight: 500;
   z-index: 20;
+  box-sizing: border-box;
 `;
 
 export const LiveDot = styled.span`
-  width: 8px;
-  height: 8px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
-  background: #e95353;
+  background: #EE3D3D;
 `;
 
 // 실시간 데이터 영역
@@ -30,43 +39,56 @@ export const DataArea = styled.div`
   position: absolute;
   top: 28px;
   right: 55px;
-  width: 225px;
+  width: 308.235px;
+  height: 324px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
   z-index: 20;
 `;
 
 export const DataCard = styled.div`
-  padding: 14px 16px;
-  border-radius: 17px;
-  background: #484848;
+  padding: 20px 33px 15px 33px;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.1);;
 `;
 
 export const DataTitle = styled.div`
-  margin-bottom: 12px;
-  color: #eee;
-  font-size: 12px;
-  font-weight: 700;
+  margin-bottom: 18.7px;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 600;
+  font-family: SUIT;
+  font-style: normal;
 `;
 
 export const DataRow = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 85px;
 
   div {
     display: flex;
     flex-direction: column;
     gap: 3px;
-  }
+  } 
 
   span {
-    color: #aaa;
-    font-size: 8px;
+    color: #EBEBEB;
+    font-family: SUIT;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
   }
 
   strong {
-    font-size: 17px;
+    display: flex;
+    justify-content: flex-end;
+    color: #FFF;
+    font-family: SUIT;
+    font-size: 25px;
+    font-style: normal;
+    font-weight: 600;
   }
 `;
 
@@ -76,15 +98,18 @@ export const DistanceCard = styled(DataCard)``;
 export const DistanceHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 19px;
 
   span {
-    font-size: 12px;
+    font-size: 23px;
+    font-weight: 600;
     color: #ddd;
   }
 
   strong {
-    font-size: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    padding-top: 8px;
     &.distance-good {
       color: #c8e9a7 !important;
     }
@@ -98,7 +123,7 @@ export const DistanceBar = styled.div`
   position: relative;
   width: 100%;
   height: 10px;
-  border-radius: 20px;
+  border-radius: 40px;
   background: linear-gradient(90deg, #e89b9b, #b7e395 50%, #e89b9b);
 `;
 
@@ -107,7 +132,7 @@ export const DistanceMarker = styled.div`
   top: -5px;
   width: 3px;
   height: 20px;
-  border-radius: 3px;
-  background: white;
+  border-radius: 40px;
+  background: #FFF;
   transition: left 0.18s ease-out;
 `;

@@ -13,12 +13,15 @@ export const Instruction = styled.div`
   pointer-events: none;
   white-space: nowrap;
   z-index: 15;
-  font-size: 15px;
+  font-family: SUIT;
+  font-size: 28px;
+  font-style: normal;
+  margin-bottom: 45px;
 `;
 
 export const MissionText = styled.span`
-  color: #eee;
-  font-weight: 600;
+  color: #DEDEDE;
+  font-weight: 700;
 `;
 
 export const InstructionSub = styled.span`

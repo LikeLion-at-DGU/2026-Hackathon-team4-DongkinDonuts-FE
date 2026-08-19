@@ -5,7 +5,7 @@ export const FooterContainer = styled.footer`
     width: 100%;
     padding: 20px 0;
     /* $isDark 값에 따른 배경색 및 글자색 분기 */
-    background-color: ${(props) => (props.$isDark ? "#17181d" : "#ffffff")};
+    background-color: ${(props) => (props.$isDark ? "#000" : "#ffffff")};
 
     transition: background-color 0.3s ease;
 
