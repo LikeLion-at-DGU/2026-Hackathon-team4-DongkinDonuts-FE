@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import CloseButton from "../../assets/icons/CloseButton.svg";
 import * as S from "./TimeChangeModal.styled";
 
 const recommendedTimes = ["15:00", "16:00", "17:00", "18:00"];
@@ -48,14 +49,14 @@ function TimeChangeModal({
     }, []);
 
     useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
+        const originalOverflow = document.body.style.overflow;
 
-    document.body.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
 
-    return () => {
-        document.body.style.overflow = originalOverflow;
-    };
-}, []);
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, []);
 
     const handleRecommendedTime = (time) => {
         setSelectedTime(time);
@@ -149,18 +150,7 @@ function TimeChangeModal({
                         type="button"
                         onClick={onClose}
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                        >
-                            <path
-                                d="M3.44629 3.65627L3.54034 3.54077C3.67705 3.40436 3.85729 3.32023 4.04965 3.30304C4.24202 3.28586 4.43431 3.3367 4.59304 3.44672L4.70854 3.54077L9.89944 8.73332L15.0903 3.54077C15.167 3.46406 15.2581 3.40322 15.3583 3.36171C15.4585 3.32019 15.566 3.29883 15.6744 3.29883C15.7829 3.29883 15.8903 3.32019 15.9906 3.36171C16.0908 3.40322 16.1818 3.46406 16.2585 3.54077C16.3352 3.61748 16.3961 3.70854 16.4376 3.80876C16.4791 3.90898 16.5005 4.01639 16.5005 4.12487C16.5005 4.23335 16.4791 4.34076 16.4376 4.44098C16.3961 4.5412 16.3352 4.63227 16.2585 4.70897L11.066 9.89987L16.2585 15.0908C16.395 15.2275 16.4791 15.4077 16.4963 15.6001C16.5135 15.7924 16.4626 15.9847 16.3526 16.1435L16.2585 16.259C16.1218 16.3954 15.9416 16.4795 15.7492 16.4967C15.5569 16.5139 15.3646 16.463 15.2058 16.353L15.0903 16.259L9.89944 11.0664L4.70854 16.259C4.63184 16.3357 4.54078 16.3965 4.44056 16.438C4.34034 16.4795 4.23292 16.5009 4.12444 16.5009C4.01597 16.5009 3.90855 16.4795 3.80833 16.438C3.70811 16.3965 3.61705 16.3357 3.54034 16.259C3.46364 16.1823 3.40279 16.0912 3.36128 15.991C3.31977 15.8908 3.2984 15.7833 3.2984 15.6749C3.2984 15.5664 3.31977 15.459 3.36128 15.3588C3.40279 15.2585 3.46364 15.1675 3.54034 15.0908L8.73289 9.89987L3.54034 4.70897C3.40393 4.57226 3.3198 4.39202 3.30261 4.19966C3.28543 4.00729 3.33627 3.815 3.44629 3.65627Z"
-                                fill="#D2D2D2"
-                            />
-                        </svg>
+                        <img src={CloseButton} alt="닫기" />
                     </S.CloseButton>
 
                     <S.Title>시간 변경하기</S.Title>
