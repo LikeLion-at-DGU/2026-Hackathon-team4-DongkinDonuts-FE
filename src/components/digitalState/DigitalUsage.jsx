@@ -16,6 +16,8 @@ function DigitalUsage({
     const {
         isResult,
         isSaving,
+        hasGeneratedResult,
+        resultVersion,
         schedules,
         alarmStates,
         toggleAlarm,
@@ -45,11 +47,12 @@ function DigitalUsage({
 
             <S.CardRow>
                 <DigitalAnalysisCard
-                    isResult={isResult}
+                    showResult={hasGeneratedResult}
+                    resultVersion={resultVersion}
                 />
 
                 <DigitalScheduleCard
-                    isResult={isResult}
+                    showResult={hasGeneratedResult}
                     schedules={schedules}
                     alarmStates={alarmStates}
                     onToggleAlarm={toggleAlarm}

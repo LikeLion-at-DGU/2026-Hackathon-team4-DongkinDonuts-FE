@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useSetupModal } from "../hooks/useSetupModal";
-import CloseButton from "../assets/icons/CloseButton.svg";
+import { useSetupModal } from "../../hooks/useSetupModal";
+import CloseButton from "../../assets/icons/CloseButton.svg";
 
 import * as S from "./SetupModal.styled";
 
@@ -111,7 +111,11 @@ function SetupModal({ onClose, mode = "initial" }) {
                                 <S.OptionButton
                                     key={option}
                                     $selected={selectedCondition === option}
-                                    onClick={() => setSelectedCondition(option)}
+                                    oonClick={() =>
+                                        setSelectedCondition(
+                                            selectedCondition === option ? "" : option
+                                        )
+                                    }
                                 >
                                     {option}
                                 </S.OptionButton>
@@ -154,7 +158,11 @@ function SetupModal({ onClose, mode = "initial" }) {
                                 <S.OptionButton
                                     key={option}
                                     $selected={selectedActivity === option}
-                                    onClick={() => setSelectedActivity(option)}
+                                    onClick={() =>
+                                        setSelectedActivity(
+                                            selectedActivity === option ? "" : option
+                                        )
+                                    }
                                 >
                                     {option}
                                 </S.OptionButton>

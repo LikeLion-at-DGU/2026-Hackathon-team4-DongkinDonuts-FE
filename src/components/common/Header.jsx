@@ -1,8 +1,13 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import Settings from "../../assets/icons/Settings.svg";
 import * as S from "./Header.styled";
+console.log(S);
 
 function Header() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isSettingsPage = location.pathname === "/settings";
 
     const handleRoutineClick = () => {
         navigate("/", {
@@ -16,12 +21,25 @@ function Header() {
         });
     };
 
+    // settings 페이지
+    if (isSettingsPage) {
+        return (
+            <S.Header>
+                <S.Logo onClick={() => navigate("/")}>
+                    Brainfit
+                </S.Logo>
+            </S.Header>
+        );
+    }
+
+    // 기본 페이지
     return (
         <S.Header>
             <S.LeftGroup>
                 <S.Logo onClick={() => navigate("/")}>
                     Brainfit
                 </S.Logo>
+
                 <S.Nav>
                     <S.NavButton onClick={handleRoutineClick}>
                         Routine
@@ -32,6 +50,11 @@ function Header() {
                     </S.NavButton>
                 </S.Nav>
             </S.LeftGroup>
+
+            <S.SettingsButton onClick={() => navigate("/settings")}>
+                <img src={Settings} alt="" />
+                Settings
+            </S.SettingsButton>
         </S.Header>
     );
 }

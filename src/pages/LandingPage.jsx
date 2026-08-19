@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import RoutineCard from "../components/landingpage/RoutineCard.jsx";
-import RoutineModal from "../components/landingpage/RoutineModal.jsx";
+import RoutineCard from "../components/routine/RoutineCard.jsx";
+import RoutineModal from "../components/routine/RoutineModal.jsx";
 import { routineData } from "../data/routineData.jsx";
-import WhyBrainfit from "../components/landingpage/WhyBrainfit.jsx";
-import YourHistory from "../components/landingpage/YourHistory.jsx";
-import DigitalState from "../components/landingpage/DigitalState.jsx";
-import SetupModal from "../components/SetupModal";
-import TimeChangeModal from "../components/landingpage/TimeChangeModal.jsx";
+import WhyBrainfit from "../components/whyBrainfit/WhyBrainfit.jsx";
+import YourHistory from "../components/history/YourHistory.jsx";
+import DigitalState from "../components/digitalState/DigitalState.jsx";
+import SetupModal from "../components/common/SetupModal.jsx";
+import TimeChangeModal from "../components/digitalState/TimeChangeModal.jsx";
 import { useNextReset } from "../hooks/useNextReset";
 import {
   generateAIRecoveryPlan,
@@ -198,7 +198,7 @@ function LandingPage() {
                 </S.ReportBottomLabel>
 
                 <S.ReportBottomDescription>
-                  지금이 되면 알림을 보내드려요
+                  시간이 되면 알림을 보내드려요
                 </S.ReportBottomDescription>
               </S.ReportBottomText>
 
