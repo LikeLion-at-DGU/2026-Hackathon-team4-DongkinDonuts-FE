@@ -26,12 +26,12 @@ const SessionDataPanel = ({ elapsedTime, successCount, handCount, screenDistance
           <DataTitle>실시간 데이터</DataTitle>
           <DataRow>
             <div>
-              <span>성공한 미션</span>
-              <strong>{successCount}</strong>
+              <span>미션 성공 횟수</span>
+              <strong>{successCount} 번</strong>
             </div>
             <div>
               <span>손 인식</span>
-              <strong>{handCount}</strong>
+              <strong>{handCount} 개</strong>
             </div>
           </DataRow>
         </DataCard>

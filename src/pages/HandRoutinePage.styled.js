@@ -8,40 +8,52 @@ export const HandRoutineGlobalStyle = createGlobalStyle`
 
   body {
     margin: 0;
-    background: #17181d;
-    overflow-y: auto; /* 전체 페이지 스크롤 허용 */
+    padding: 0;
+    background: #000;
+    overflow-y: auto;
   }
 `;
 
-// 2. 최상위 레이아웃 (수정됨)
+// 2. 최상위 레이아웃
 export const RoutineContainer = styled.div`
-  width: 100%; /* 100vw에서 변경: App.jsx의 1440px Wrapper 너비에 맞춤 */
-  /* height: 100vh; 삭제: 내부 콘텐츠 높이에 맞춰 자연스럽게 늘어나도록 설정 */
-  /* margin-left: calc(50% - 50vw); 삭제: 억지로 화면 전체로 확장하는 마진 제거 */
-  
-  background: #17181d;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  background: #000;
   color: white;
   display: flex;
   flex-direction: column;
-  
-  /* overflow: hidden; 삭제: 페이지 전체 스크롤을 막지 않도록 제거 */
+  align-items: center;
 `;
 
-// 3. 메인 화면 및 컨테이너
+// 3. 메인 콘텐츠 래퍼
+export const ContentWrapper = styled.div`
+  width: 100%;
+  max-width: 1345px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+// 4. 메인 화면 및 컨테이너
 export const PlayContainer = styled.div`
   position: relative;
   width: 100%;
-  min-height: 720px;
-  height: 75vh;
+  height: 721px;
   background: #252525;
-  overflow: hidden; /* 게임 영역 밖으로 UI가 삐져나가는 것만 방지 */
-  
-  /* (선택 사항) 메인 게임 영역 모서리를 둥글게 하면 레이아웃과 더 잘 어울립니다 */
-  border-radius: 16px; 
-  margin: 20px 0; /* 헤더/푸터 및 컨트롤 영역과의 여백 */
+  overflow: hidden;
+  border-radius: 20px;
 `;
 
-// 4. 플레이 영역 (Canvas 컨테이너)
+// 5. 하단 컨트롤 버튼 영역 래퍼
+export const ControlsWrapper = styled.div`
+  width: 100%;
+  height: 150px;
+  margin-top: 18px;
+  margin-bottom: 131px;
+`;
+
+// 6. 플레이 영역 (Canvas 컨테이너)
 export const PlayArea = styled.div`
   position: absolute;
   left: 0;
