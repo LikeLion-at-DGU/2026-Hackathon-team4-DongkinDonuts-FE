@@ -6,7 +6,7 @@ const Footer = () => {
 
     const location = useLocation();
     // 어두운 푸터를 적용할 페이지 경로 목록
-    const darkPages = ["/handroutine",];
+    const darkPages = ["/handroutine", "/breathroutine",];
     const isDark = darkPages.includes(location.pathname);
 
     return (

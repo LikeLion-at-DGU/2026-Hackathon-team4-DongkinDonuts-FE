@@ -90,7 +90,7 @@ const BreathRoutinePage = () => {
   }, []);
 
   const phase = useMemo(() => BREATH_PHASES[phaseIndex].key, [phaseIndex]);
-  const isUIOverlayVisible = !isMissionComplete && !isTerminated;
+  const isUIOverlayVisible = !isTerminated;
 
   return (
     <SessionPage
