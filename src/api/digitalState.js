@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient from "./client";
 
 // 1. PC 사용 패턴 조회
 export const getDigitalPatterns = async () => {
