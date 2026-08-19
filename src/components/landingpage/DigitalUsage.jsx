@@ -12,11 +12,11 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
-    schedules,
 }) {
     const {
         isResult,
         isSaving,
+        schedules,
         alarmStates,
         toggleAlarm,
         toggleCell,
@@ -56,12 +56,16 @@ function DigitalUsage({
                 />
             </S.CardRow>
 
-            <S.ActionRow $isResult={isResult}>
+            <S.ActionRow
+                $isResult={isResult}
+            >
                 {!isResult ? (
                     <>
                         <S.SaveButton
                             type="button"
-                            onClick={handleTemporarySave}
+                            onClick={
+                                handleTemporarySave
+                            }
                             disabled={isSaving}
                         >
                             {isSaving
@@ -71,7 +75,9 @@ function DigitalUsage({
 
                         <S.CreateButton
                             type="button"
-                            onClick={handleCreate}
+                            onClick={
+                                handleCreate
+                            }
                             disabled={isSaving}
                         >
                             {isSaving

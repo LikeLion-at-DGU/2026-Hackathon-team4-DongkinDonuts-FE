@@ -16,12 +16,6 @@ export async function getNextResetTime() {
   }
 }
 
-/**
- * AI 기반 오늘의 회복 계획 생성. context_snapshot/next_activity_plan을 안 넘기면
- * 백엔드가 오늘 가장 최근에 만든 스냅샷/계획을 자동으로 찾아서 쓴다(우리가 굳이
- * 방금 만든 것의 id를 따로 들고 다닐 필요 없음). 실제 LLM 호출이라 30~50초 정도
- * 걸릴 수 있다 — 호출부에서 로딩 상태를 반드시 보여줘야 한다.
- */
 export function generateAIRecoveryPlan(notificationEnabled = true) {
   return apiClient.post("/plans/recovery-plans/today/ai-generate/", {
     notification_enabled: notificationEnabled,

@@ -96,31 +96,21 @@ function DigitalAnalysisCard({ isResult }) {
                             <strong>
                                 {analysis?.weekly_pc_usage_hours ?? 0}
                             </strong>
-
-                            <span>
-                                주간 사용(h)
-                            </span>
+                            <span>주간 사용(h)</span>
                         </S.StatBox>
 
                         <S.StatBox>
                             <strong>
-                                {analysis?.weekly_pc_usage_day_count ?? 0}
-                                /7
+                                {analysis?.weekly_pc_usage_day_count ?? 0}/7
                             </strong>
-
-                            <span>
-                                활성 요일
-                            </span>
+                            <span>활성 요일</span>
                         </S.StatBox>
 
                         <S.StatBox>
                             <strong>
-                                {analysis?.weekly_activity_rate ?? 0}%
+                                {analysis?.weekly_activity_rate?.percent ?? 0}%
                             </strong>
-
-                            <span>
-                                주간 활동률
-                            </span>
+                            <span>주간 활동률</span>
                         </S.StatBox>
                     </S.StatRow>
 
