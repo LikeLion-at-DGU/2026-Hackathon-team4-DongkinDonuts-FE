@@ -5,13 +5,11 @@ import {
   ResetButton,
 } from "./SessionControls.styled";
 
-const SessionControls = ({ handleStopGame, resetGame, isTerminated }) => {
+const SessionControls = ({ handleStopGame, nextSession, }) => {
   return (
     <ControlArea>
       <StopButton onClick={handleStopGame}>종료</StopButton>
-      <ResetButton onClick={resetGame} disabled={isTerminated}>
-        초기화
-      </ResetButton>
+      <ResetButton onClick={nextSession}>다음 세션</ResetButton>
     </ControlArea>
   );
 };

@@ -1,10 +1,12 @@
 import { memo } from "react";
 import { ProgressSection, ProgressBarContainer, ProgressFill, Steps } from "./ProgressBar.styled";
 
-const ProgressBar = ({ missionType, sequenceIndex = 0, missionProgress = 0, phases, elapsedInCycle = 0 }) => {
+const ProgressBar = ({ missionType, sequenceIndex = 0, missionProgress = 0, phases, elapsedInCycle = 0, progressPercent: progressPercentProp }) => {
   let progressPercent;
 
-  if (phases?.length) {
+  if (progressPercentProp !== undefined) {
+    progressPercent = progressPercentProp;
+  } else if (phases?.length) {
     const [inhale, hold, exhale] = phases;
     const total = inhale + hold + exhale;
     const time = Math.max(0, Math.min(elapsedInCycle, total));

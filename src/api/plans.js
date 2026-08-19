@@ -16,14 +16,23 @@ export async function getNextResetTime() {
   }
 }
 
-// 오늘 AI 회복 계획 생성
-export async function generateTodayRecoveryPlan({
-  notificationEnabled = true,
-} = {}) {
-  return await apiClient.post(
-    "/plans/recovery-plans/today/ai-generate/",
-    {
-      notification_enabled: notificationEnabled,
-    }
-  );
+export function generateAIRecoveryPlan(notificationEnabled = true) {
+  return apiClient.post("/plans/recovery-plans/today/ai-generate/", {
+    notification_enabled: notificationEnabled,
+  });
+}
+
+/** 특정 회복 슬롯의 예정 시간 변경. scheduledAt은 ISO 8601 문자열이어야 한다. */
+export function updateRecoverySlotSchedule(slotId, scheduledAtIso) {
+  return apiClient.patch(`/plans/recovery-slots/${slotId}/schedule/`, {
+    scheduled_at: scheduledAtIso,
+  });
+}
+
+/** 특정 회복 슬롯의 웹 알림 on/off + 반복 규칙 변경. */
+export function updateRecoverySlotNotification(slotId, { notificationEnabled, repeatRule = "" }) {
+  return apiClient.patch(`/plans/recovery-slots/${slotId}/notification/`, {
+    notification_enabled: notificationEnabled,
+    repeat_rule: repeatRule,
+  });
 }

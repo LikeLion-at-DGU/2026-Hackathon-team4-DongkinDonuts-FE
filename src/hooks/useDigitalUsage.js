@@ -2,9 +2,15 @@ import { useState } from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
-import { generateTodayRecoveryPlan } from "../api/plans";
 
-const FRONT_TO_BACK_DAY = [
+import {
+    generateAIRecoveryPlan,
+    updateRecoverySlotNotification,
+} from "../api/plans";
+
+// 프론트 표 순서: 일 월 화 수 목 금 토
+// 백엔드 요일 코드로 변환
+const DAY_CODE_MAP = [
     "SUN",
     "MON",
     "TUE",
@@ -20,18 +26,26 @@ export function useDigitalUsage({
     setSelected,
     onCreate,
 }) {
-    const [isSaving, setIsSaving] = useState(false);
-    const [alarmStates, setAlarmStates] = useState({});
+    const [isSaving, setIsSaving] =
+        useState(false);
 
-    // AI가 생성한 오늘의 회복 슬롯
-    const [schedules, setSchedules] = useState([]);
+    const [schedules, setSchedules] =
+        useState([]);
+
+    const [alarmStates, setAlarmStates] =
+        useState({});
 
     const isResult = mode === "result";
 
-    const toggleCell = (rowIndex, colIndex) => {
+    // 개별 칸 선택
+    const toggleCell = (
+        rowIndex,
+        colIndex
+    ) => {
         if (isResult) return;
 
-        const key = `${rowIndex}-${colIndex}`;
+        const key =
+            `${rowIndex}-${colIndex}`;
 
         setSelected((prev) => ({
             ...prev,
@@ -39,6 +53,7 @@ export function useDigitalUsage({
         }));
     };
 
+    // 해당 시간대 일~토 전체 선택
     const toggleRow = (rowIndex) => {
         if (isResult) return;
 
@@ -48,56 +63,70 @@ export function useDigitalUsage({
                     `${rowIndex}-${colIndex}`
             );
 
-            const isAllSelected = rowKeys.every(
-                (key) => !!prev[key]
-            );
+            const isAllSelected =
+                rowKeys.every(
+                    (key) => !!prev[key]
+                );
 
-            const next = { ...prev };
+            const next = {
+                ...prev,
+            };
 
             rowKeys.forEach((key) => {
-                next[key] = !isAllSelected;
+                next[key] =
+                    !isAllSelected;
             });
 
             return next;
         });
     };
 
+    // 전체 초기화
     const resetAll = () => {
         if (isResult) return;
 
         setSelected({});
     };
 
-    const toggleAlarm = (id) => {
-        setAlarmStates((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
-    };
-
-    const convertSelectedToPatterns = (selected) => {
-        return Object.entries(selected)
-            .filter(([, isSelected]) => isSelected)
+    // selected 객체 → 백엔드 요청 배열
+    const convertSelectedToPatterns = (
+        selectedData
+    ) => {
+        return Object.entries(
+            selectedData
+        )
+            .filter(
+                ([, isSelected]) =>
+                    isSelected
+            )
             .map(([key]) => {
-                const [rowIndex, colIndex] = key
+                const [
+                    rowIndex,
+                    colIndex,
+                ] = key
                     .split("-")
                     .map(Number);
 
                 return {
                     day_of_week:
-                        FRONT_TO_BACK_DAY[colIndex],
+                        DAY_CODE_MAP[
+                            colIndex
+                        ],
                     hour: rowIndex,
                     is_used: true,
                 };
             });
     };
 
+    // PC 패턴 저장
     const savePatterns = async () => {
         try {
             setIsSaving(true);
 
             const patterns =
-                convertSelectedToPatterns(selected);
+                convertSelectedToPatterns(
+                    selected
+                );
 
             console.log(
                 "변환 후 서버로 보내는 데이터:",
@@ -105,7 +134,9 @@ export function useDigitalUsage({
             );
 
             const result =
-                await saveDigitalPatterns(patterns);
+                await saveDigitalPatterns(
+                    patterns
+                );
 
             console.log(
                 "PC 사용 패턴 저장 성공:",
@@ -125,48 +156,66 @@ export function useDigitalUsage({
         }
     };
 
-    const handleTemporarySave = async () => {
-        await savePatterns();
-    };
+    // 임시 저장
+    const handleTemporarySave =
+        async () => {
+            await savePatterns();
+        };
 
+    // PC 패턴 저장 → AI 회복 계획 생성
     const handleCreate = async () => {
         try {
             setIsSaving(true);
 
-            // 1. PC 패턴 저장
+            // 1. 선택한 PC 패턴 변환
             const patterns =
-                convertSelectedToPatterns(selected);
+                convertSelectedToPatterns(
+                    selected
+                );
 
-            await saveDigitalPatterns(patterns);
+            // 2. PC 패턴 서버 저장
+            await saveDigitalPatterns(
+                patterns
+            );
 
-            // 2. 저장된 PC 패턴 기준으로 AI 회복 계획 생성
+            console.log(
+                "PC 패턴 저장 완료"
+            );
+
+            // 3. AI 회복 계획 생성
+            // plans.js의 함수는 boolean을 직접 받음
             const recoveryPlan =
-                await generateTodayRecoveryPlan({
-                    notificationEnabled: true,
-                });
+                await generateAIRecoveryPlan(
+                    true
+                );
 
             console.log(
                 "AI 오늘 회복 계획:",
                 recoveryPlan
             );
 
+            // 4. AI가 만든 슬롯 저장
             const slots =
-                recoveryPlan?.slots ?? [];
+                recoveryPlan?.slots ??
+                [];
 
             setSchedules(slots);
 
-            // 각 슬롯의 서버 알림 상태를 초기값으로 사용
+            // 5. 서버에서 내려준 알림 상태 저장
             const initialAlarmStates =
                 Object.fromEntries(
                     slots.map((slot) => [
                         slot.id,
-                        slot.notification_enabled,
+                        slot.notification_enabled ??
+                            false,
                     ])
                 );
 
-            setAlarmStates(initialAlarmStates);
+            setAlarmStates(
+                initialAlarmStates
+            );
 
-            // 3. 결과 화면 전환
+            // 6. 결과 화면으로 전환
             onCreate();
         } catch (error) {
             console.error(
@@ -175,6 +224,61 @@ export function useDigitalUsage({
             );
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    // 자동 알림 ON/OFF
+    const toggleAlarm = async (
+        slotId
+    ) => {
+        const current =
+            alarmStates[slotId] ??
+            false;
+
+        const next = !current;
+
+        // 일단 화면 먼저 변경
+        setAlarmStates((prev) => ({
+            ...prev,
+            [slotId]: next,
+        }));
+
+        try {
+            const slot =
+                schedules.find(
+                    (item) =>
+                        item.id ===
+                        slotId
+                );
+
+            await updateRecoverySlotNotification(
+                slotId,
+                {
+                    notificationEnabled:
+                        next,
+
+                    repeatRule:
+                        slot?.repeat_rule ??
+                        "",
+                }
+            );
+
+            console.log(
+                "알림 설정 변경 성공:",
+                slotId,
+                next
+            );
+        } catch (error) {
+            console.error(
+                "알림 설정 변경 실패:",
+                error
+            );
+
+            // API 실패하면 화면도 원래 상태로 복구
+            setAlarmStates((prev) => ({
+                ...prev,
+                [slotId]: current,
+            }));
         }
     };
 

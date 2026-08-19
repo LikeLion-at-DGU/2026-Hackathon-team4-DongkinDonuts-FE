@@ -5,7 +5,6 @@ import {
   createNormalBalls,
   createSameColorBalls,
   createMovingTargetBalls,
-  createTimeAttackBalls,
 } from "../utils/handUtils";
 
 export const setupMission = ({
@@ -38,9 +37,7 @@ export const setupMission = ({
 
   setMissionProgress(0);
   setSequenceIndex(0);
-  setMissionRemaining(
-    nextMission.type === "TIME_ATTACK" ? CONFIG.timeAttackDuration : 60
-  );
+  setMissionRemaining(CONFIG.timeAttackDuration);
   setMissionStatus("playing");
   setIsRunning(true);
   setIsMissionComplete(false);
@@ -75,21 +72,6 @@ export const setupMission = ({
       vx: (Math.random() > 0.5 ? 1 : -1) * 0.00042,
       vy: (Math.random() > 0.5 ? 1 : -1) * 0.00024,
     };
-    return;
-  }
-
-  if (nextMission.type === "TIME_ATTACK") {
-    ballsRef.current = createTimeAttackBalls();
-    staticTargetsRef.current = [
-      {
-        id: "single",
-        x: 0.2 + Math.random() * 0.6,
-        y: 0.55 + Math.random() * 0.15,
-        radius: 0.12,
-        color: "#8EA9B8",
-        label: "목표",
-      },
-    ];
     return;
   }
 
@@ -224,7 +206,7 @@ export const handleBallRelease = ({
     return;
   }
 
-  if (mission.type === "MOVING_TARGET" || mission.type === "TIME_ATTACK") {
+  if (mission.type === "MOVING_TARGET") {
     if (!insideTarget) return;
 
     missionProgressRef.current += 1;
