@@ -56,13 +56,20 @@ function SetupModal({ onClose, mode = "initial" }) {
     } = useSetupModal();
 
     const handleComplete = async () => {
-        // completeSetup은 성공 시 null, 실패 시 에러 메시지 문자열을 반환한다.
-        const errorMessage = await completeSetup(mode);
-        if (errorMessage) {
-            // 실패해도 사용자를 모달에 가둬두지 않는다 — 다음 리셋 시간 등은
-            // 다시 "내 계획 다시 설정"으로 재시도 가능하니 일단 닫고 알림으로만 안내.
-            window.alert(errorMessage);
+        if (!selectedActivity || !selectedTime) {
+            window.alert("활동과 활동 시간을 하나씩 선택해주세요.");
+            return;
         }
+
+        const errorMessage = await completeSetup(mode);
+
+        if (errorMessage) {
+            window.alert(
+                "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
+            );
+            return;
+        }
+
         onClose();
     };
 

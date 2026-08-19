@@ -26,7 +26,7 @@ export const ModalPositioner = styled.div`
 export const Modal = styled.div`
     position: absolute;
 
-    top: 250px;
+    top: 270px;
     right: 90px;
 
     width: 410px;
@@ -35,6 +35,7 @@ export const Modal = styled.div`
     padding: 30px 30px 22px;
 
     box-sizing: border-box;
+    transform: scale(1.1);
 
     overflow-y: auto;
     overflow-x: hidden;

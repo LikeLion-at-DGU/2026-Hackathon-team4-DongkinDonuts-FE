@@ -24,6 +24,11 @@ export const useSetupModal = () => {
     const [submitError, setSubmitError] = useState(null);
 
     const goNext = () => {
+        if (!selectedCondition) {
+            window.alert("현재 상태를 하나 선택해주세요.");
+            return;
+        }
+
         setStep(2);
     };
 
