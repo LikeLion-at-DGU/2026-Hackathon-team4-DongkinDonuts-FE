@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { whyBrainfitData } from "../../data/whybrainfitData";
+import ArrowSide from "../../assets/icons/ArrowSide.svg";
 
 import * as S from "./WhyBrainfit.styled";
 
@@ -33,9 +34,7 @@ function WhyBrainfit() {
                     onClick={handlePrev}
                     disabled={currentIndex === 0}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="24" viewBox="0 0 14 24" fill="none">
-                        <path d="M11.6665 21.667L1.6665 11.667L11.6665 1.66699" stroke="#9D9D9D" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <img src={ArrowSide} alt="" />
                 </S.ArrowButton>
 
                 <S.TextArea>
@@ -84,9 +83,7 @@ function WhyBrainfit() {
                     onClick={handleNext}
                     disabled={currentIndex === whyBrainfitData.length - 1}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
-                        <path d="M15 30L25 20L15 10" stroke="#9D9D9D" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <img src={ArrowSide} alt="" />
                 </S.ArrowButton>
             </S.SlideArea>
 

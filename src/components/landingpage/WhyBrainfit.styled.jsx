@@ -243,8 +243,8 @@ export const ArrowButton = styled.button`
     position: absolute;
     top: 50%;
 
-    ${({ $left }) => $left && `left: 0;`}
-    ${({ $right }) => $right && `right: 0;`}
+    ${({ $left }) => $left && `left: -20px;`}
+    ${({ $right }) => $right && `right: 40px;`}
 
     transform: translateY(-50%);
 
@@ -282,6 +282,11 @@ export const ArrowButton = styled.button`
     z-index: 3;
 
     transition: 0.2s ease;
+
+        img {
+        transform: ${({ $right }) =>
+            $right ? "rotate(180deg)" : "none"};
+    }
 
     &:hover {
         background: ${({ disabled }) =>
