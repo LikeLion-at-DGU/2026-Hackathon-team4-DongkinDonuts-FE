@@ -59,7 +59,7 @@ function DigitalState() {
     const isLocked =
     digitalStep === "locked" &&
     !status?.has_any_pattern;
-    
+
     return (
         <S.DigitalSection>
             <S.DigitalHeader>
@@ -68,9 +68,9 @@ function DigitalState() {
                 </S.DigitalTitle>
 
                 <S.DigitalDescription>
-                    평소 PC 사용 패턴을 입력하면 Brainfit이 집중시간과 사용 습관을 분석해
+                    PC 사용 패턴을 입력하면
                     <br />
-                    적정 휴식 시간을 추천하고, 나에게 맞는 휴식 일정을 자동으로 설정해줘요.
+                    Brainfit이 나에게 맞는 휴식 일정을 자동으로 설정해줘요.
                 </S.DigitalDescription>
             </S.DigitalHeader>
 
