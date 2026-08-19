@@ -12,18 +12,23 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
+    analysis,
 }) {
     const {
         isResult,
+        isSaving,
         alarmStates,
         toggleAlarm,
         toggleCell,
         toggleRow,
         resetAll,
+        handleTemporarySave,
+        handleCreate,
     } = useDigitalUsage({
         mode,
         selected,
         setSelected,
+        onCreate,
     });
 
     return (
@@ -41,6 +46,7 @@ function DigitalUsage({
             <S.CardRow>
                 <DigitalAnalysisCard
                     isResult={isResult}
+                    analysis={analysis}
                 />
 
                 <DigitalScheduleCard
@@ -53,15 +59,24 @@ function DigitalUsage({
             <S.ActionRow $isResult={isResult}>
                 {!isResult ? (
                     <>
-                        <S.SaveButton type="button">
-                            임시 저장
+                        <S.SaveButton
+                            type="button"
+                            onClick={handleTemporarySave}
+                            disabled={isSaving}
+                        >
+                            {isSaving
+                                ? "저장 중..."
+                                : "임시 저장"}
                         </S.SaveButton>
 
                         <S.CreateButton
                             type="button"
-                            onClick={onCreate}
+                            onClick={handleCreate}
+                            disabled={isSaving}
                         >
-                            이 패턴으로 휴식 타이머 생성
+                            {isSaving
+                                ? "생성 중..."
+                                : "이 패턴으로 휴식 타이머 생성"}
                         </S.CreateButton>
                     </>
                 ) : (

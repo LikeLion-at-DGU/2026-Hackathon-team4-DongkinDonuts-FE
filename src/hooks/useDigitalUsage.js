@@ -1,32 +1,31 @@
 import { useState } from "react";
+import { saveDigitalPatterns } from "../api/digitalState";
 
-import {
-    DAYS,
-    INITIAL_ALARM_STATES,
-} from "../config/digitalUsageConfig";
-
-export const useDigitalUsage = ({
+export function useDigitalUsage({
     mode,
     selected,
     setSelected,
-}) => {
+    onCreate,
+}) {
+    const [isSaving, setIsSaving] = useState(false);
+
     const isResult = mode === "result";
 
-    const [alarmStates, setAlarmStates] = useState(
-        INITIAL_ALARM_STATES
-    );
+    const [alarmStates, setAlarmStates] = useState({
+        first: true,
+        second: true,
+        third: true,
+    });
 
-    const toggleAlarm = (id) => {
+    const toggleAlarm = (key) => {
         setAlarmStates((prev) => ({
             ...prev,
-            [id]: !prev[id],
+            [key]: !prev[key],
         }));
     };
 
-    const toggleCell = (rowIndex, colIndex) => {
+    const toggleCell = (key) => {
         if (isResult) return;
-
-        const key = `${rowIndex}-${colIndex}`;
 
         setSelected((prev) => ({
             ...prev,
@@ -34,18 +33,14 @@ export const useDigitalUsage = ({
         }));
     };
 
-    const toggleRow = (rowIndex) => {
+    const toggleRow = (rowKeys) => {
         if (isResult) return;
 
-        const rowKeys = DAYS.map(
-            (_, colIndex) => `${rowIndex}-${colIndex}`
-        );
-
-        const isAllSelected = rowKeys.every(
-            (key) => selected[key]
-        );
-
         setSelected((prev) => {
+            const isAllSelected = rowKeys.every(
+                (key) => prev[key]
+            );
+
             const next = { ...prev };
 
             rowKeys.forEach((key) => {
@@ -62,14 +57,53 @@ export const useDigitalUsage = ({
         setSelected({});
     };
 
+    const savePatterns = async () => {
+        try {
+            setIsSaving(true);
+
+            const result = await saveDigitalPatterns(
+                selected
+            );
+
+            console.log(
+                "PC 사용 패턴 저장 성공:",
+                result
+            );
+
+            return true;
+        } catch (error) {
+            console.error(
+                "PC 사용 패턴 저장 실패:",
+                error
+            );
+
+            return false;
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleTemporarySave = async () => {
+        await savePatterns();
+    };
+
+    const handleCreate = async () => {
+        const success = await savePatterns();
+
+        if (!success) return;
+
+        onCreate();
+    };
+
     return {
         isResult,
-
+        isSaving,
         alarmStates,
-
         toggleAlarm,
         toggleCell,
         toggleRow,
         resetAll,
+        handleTemporarySave,
+        handleCreate,
     };
-};
+}

@@ -1,6 +1,13 @@
+import { useEffect, useState } from "react";
+
 import DigitalUsage from "./DigitalUsage";
 import LockIcon from "../../assets/icons/LockIcon.svg";
 import { useDigitalState } from "../../hooks/useDigitalState";
+
+import {
+    getDigitalPatternStatus,
+    getDigitalPatternAnalysis,
+} from "../../api/digitalState";
 
 import * as S from "./DigitalState.styled";
 
@@ -14,8 +21,45 @@ function DigitalState() {
         editInput,
     } = useDigitalState();
 
-    const isLocked = digitalStep === "locked";
+    const [status, setStatus] = useState(null);
+    const [analysis, setAnalysis] = useState(null);
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        const fetchDigitalState = async () => {
+            try {
+                const statusData =
+                    await getDigitalPatternStatus();
+
+                setStatus(statusData);
+
+                if (statusData.has_any_pattern) {
+                    const analysisData =
+                        await getDigitalPatternAnalysis();
+
+                    setAnalysis(analysisData);
+                }
+            } catch (error) {
+                console.error(
+                    "디지털 상태 조회 실패:",
+                    error
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDigitalState();
+    }, []);
+
+    if (loading) {
+        return null;
+    }
+
+    const isLocked =
+    digitalStep === "locked" &&
+    !status?.has_any_pattern;
+    
     return (
         <S.DigitalSection>
             <S.DigitalHeader>
@@ -33,11 +77,11 @@ function DigitalState() {
             {isLocked ? (
                 <S.DigitalResult>
                     <S.BlurredDigitalText>
-                        오늘의 움직임 분석 결과 집중도와 반응 속도는 안정적인 흐름을 보였어요.
+                        디지털 사용 데이터를 입력하면
                         <br />
-                        손의 움직임은 이전 루틴보다 부드러워졌으며 시선 유지 시간도 증가했어요.
+                        주간 PC 사용 시간과 활동 패턴을 분석하고
                         <br />
-                        오늘은 짧은 집중 루틴과 호흡 루틴을 함께 진행하는 것을 추천해요.
+                        나에게 맞는 휴식 시간을 추천해드려요.
                     </S.BlurredDigitalText>
 
                     <S.LockIcon>
@@ -65,6 +109,7 @@ function DigitalState() {
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
+                    analysis={analysis}
                 />
             )}
         </S.DigitalSection>
