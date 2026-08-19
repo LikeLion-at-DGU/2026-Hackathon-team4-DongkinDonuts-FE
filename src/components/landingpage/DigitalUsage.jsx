@@ -13,6 +13,7 @@ function DigitalUsage({
     onCreate,
     onEdit,
     analysis,
+    schedules,
 }) {
     const {
         isResult,
@@ -51,6 +52,7 @@ function DigitalUsage({
 
                 <DigitalScheduleCard
                     isResult={isResult}
+                    schedules={schedules}
                     alarmStates={alarmStates}
                     onToggleAlarm={toggleAlarm}
                 />

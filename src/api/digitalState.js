@@ -45,6 +45,8 @@ export const getDigitalPatternAnalysis = async () => {
 
 // 4. PC 사용 패턴 일괄 저장
 export const saveDigitalPatterns = async (patterns) => {
+    console.log("서버로 보내는 데이터:", patterns);
+
     const response = await fetch(
         `${BASE_URL}/digital-state/patterns/bulk/`,
         {
@@ -57,7 +59,17 @@ export const saveDigitalPatterns = async (patterns) => {
     );
 
     if (!response.ok) {
-        throw new Error("PC 사용 패턴 저장 실패");
+        const errorText = await response.text();
+
+        console.error(
+            "패턴 저장 API 에러:",
+            response.status,
+            errorText
+        );
+
+        throw new Error(
+            `PC 사용 패턴 저장 실패: ${response.status}`
+        );
     }
 
     return response.json();
