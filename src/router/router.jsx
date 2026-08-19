@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import App from "../App";
 import LandingPage from "../pages/LandingPage";
 import HandRoutinePage from "../pages/HandRoutinePage";
@@ -10,7 +10,7 @@ import ShoulderPmrRoutinePage from "../pages/ShoulderPmrRoutinePage";
 import FocusPinchRoutinePage from "../pages/FocusPinchRoutinePage";
 import DrowsyIceRoutinePage from "../pages/DrowsyIceRoutinePage";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,

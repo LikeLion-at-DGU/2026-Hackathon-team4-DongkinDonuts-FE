@@ -30,3 +30,29 @@ npm install
 npm install @mediapipe/tasks-vision
 npm run dev
 ```
+
+## 🚢 Deployment
+
+이 프로젝트는 GitHub Actions와 GitHub Pages로 자동 배포합니다.
+
+### 최초 1회 GitHub 설정
+
+1. GitHub 저장소에서 `Settings` → `Pages`로 이동합니다.
+2. `Build and deployment`의 `Source`를 `GitHub Actions`로 선택합니다.
+3. `Settings` → `Secrets and variables` → `Actions` → `Variables`에 필요한 값을 등록합니다.
+   - `VITE_API_BASE_URL`: 배포 환경에서 사용할 API 서버 주소
+   - `VITE_BASE_PATH`: 기본값은 `/<REPO_NAME>/`이며, 커스텀 도메인을 쓰면 `/`로 설정
+
+### 자동 배포 흐름
+
+- `main` 브랜치에 push하면 `npm ci` → `npm run lint` → `npm run build` 후 GitHub Pages로 배포됩니다.
+- `main` 대상 Pull Request에서는 배포 없이 lint/build 검증만 실행됩니다.
+- 수동 배포가 필요하면 GitHub `Actions` 탭에서 `Deploy Frontend to GitHub Pages` 워크플로우를 `Run workflow`로 실행합니다.
+
+### 로컬 사전 검증
+
+```bash
+npm ci
+npm run lint
+npm run build
+```
