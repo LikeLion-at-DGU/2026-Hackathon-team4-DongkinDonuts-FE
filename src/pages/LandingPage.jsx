@@ -27,9 +27,67 @@ function LandingPage() {
   const {
     hasPlan,
     resetTimeLabel,
-    countdownLabel,
     refresh: refreshNextReset,
   } = useNextReset();
+
+  const [countdown, setCountdown] = useState("--:--");
+
+  useEffect(() => {
+    if (!hasPlan || !resetTimeLabel) {
+      setCountdown("--:--");
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date();
+
+      // "17:00" → 17, 0
+      const [hour, minute] = resetTimeLabel
+        .split(":")
+        .map(Number);
+
+      const target = new Date();
+
+      target.setHours(
+        hour,
+        minute,
+        0,
+        0
+      );
+
+      const diff = target.getTime() - now.getTime();
+
+      // 이미 시간이 지난 경우
+      if (diff <= 0) {
+        setCountdown("00:00");
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      setCountdown(
+        `${String(minutes).padStart(2, "0")}:${String(
+          seconds
+        ).padStart(2, "0")}`
+      );
+    };
+
+    // 처음 렌더링하자마자 바로 계산
+    updateCountdown();
+
+    // 이후 1초마다 다시 계산
+    const timer = setInterval(
+      updateCountdown,
+      1000
+    );
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [hasPlan, resetTimeLabel]);
 
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
@@ -181,7 +239,7 @@ function LandingPage() {
               </S.ReportBottomText>
 
               <S.Countdown>
-                {hasPlan ? countdownLabel : "--:--"}
+                {hasPlan ? countdown : "--:--"}
               </S.Countdown>
             </S.ReportBottom>
 
@@ -283,19 +341,19 @@ function LandingPage() {
       )}
 
       {showTimeModal && (
-  <TimeChangeModal
-    currentTime={hasPlan ? resetTimeLabel : ""}
-    onClose={() => setShowTimeModal(false)}
-    onSave={(time, repeat) => {
-      // TODO: PATCH /plans/recovery-slots/{id}/schedule/, /notification/ 연동은
-      // 별도 작업으로 남겨둠 — 지금은 로컬 상태만 반영.
-      setRepeatAlarm(repeat);
+        <TimeChangeModal
+          currentTime={hasPlan ? resetTimeLabel : ""}
+          onClose={() => setShowTimeModal(false)}
+          onSave={(time, repeat) => {
+            // TODO: PATCH /plans/recovery-slots/{id}/schedule/, /notification/ 연동은
+            // 별도 작업으로 남겨둠 — 지금은 로컬 상태만 반영.
+            setRepeatAlarm(repeat);
 
-      console.log("변경된 리셋 시간:", time);
-      console.log("반복 알림:", repeat);
-    }}
-  />
-)}
+            console.log("변경된 리셋 시간:", time);
+            console.log("반복 알림:", repeat);
+          }}
+        />
+      )}
     </S.LandingPage>
   );
 }
