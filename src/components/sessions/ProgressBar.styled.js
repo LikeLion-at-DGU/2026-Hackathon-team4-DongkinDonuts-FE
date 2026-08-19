@@ -6,6 +6,7 @@ export const ProgressSection = styled.div`
   left: 7%;
   right: 7%;
   bottom: 17px;
+  z-index: 15;
 `;
 
 export const ProgressBarContainer = styled.div`

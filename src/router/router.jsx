@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import LandingPage from "../pages/LandingPage";
 import HandRoutinePage from "../pages/HandRoutinePage";
+import BreathRoutinePage from "../pages/BreathRoutinePage";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
       {
         path: "/handroutine",
         element: <HandRoutinePage />
+      },
+      {
+        path: "/breathroutine",
+        element: <BreathRoutinePage />
       },
     ],
   },

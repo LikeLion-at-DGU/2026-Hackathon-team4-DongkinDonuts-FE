@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import {
   ControlArea,
   StopButton,
@@ -16,4 +16,4 @@ const SessionControls = ({ handleStopGame, resetGame, isTerminated }) => {
   );
 };
 
-export default SessionControls;
+export default memo(SessionControls);

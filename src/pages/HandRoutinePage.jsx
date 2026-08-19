@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 
 import { getTargetZone, handleBallRelease, completeMission } from "../engine/missionManager";
 import { updateMovingTarget, updateGrabbedBalls, grabNearestBall } from "../engine/ballManager";
@@ -9,21 +9,8 @@ import { useHandTracking } from "../hooks/useHandTracking";
 import { useSessionLoop } from "../hooks/useSessionLoop";
 import { useSessionState } from "../hooks/useSessionState";
 
-import CameraPreview from "../components/handpage/CameraPreview";
-import SessionDataPanel from "../components/handpage/SessionDataPanel";
-import SessionEndModal from "../components/handpage/SessionEndModal";
-import SessionControls from "../components/handpage/SessionControls";
-import MissionInstruction from "../components/handpage/MissionInstruction";
-import ProgressBar from "../components/handpage/ProgressBar";
-import QuitConfirmModal from "../components/handpage/QuitConfirmModal";
-import {
-  HandRoutineGlobalStyle,
-  RoutineContainer,
-  ContentWrapper,
-  PlayContainer,
-  ControlsWrapper,
-  PlayArea,
-} from "./HandRoutinePage.styled";
+import HandPlayArea from "../components/sessions/HandPlayArea";
+import SessionPage from "./SessionPage";
 
 const HandRoutinePage = () => {
   const canvasRef = useRef(null);
@@ -41,8 +28,10 @@ const HandRoutinePage = () => {
   } = useHandTracking();
 
   const { refs, state, setters, initializeMission } = useSessionState();
+  const { setElapsedTime } = setters;
 
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
+  const lastRemainingRef = useRef(null);
 
   const {
     isRunning,
@@ -74,11 +63,11 @@ const HandRoutinePage = () => {
       isMounted = false;
       cleanup();
     };
-  }, []);
+  }, [cleanup, initializeMediaPipe, startCamera]);
 
   useEffect(() => {
     initializeMission();
-  }, []);
+  }, [initializeMission]);
 
   // 2. 모달 상태에 따른 비디오 정지/재생
   useEffect(() => {
@@ -96,11 +85,11 @@ const HandRoutinePage = () => {
     if (!isRunning || isQuitModalOpen) return;
 
     const timer = setInterval(() => {
-      setters.setElapsedTime((prev) => prev + 1);
+        setElapsedTime((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRunning, isQuitModalOpen, setters]);
+  }, [isRunning, isQuitModalOpen, setElapsedTime]);
 
   // 4. 게임 프레임 루프
   const handleFrame = useCallback(
@@ -113,7 +102,10 @@ const HandRoutinePage = () => {
         if (mission.type === "TIME_ATTACK" && missionStatus === "playing") {
           const elapsed = (timestamp - refs.missionStartTimeRef.current) / 1000;
           const remaining = Math.max(0, Math.ceil(CONFIG.timeAttackDuration - elapsed));
-          setters.setMissionRemaining(remaining);
+          if (lastRemainingRef.current !== remaining) {
+            lastRemainingRef.current = remaining;
+            setters.setMissionRemaining(remaining);
+          }
 
           if (remaining <= 0) {
             setters.setMissionStatus("failed");
@@ -183,7 +175,6 @@ const HandRoutinePage = () => {
       missionStatus,
       sequenceIndex,
       setters,
-      initializeMission,
       refs,
       handsRef,
     ]
@@ -194,87 +185,63 @@ const HandRoutinePage = () => {
     onFrame: handleFrame,
   });
 
-  const handleStopGame = () => {
+  const handleStopGame = useCallback(() => {
     setIsQuitModalOpen(true);
-  };
+  }, []);
 
-  const handleConfirmQuit = () => {
+  const handleConfirmQuit = useCallback(() => {
     setIsQuitModalOpen(false);
     setters.setIsRunning(false);
     setters.setIsTerminated(true);
     cleanup();
-  };
+  }, [cleanup, setters]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsQuitModalOpen(false);
-  };
+  }, []);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
+    lastRemainingRef.current = null;
     initializeMission();
-  };
+  }, [initializeMission]);
 
   const isUIOverlayVisible = !isMissionComplete && !isTerminated;
 
   return (
-    <>
-      <HandRoutineGlobalStyle />
-      <RoutineContainer>
-        <QuitConfirmModal
-          isOpen={isQuitModalOpen}
-          onClose={handleCloseModal}
-          onConfirm={handleConfirmQuit}
-        />
-
-        <ContentWrapper>
-          <PlayContainer>
-            {isUIOverlayVisible && (
-              <>
-                <CameraPreview
-                  videoRef={videoRef}
-                  cameraReady={cameraReady}
-                  isTerminated={isTerminated}
-                />
-                <SessionDataPanel
-                  elapsedTime={elapsedTime}
-                  successCount={successCount}
-                  handCount={handCount}
-                  screenDistance={screenDistance}
-                />
-                <MissionInstruction
-                  mission={mission}
-                  sequenceOrder={refs.sequenceOrderRef.current}
-                  sameColorTargetType={refs.sameColorTargetTypeRef.current}
-                  missionRemaining={missionRemaining}
-                />
-                <ProgressBar
-                  missionType={mission.type}
-                  sequenceIndex={sequenceIndex}
-                  missionProgress={missionProgress}
-                />
-              </>
-            )}
-
-            <PlayArea>
-              <canvas ref={canvasRef} />
-            </PlayArea>
-
-            <SessionEndModal
-              isMissionComplete={isMissionComplete}
-              isTerminated={isTerminated}
-              resetGame={resetGame}
-            />
-          </PlayContainer>
-
-          <ControlsWrapper>
-            <SessionControls
-              handleStopGame={handleStopGame}
-              resetGame={resetGame}
-              isTerminated={isTerminated}
-            />
-          </ControlsWrapper>
-        </ContentWrapper>
-      </RoutineContainer>
-    </>
+    <SessionPage
+      isQuitModalOpen={isQuitModalOpen}
+      onCloseQuit={handleCloseModal}
+      onConfirmQuit={handleConfirmQuit}
+      isMissionComplete={isMissionComplete}
+      isTerminated={isTerminated}
+      resetSession={resetGame}
+      onStopSession={handleStopGame}
+      showOverlay={isUIOverlayVisible}
+      cameraPreviewProps={{
+        videoRef,
+        cameraReady,
+        isTerminated,
+      }}
+      dataPanelProps={{
+        elapsedTime,
+        successCount,
+        handCount,
+        screenDistance,
+      }}
+      instructionProps={{
+        mission,
+        sequenceOrder: refs.sequenceOrderRef.current,
+        sameColorTargetType: refs.sameColorTargetTypeRef.current,
+        missionRemaining,
+      }}
+      progressProps={{
+        missionType: mission.type,
+        sequenceIndex,
+        missionProgress,
+      }}
+    >
+      <HandPlayArea canvasRef={canvasRef} />
+    </SessionPage>
   );
 };
 
