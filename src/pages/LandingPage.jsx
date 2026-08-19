@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import RoutineCard from "../components/landingpage/RoutineCard.jsx";
 import RoutineModal from "../components/landingpage/RoutineModal.jsx";
 import { routineData } from "../data/routineData.jsx";
@@ -7,16 +8,79 @@ import WhyBrainfit from "../components/landingpage/WhyBrainfit.jsx";
 import YourHistory from "../components/landingpage/YourHistory.jsx";
 import DigitalState from "../components/landingpage/DigitalState.jsx";
 import SetupModal from "../components/SetupModal";
-
+import TimeChangeModal from "../components/landingpage/TimeChangeModal.jsx";
 
 import * as S from "./LandingPage.styled";
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [showSetupModal, setShowSetupModal] = useState(true);
+  const location = useLocation();
+
+
+  const [showSetupModal, setShowSetupModal] = useState(false);
   const [setupModalMode, setSetupModalMode] = useState("initial");
+
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [resetTime, setResetTime] = useState("15:00");
+  const [repeatAlarm, setRepeatAlarm] = useState(true);
+
   const [activeTab, setActiveTab] = useState("routine");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
+
+  const routineRef = useRef(null);
+  const digitalRef = useRef(null);
+
+  // 브라우저 탭에서 처음 접속했을 때만 SetupModal 띄우기
+  // 브라우저 탭에서 처음 접속했을 때만 SetupModal 띄우기
+  useEffect(() => {
+    const hasSeenSetupModal = sessionStorage.getItem(
+      "hasSeenSetupModal"
+    );
+
+    if (!hasSeenSetupModal) {
+      setSetupModalMode("initial");
+      setShowSetupModal(true);
+
+      sessionStorage.setItem(
+        "hasSeenSetupModal",
+        "true"
+      );
+    }
+  }, []);
+
+
+  // Header에서 들어온 scrollTo 처리
+  useEffect(() => {
+    const target = location.state?.scrollTo;
+
+    if (!target) return;
+
+    if (target === "routine") {
+      setActiveTab("routine");
+
+      setTimeout(() => {
+        routineRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+
+    if (target === "digital") {
+      setTimeout(() => {
+        digitalRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+
+    // scrollTo state 제거
+    navigate(location.pathname, {
+      replace: true,
+      state: null,
+    });
+  }, [location.state, location.pathname, navigate]);
 
   // 테스트용: 아직 모든 루틴 미완료라고 가정
   const completedRoutines = [false, false, false];
@@ -24,7 +88,7 @@ function LandingPage() {
   const handleRoutineStart = (index) => {
     // 첫 번째 루틴은 바로 시작 가능
     if (index === 0) {
-      console.log("첫 번째 루틴 시작");
+      navigate("/handroutine");
       return;
     }
 
@@ -37,29 +101,12 @@ function LandingPage() {
     console.log(`${index + 1}번째 루틴 시작`);
   };
 
-  const routineRef = useRef(null);
-  const insightRef = useRef(null);
 
-  const scrollToRoutine = () => {
-    routineRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
-  const scrollToInsight = () => {
-    insightRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
 
   return (
     <S.LandingPage>
-
       {/* HERO */}
       <S.HeroSection>
-
         <S.HeroContent>
           <S.HeroText>
             <S.Title>
@@ -75,7 +122,9 @@ function LandingPage() {
             </S.Description>
 
             <S.ButtonGroup>
-              <S.StartButton onClick={() => navigate("/handroutine")}>
+              <S.StartButton
+                onClick={() => navigate("/handroutine")}
+              >
                 회복 루틴 시작하기
               </S.StartButton>
 
@@ -102,7 +151,7 @@ function LandingPage() {
             </S.ReportTop>
 
             <S.ReportTime>
-              15:00
+              {resetTime}
             </S.ReportTime>
 
             <S.ReportDescription>
@@ -127,7 +176,9 @@ function LandingPage() {
               </S.Countdown>
             </S.ReportBottom>
 
-            <S.ChangeTimeButton>
+            <S.ChangeTimeButton
+              onClick={() => setShowTimeModal(true)}
+            >
               시간 변경하기
             </S.ChangeTimeButton>
           </S.ReportBox>
@@ -136,7 +187,6 @@ function LandingPage() {
 
       {/* MAIN */}
       <S.MainContent>
-
         {/* TABS */}
         <S.TabMenu>
           <S.TabButton
@@ -161,9 +211,9 @@ function LandingPage() {
           </S.TabButton>
         </S.TabMenu>
 
-        {/* 탭에 따라 이 부분만 변경 */}
+        {/* TODAY'S ROUTINE */}
         {activeTab === "routine" && (
-          <S.RoutineSection>
+          <S.RoutineSection ref={routineRef}>
             <S.SectionHeader>
               <S.SectionLabel>
                 Today's Routine
@@ -179,41 +229,63 @@ function LandingPage() {
                 <RoutineCard
                   key={routine.id}
                   {...routine}
-                  onStart={() => handleRoutineStart(index)}
+                  onStart={() =>
+                    handleRoutineStart(index)
+                  }
                 />
               ))}
             </S.RoutineCards>
           </S.RoutineSection>
         )}
 
+        {/* WHY BRAINFIT */}
         {activeTab === "progress" && (
           <WhyBrainfit />
         )}
 
-
+        {/* YOUR HISTORY */}
         {activeTab === "digital" && (
-          < YourHistory />
+          <YourHistory />
         )}
 
-        <DigitalState />
-
+        <div ref={digitalRef}>
+          <DigitalState />
+        </div>
       </S.MainContent>
 
       {/* ROUTINE MODAL */}
-      {
-        showRoutineModal && (
-          <RoutineModal
-            onClose={() => setShowRoutineModal(false)}
-          />
-        )
-      }
+      {showRoutineModal && (
+        <RoutineModal
+          onClose={() =>
+            setShowRoutineModal(false)
+          }
+        />
+      )}
+
+      {/* SETUP MODAL */}
       {showSetupModal && (
         <SetupModal
           mode={setupModalMode}
-          onClose={() => setShowSetupModal(false)}
+          onClose={() =>
+            setShowSetupModal(false)
+          }
         />
       )}
-    </S.LandingPage >
+
+      {showTimeModal && (
+  <TimeChangeModal
+    currentTime={resetTime}
+    onClose={() => setShowTimeModal(false)}
+    onSave={(time, repeat) => {
+      setResetTime(time);
+      setRepeatAlarm(repeat);
+
+      console.log("변경된 리셋 시간:", time);
+      console.log("반복 알림:", repeat);
+    }}
+  />
+)}
+    </S.LandingPage>
   );
 }
 
