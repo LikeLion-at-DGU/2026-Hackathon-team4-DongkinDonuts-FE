@@ -73,7 +73,7 @@ export const Title = styled.h1`
 `;
 
 export const Description = styled.p`
-    margin: 40px 0 0;
+    margin: 10px 0 0;
 
     font-size: 24px;
     line-height: 32px;
@@ -117,35 +117,6 @@ export const StartButton = styled.button`
 
     &:hover {
     background: #eeeeee;
-    }
-`;
-
-export const ResetButton = styled.button`
-    display: flex;
-    width: 216px;
-    height: 53px;
-    padding: 14.744px 16.587px 14.744px 22.117px;
-
-    justify-content: center;
-    align-items: center;
-
-    border: 1px solid #ffffff;
-    border-radius: 999px;
-
-    background: transparent;
-    color: #ffffff;
-
-    font-family: Poppins;
-    font-size: 20px;
-    font-weight: 600;
-    line-height: normal;
-
-    cursor: pointer;
-
-    transition: 0.2s ease;
-
-    &:hover {
-    background: rgba(255, 255, 255, 0.1);
     }
 `;
 
@@ -195,7 +166,7 @@ export const AiBadge = styled.span`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 73px;
+    width: 108px;
     height: 30px;
     padding: 7.371px 13.514px 7.371px 14.743px;
     justify-content: center;
@@ -207,7 +178,7 @@ export const AiBadge = styled.span`
     color: #ffffff;
     font-family: Poppins;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
 `;
 
 export const ReportTime = styled.div`
@@ -220,7 +191,7 @@ export const ReportTime = styled.div`
 
     color: #ffffff;
     font-family: Poppins;
-    font-size: 61px;
+    font-size: 45px;
     font-weight: 500;
     line-height: normal;
     letter-spacing: 3px;
@@ -232,7 +203,7 @@ export const ReportDescription = styled.p`
     color: #CCC;
 
     font-family: Poppins;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
     line-height: normal;
 `;
@@ -270,9 +241,9 @@ export const ReportBottomLabel = styled.span`
 
 export const ReportBottomDescription = styled.span`
     color: #CCC;
-
+    margin-top: 4px;
     font-family: Poppins;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
 `;
 
@@ -280,7 +251,7 @@ export const Countdown = styled.span`
     color: #e04141;
 
     font-family: Poppins;
-    font-size: 29px;
+    font-size: 32px;
     font-weight: 600;
     letter-spacing: 1.474px;
 `;

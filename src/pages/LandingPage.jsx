@@ -137,13 +137,13 @@ function LandingPage() {
         <S.HeroContent>
           <S.HeroText>
             <S.Title>
-              디지털 피로를 위한
+              나를 위한
               <br />
-              짧은 회복 루틴, Brainfit
+              맞춤 회복 루틴, Brainfit
             </S.Title>
 
             <S.Description>
-              AI가 필요한 순간을 찾아
+              지친 순간을 알아채고
               <br />
               짧은 움직임으로 나를 다시 깨워요
             </S.Description>
@@ -154,15 +154,6 @@ function LandingPage() {
               >
                 회복 루틴 시작하기
               </S.StartButton>
-
-              <S.ResetButton
-                onClick={() => {
-                  setSetupModalMode("reset");
-                  setShowSetupModal(true);
-                }}
-              >
-                내 계획 다시 설정
-              </S.ResetButton>
             </S.ButtonGroup>
           </S.HeroText>
 
@@ -173,7 +164,7 @@ function LandingPage() {
               </S.ReportLabel>
 
               <S.AiBadge>
-                AI 추천
+                Brainfit 추천
               </S.AiBadge>
             </S.ReportTop>
 
