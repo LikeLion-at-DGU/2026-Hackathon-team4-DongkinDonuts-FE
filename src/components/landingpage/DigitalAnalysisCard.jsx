@@ -96,31 +96,21 @@ function DigitalAnalysisCard({ isResult }) {
                             <strong>
                                 {analysis?.weekly_pc_usage_hours ?? 0}
                             </strong>
-
-                            <span>
-                                주간 사용(h)
-                            </span>
+                            <span>주간 사용(h)</span>
                         </S.StatBox>
 
                         <S.StatBox>
                             <strong>
-                                {analysis?.weekly_pc_usage_day_count ?? 0}
-                                /7
+                                {analysis?.weekly_pc_usage_day_count ?? 0}/7
                             </strong>
-
-                            <span>
-                                활성 요일
-                            </span>
+                            <span>활성 요일</span>
                         </S.StatBox>
 
                         <S.StatBox>
                             <strong>
-                                {analysis?.weekly_activity_rate ?? 0}%
+                                {analysis?.weekly_activity_rate?.percent ?? 0}%
                             </strong>
-
-                            <span>
-                                주간 활동률
-                            </span>
+                            <span>주간 활동률</span>
                         </S.StatBox>
                     </S.StatRow>
 
@@ -129,7 +119,7 @@ function DigitalAnalysisCard({ isResult }) {
                             <strong>
                                 평소{" "}
                                 {analysis?.most_used_patterns
-                                    ?.time_pattern ?? "-"}
+                                    ?.time_pattern?.label ?? "-"}
                                 에
                             </strong>{" "}
                             PC를
@@ -141,7 +131,7 @@ function DigitalAnalysisCard({ isResult }) {
                             특히{" "}
                             <strong>
                                 {analysis?.most_used_patterns
-                                    ?.time_of_day_pattern ?? "-"}
+                                    ?.time_of_day_pattern?.label ?? "-"}
                             </strong>{" "}
                             시간대에 집중적인 사용이 예상돼요.
                         </p>

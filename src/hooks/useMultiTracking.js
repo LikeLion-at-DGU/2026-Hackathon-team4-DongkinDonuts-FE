@@ -173,17 +173,14 @@ export const useMultiTracking = (trackingType = "HAND") => {
       const leftShoulder = pose[11];
       const rightShoulder = pose[12];
 
-      // 목 기울기: 눈-라인과 귀-라인 두 기준을 평균해 어깨-라인과 비교 (귀 한쪽이 머리카락 등에
-      // 가려 흔들려도 눈 기준이 보완해줘서 더 안정적으로 인식됨). 절대 임계값 대신 페이지에서
-      // 세션 시작 시점 기준값과 비교해 판정 (개인차/카메라 각도 보정)
+      // 목 기울기: 눈-라인과 귀-라인 두 기준을 평균해 어깨-라인과 비교
       const eyeAngle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
       const earAngle = Math.atan2(rightEar.y - leftEar.y, rightEar.x - leftEar.x);
       const shoulderAngle = Math.atan2(rightShoulder.y - leftShoulder.y, rightShoulder.x - leftShoulder.x);
       const headAngle = (eyeAngle + earAngle) / 2;
       const neckTiltDeg = (headAngle - shoulderAngle) * (180 / Math.PI);
 
-      // 어깨 으쓱: 코-어깨중점 거리와 양쪽 귀-어깨 거리를 함께 평균해 어깨너비로 정규화.
-      // 점 하나에만 의존하지 않아 한쪽 귀 인식이 흔들려도 값이 급격히 튀지 않음
+      // 어깨 으쓱: 코-어깨중점 거리와 양쪽 귀-어깨 거리를 함께 평균해 어깨너비로 정규화
       const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
       const noseToShoulder = getDistance(nose, shoulderMid);
       const earToShoulder = (getDistance(leftEar, leftShoulder) + getDistance(rightEar, rightShoulder)) / 2;

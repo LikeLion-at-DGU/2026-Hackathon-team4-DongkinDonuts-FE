@@ -11,6 +11,7 @@ import * as S from "./TimeChangeModal.styled";
 
 function TimeChangeModal({
     currentTime = "15:00",
+    currentRepeat = true,
     onClose,
     onSave,
 }) {
@@ -28,7 +29,7 @@ function TimeChangeModal({
         handleMinuteChange,
         toggleRepeat,
         handleSave,
-    } = useTimeChangeModal(currentTime, onSave, onClose);
+    } = useTimeChangeModal(currentTime, currentRepeat, onSave, onClose);
 
     return (
         <S.Overlay onClick={onClose}>

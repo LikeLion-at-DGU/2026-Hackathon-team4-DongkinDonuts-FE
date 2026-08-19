@@ -1,0 +1,153 @@
+name: Deploy Frontend to Gabia
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gabia-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.dgu14thlikelion.shop/api/v1' }}
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Gabia
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: gabia-production
+      url: https://www.dgu14thlikelion.shop
+
+    env:
+      GABIA_HOST: ${{ secrets.GABIA_HOST }}
+      GABIA_USER: ${{ secrets.GABIA_USER }}
+      GABIA_SSH_PORT: ${{ secrets.GABIA_SSH_PORT }}
+      GABIA_SSH_PRIVATE_KEY: ${{ secrets.GABIA_SSH_PRIVATE_KEY }}
+      GABIA_DEPLOY_PATH: ${{ secrets.GABIA_DEPLOY_PATH }}
+      GABIA_POST_DEPLOY_COMMAND: ${{ vars.GABIA_POST_DEPLOY_COMMAND }}
+
+    steps:
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - name: Validate deployment settings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for name in GABIA_HOST GABIA_USER GABIA_SSH_PRIVATE_KEY GABIA_DEPLOY_PATH; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required secret: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "${GABIA_SSH_PRIVATE_KEY}" \
+            | tr -d '\r' \
+            > ~/.ssh/gabia_deploy_key
+
+          chmod 600 ~/.ssh/gabia_deploy_key
+
+          echo "Validating SSH private key..."
+
+          if ! ssh-keygen -y -f ~/.ssh/gabia_deploy_key > /dev/null; then
+            echo "::error::GABIA_SSH_PRIVATE_KEY is not a valid SSH private key."
+            exit 1
+          fi
+
+          ssh-keyscan \
+            -p "${GABIA_SSH_PORT:-22}" \
+            "${GABIA_HOST}" \
+            >> ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload and release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PORT="${GABIA_SSH_PORT:-22}"
+          REMOTE_ARCHIVE="/tmp/frontend-dist-${GITHUB_SHA}.tar.gz"
+
+          tar -czf frontend-dist.tar.gz -C dist .
+
+          scp \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -i ~/.ssh/gabia_deploy_key \
+            -P "${PORT}" \
+            frontend-dist.tar.gz \
+            "${GABIA_USER}@${GABIA_HOST}:${REMOTE_ARCHIVE}"
+
+          ssh \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -i ~/.ssh/gabia_deploy_key \
+            -p "${PORT}" \
+            "${GABIA_USER}@${GABIA_HOST}" \
+            "mkdir -p '${GABIA_DEPLOY_PATH}' && \
+            find '${GABIA_DEPLOY_PATH}' -mindepth 1 -maxdepth 1 -exec rm -rf {} + && \
+            tar -xzf '${REMOTE_ARCHIVE}' -C '${GABIA_DEPLOY_PATH}' && \
+            rm -f '${REMOTE_ARCHIVE}'"
+
+      - name: Run post deploy command
+        if: ${{ env.GABIA_POST_DEPLOY_COMMAND != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh -i ~/.ssh/gabia_deploy_key -p "${GABIA_SSH_PORT:-22}" "${GABIA_USER}@${GABIA_HOST}" "${GABIA_POST_DEPLOY_COMMAND}"
