@@ -1,13 +1,20 @@
-import { useState } from "react";
-
 import DigitalUsage from "./DigitalUsage";
 import LockIcon from "../../assets/icons/LockIcon.svg";
+import { useDigitalState } from "../../hooks/useDigitalState";
+
 import * as S from "./DigitalState.styled";
 
 function DigitalState() {
-    const [digitalStep, setDigitalStep] = useState("locked");
+    const {
+        digitalStep,
+        selected,
+        setSelected,
+        openInput,
+        showResult,
+        editInput,
+    } = useDigitalState();
 
-    const [selected, setSelected] = useState({});
+    const isLocked = digitalStep === "locked";
 
     return (
         <S.DigitalSection>
@@ -23,7 +30,7 @@ function DigitalState() {
                 </S.DigitalDescription>
             </S.DigitalHeader>
 
-            {digitalStep === "locked" && (
+            {isLocked ? (
                 <S.DigitalResult>
                     <S.BlurredDigitalText>
                         오늘의 움직임 분석 결과 집중도와 반응 속도는 안정적인 흐름을 보였어요.
@@ -34,7 +41,7 @@ function DigitalState() {
                     </S.BlurredDigitalText>
 
                     <S.LockIcon>
-                        <img src={LockIcon} alt="잠금" />
+                        <img src={LockIcon} alt="" />
                     </S.LockIcon>
 
                     <S.ResultTitle>
@@ -47,21 +54,17 @@ function DigitalState() {
                         맞춤 타이머를 세팅할 수 있어요
                     </S.ResultDescription>
 
-                    <S.ResultButton
-                        onClick={() => setDigitalStep("input")}
-                    >
+                    <S.ResultButton onClick={openInput}>
                         입력하기
                     </S.ResultButton>
                 </S.DigitalResult>
-            )}
-
-            {digitalStep !== "locked" && (
+            ) : (
                 <DigitalUsage
                     mode={digitalStep}
                     selected={selected}
                     setSelected={setSelected}
-                    onCreate={() => setDigitalStep("result")}
-                    onEdit={() => setDigitalStep("input")}
+                    onCreate={showResult}
+                    onEdit={editInput}
                 />
             )}
         </S.DigitalSection>
