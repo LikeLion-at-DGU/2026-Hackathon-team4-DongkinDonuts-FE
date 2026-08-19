@@ -1,4 +1,4 @@
-import * as S from "./DigitalUsageForm.styled";
+import * as S from "./UsageTable.styled";
 
 const days = ["일", "월", "화", "수", "목", "금", "토"];
 

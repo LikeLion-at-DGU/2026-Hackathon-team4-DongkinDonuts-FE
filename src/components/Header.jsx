@@ -1,20 +1,37 @@
+import { useNavigate } from "react-router-dom";
 import * as S from "./Header.styled";
 
-function Header({
-    onRoutineClick,
-    onInsightClick,
-}) {
+function Header() {
+    const navigate = useNavigate();
+
+        const handleLogoClick = () => {
+        navigate("/");
+    };
+
+    const handleRoutineClick = () => {
+        navigate("/", {
+            state: { scrollTo: "routine" },
+        });
+    };
+
+    const handleDigitalClick = () => {
+        navigate("/", {
+            state: { scrollTo: "digital" },
+        });
+    };
+
     return (
         <S.Header>
             <S.LeftGroup>
-                <S.Logo>Brainfit</S.Logo>
-
+                <S.Logo onClick={() => navigate("/")}>
+                    Brainfit
+                </S.Logo>
                 <S.Nav>
-                    <S.NavButton>
+                    <S.NavButton onClick={handleRoutineClick}>
                         Routine
                     </S.NavButton>
 
-                    <S.NavButton>
+                    <S.NavButton onClick={handleDigitalClick}>
                         My Digital State
                     </S.NavButton>
                 </S.Nav>
