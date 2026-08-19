@@ -49,6 +49,27 @@ function showBrowserNotification(message, onClick) {
     }
 }
 
+// "이미 이 (슬롯, 목표시각)에 대해 알람을 울렸다"는 걸 새로고침해도 기억하기 위한
+// localStorage 키. useRef만으로는 F5 한 번에 기억이 날아가서, 슬롯이 여전히
+// 지나있으면 방금 울렸던 알람이 새로고침할 때마다 계속 다시 울리는 문제가 있었다.
+const ALERTED_KEY_STORAGE_KEY = "brainfit_alerted_slot_key";
+
+function readAlertedKey() {
+    try {
+        return window.localStorage.getItem(ALERTED_KEY_STORAGE_KEY);
+    } catch {
+        return null;
+    }
+}
+
+function writeAlertedKey(key) {
+    try {
+        window.localStorage.setItem(ALERTED_KEY_STORAGE_KEY, key);
+    } catch {
+        // localStorage 접근 불가(프라이빗 모드 등)면 그냥 이번 탭 안에서만 못 기억함
+    }
+}
+
 function formatClock(date) {
     const hh = String(date.getHours()).padStart(2, "0");
     const mm = String(date.getMinutes()).padStart(2, "0");
@@ -101,7 +122,10 @@ export function useNextReset(onAlertClick) {
     // 밑으로 내려간 뒤에도 1초마다 계속 렌더링되니, 한 번만 울리게 막는다.
     // recoverySlotId만으로 키를 잡으면, "시간 변경하기"로 같은 슬롯의 목표시각만
     // 바뀌었을 때(슬롯 id는 그대로) 재알림이 안 울리는 버그가 생겨서 시각도 같이 키에 넣는다.
-    const alertedKeyRef = useRef(null);
+    // localStorage에서 초기값을 읽어와서, F5로 새로고침해도(useRef만 쓰면 새로고침
+    // 때마다 리셋돼서 이미 지나간 슬롯의 알람이 계속 다시 울리는 문제가 있었음)
+    // 이미 울린 알람은 기억한다.
+    const alertedKeyRef = useRef(readAlertedKey());
 
     const refresh = useCallback(async () => {
         setLoading(true);
@@ -144,6 +168,7 @@ export function useNextReset(onAlertClick) {
         if (alertedKeyRef.current === key) return;
 
         alertedKeyRef.current = key;
+        writeAlertedKey(key);
         playBeep();
         showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?", onAlertClick);
     }, [now, nextResetAt, recoverySlotId, onAlertClick]);
