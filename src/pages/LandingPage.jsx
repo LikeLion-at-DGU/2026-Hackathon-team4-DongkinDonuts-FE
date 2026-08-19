@@ -199,7 +199,7 @@ function LandingPage() {
               </S.ReportBottomText>
 
               <S.Countdown>
-                {hasPlan ? countdownLabel : "--:--"}
+                {!generatingPlan && hasPlan ? countdownLabel : "--:--"}
               </S.Countdown>
             </S.ReportBottom>
 
