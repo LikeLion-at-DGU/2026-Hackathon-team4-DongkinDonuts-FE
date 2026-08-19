@@ -30,12 +30,20 @@ function playBeep() {
 
 // 권한이 이미 허용돼 있으면 브라우저 시스템 알림 팝업도 띄운다(탭이 백그라운드여도 뜸).
 // 권한이 없거나(default/denied) 브라우저가 Notification API를 지원 안 하면 조용히 넘어간다.
-function showBrowserNotification(message) {
+// onClick을 주면, 알림 팝업을 클릭했을 때 이 탭으로 포커스를 옮기고 그 콜백을 실행한다.
+function showBrowserNotification(message, onClick) {
     if (typeof Notification === "undefined") return;
     if (Notification.permission !== "granted") return;
 
     try {
-        new Notification("Brainfit", { body: message });
+        const notification = new Notification("Brainfit", { body: message });
+        if (onClick) {
+            notification.onclick = () => {
+                window.focus();
+                onClick();
+                notification.close();
+            };
+        }
     } catch (error) {
         console.error("브라우저 알림 표시 실패:", error);
     }
@@ -80,7 +88,9 @@ function formatCountdown(ms) {
 // 다음 회복 슬롯("다음 리셋 시간") 조회 + 1초마다 카운트다운 갱신.
 // GET /plans/recovery-slots/next-reset-time/ 가 404(오늘 예정된 슬롯 없음)면
 // hasPlan=false로 내려주고, 화면은 "아직 계획이 없어요" 같은 안내를 보여주면 된다.
-export function useNextReset() {
+// onAlertClick: 카운트다운 종료 알림(브라우저 알림 팝업)을 클릭했을 때 실행할 콜백.
+// 보통 회복 루틴 시작 페이지로 이동시키는 용도로 넘긴다(예: () => navigate("/handroutine")).
+export function useNextReset(onAlertClick) {
     const [nextResetAt, setNextResetAt] = useState(null);
     const [recoverySlotId, setRecoverySlotId] = useState(null);
     const [isOverdue, setIsOverdue] = useState(false);
@@ -135,8 +145,8 @@ export function useNextReset() {
 
         alertedKeyRef.current = key;
         playBeep();
-        showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?");
-    }, [now, nextResetAt, recoverySlotId]);
+        showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?", onAlertClick);
+    }, [now, nextResetAt, recoverySlotId, onAlertClick]);
 
     // 계획이 생기는 시점에 자연스럽게 알림 권한을 한 번 물어본다(이미 허용/거부된
     // 상태면 다시 안 물어봄 — Notification.permission이 "default"일 때만).

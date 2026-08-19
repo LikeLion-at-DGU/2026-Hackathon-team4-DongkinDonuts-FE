@@ -36,7 +36,7 @@ function LandingPage() {
     resetTimeLabel,
     countdownLabel,
     refresh: refreshNextReset,
-  } = useNextReset();
+  } = useNextReset(() => navigate("/handroutine"));
 
   // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
   // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
