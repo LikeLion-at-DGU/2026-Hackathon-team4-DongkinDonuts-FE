@@ -8,7 +8,7 @@ export const Overlay = styled.div`
     align-items: flex-start;
     justify-content: center;
 
-    padding-top: 150px;
+    padding-top: 190px;
     box-sizing: border-box;
 
      /* 피그마처럼 밝은 회색 반투명 */
@@ -36,6 +36,9 @@ export const Modal = styled.div`
 
     display: flex;
     flex-direction: column;
+
+    transform: scale(0.64);
+    transform-origin: top center;
 `;
 
 export const CloseButton = styled.button`
@@ -83,7 +86,7 @@ export const Description = styled.p`
     margin: 16px 0 17px;
 
     font-family: Poppins;
-    font-size: 16px;
+    font-size: 19px;
     font-weight: 400;
     line-height: 23px;
     letter-spacing: 0.32px;
@@ -93,7 +96,7 @@ export const Description = styled.p`
 
 export const SectionLabel = styled.p`
     margin: ${({ $marginTop }) =>
-        $marginTop ? "22px 0 0" : "0"};
+        $marginTop ? "25px 0 0" : "0"};
 
     justify-content: center;
     align-self: stretch;
