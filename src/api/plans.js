@@ -82,3 +82,22 @@ export function updateRecoverySlotNotification(
     }
   );
 }
+
+/**
+ * PushManager.subscribe()에 넘길 applicationServerKey(VAPID 공개키) 조회.
+ * 공개키라 노출돼도 문제없음 — 개인정보 아님.
+ */
+export function getVapidPublicKey() {
+  return apiClient.get("/plans/notification-subscriptions/vapid-public-key/");
+}
+
+/**
+ * 브라우저 Web Push 구독 등록. subscription.toJSON()의 endpoint/keys를 그대로 보낸다.
+ */
+export function createWebPushSubscription({ endpoint, keys, userAgent = "" }) {
+  return apiClient.post("/plans/notification-subscriptions/", {
+    endpoint,
+    keys,
+    user_agent: userAgent,
+  });
+}

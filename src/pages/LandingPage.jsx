@@ -10,6 +10,7 @@ import DigitalState from "../components/digitalState/DigitalState.jsx";
 import SetupModal from "../components/common/SetupModal.jsx";
 import TimeChangeModal from "../components/digitalState/TimeChangeModal.jsx";
 import { useNextReset } from "../hooks/useNextReset";
+import { usePushSubscription } from "../hooks/usePushSubscription";
 import {
   generateAIRecoveryPlan,
   updateRecoverySlotNotification,
@@ -37,6 +38,10 @@ function LandingPage() {
     countdownLabel,
     refresh: refreshNextReset,
   } = useNextReset(() => navigate("/handroutine"));
+
+  // 탭이 닫혀있거나 오래 백그라운드에 있어도 회복 타이머 알림이 오도록 진짜 Web
+  // Push를 구독한다(권한 이미 거부/미지원이면 조용히 스킵).
+  usePushSubscription();
 
   // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
   // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
