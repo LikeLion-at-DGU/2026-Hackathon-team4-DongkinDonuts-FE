@@ -19,7 +19,13 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  config.headers["X-Device-Code"] = getDeviceCode();
+  const deviceCode = getDeviceCode();
+
+  config.headers["X-Device-Code"] = deviceCode;
+
+  console.log("요청 URL:", config.baseURL + config.url);
+  console.log("X-Device-Code:", deviceCode);
+
   return config;
 });
 
