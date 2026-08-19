@@ -119,7 +119,7 @@ function DigitalAnalysisCard({ isResult }) {
                             <strong>
                                 평소{" "}
                                 {analysis?.most_used_patterns
-                                    ?.time_pattern ?? "-"}
+                                    ?.time_pattern?.label ?? "-"}
                                 에
                             </strong>{" "}
                             PC를
@@ -131,7 +131,7 @@ function DigitalAnalysisCard({ isResult }) {
                             특히{" "}
                             <strong>
                                 {analysis?.most_used_patterns
-                                    ?.time_of_day_pattern ?? "-"}
+                                    ?.time_of_day_pattern?.label ?? "-"}
                             </strong>{" "}
                             시간대에 집중적인 사용이 예상돼요.
                         </p>
