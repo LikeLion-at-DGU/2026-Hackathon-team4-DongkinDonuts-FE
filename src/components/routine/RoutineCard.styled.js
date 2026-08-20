@@ -4,7 +4,8 @@ import { FONT_POPPINS } from "../../styles/fonts";
 export const Card = styled.article`
   position: relative;
 
-  flex-grow: 1;
+  flex-grow: ${({ $featured }) =>
+    $featured ? 1.6 : 1};
   flex-basis: 0;
   min-width: 0;
 
@@ -18,24 +19,31 @@ export const Card = styled.article`
     flex-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.25s ease;
 
-    /* 배경 이미지만 흑백 처리 */
   &::before {
     content: "";
 
     position: absolute;
     inset: 0;
 
-    background-image: ${({ $image }) => `url(${$image})`};
-    background-size: 100%;
-    background-repeat: no-repeat;
-    background-position: center 42%;
+    background-image: ${({ $image }) =>
+      `url(${$image})`};
 
-    filter: grayscale(80%) brightness(0.9) contrast(0.85);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    filter: grayscale(80%)
+      brightness(0.9)
+      contrast(0.85);
+
     opacity: 0.9;
   }
 
   &:hover {
-    transform: ${({ $locked }) => ($locked ? "none" : "translateY(-2px)")};
+    transform: ${({ $locked }) =>
+      $locked
+        ? "none"
+        : "translateY(-2px)"};
   }
 
   &:hover button {
@@ -78,7 +86,7 @@ export const Top = styled.div`
   align-items: flex-start;
   justify-content: space-between;
 
-  gap: 12pxpx;
+  gap: 12px;
 `;
 
 export const TitleArea = styled.div`
