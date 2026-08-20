@@ -183,9 +183,7 @@ function TimeChangeModal({
                                                     time
                                                 }
                                                 type="button"
-                                                $selected={
-                                                    isSelected
-                                                }
+                                                $active={isSelected}
                                                 $recommended={
                                                     isRecommended
                                                 }
