@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { CONFIG } from "../config/handRoutineConfig";
 import { getRandomMission } from "../utils/handUtils";
 import { setupMission } from "../engine/missionManager";
+import { usePersistedElapsedTime } from "./usePersistedElapsedTime";
 
 export const useSessionState = () => {
   const ballsRef = useRef([]);
@@ -15,7 +16,7 @@ export const useSessionState = () => {
   const staticTargetsRef = useRef([]);
 
   const [isRunning, setIsRunning] = useState(true);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
   const [successCount, setSuccessCount] = useState(0);
   const [mission, setMission] = useState(() => getRandomMission());
   const [missionStatus, setMissionStatus] = useState("playing");

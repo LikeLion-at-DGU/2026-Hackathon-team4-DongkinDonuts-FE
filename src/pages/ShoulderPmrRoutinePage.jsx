@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
+import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -36,7 +37,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
   const [pmrStep, setPmrStep] = useState(0); // 0: 대기, 1: 으쓱 수축, 2: 이완 애니메이션
   const [repCount, setRepCount] = useState(0); // 완료한 반복 횟수 (0 ~ TOTAL_REPS)
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 

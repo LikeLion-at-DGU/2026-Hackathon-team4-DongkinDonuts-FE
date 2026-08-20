@@ -43,6 +43,8 @@ import {
   stageStatusLabel,
 } from "../config/recoveryRouting";
 
+import { clearPersistedElapsedSeconds } from "../utils/sessionDurationStorage";
+
 import * as S from "./LandingPage.styled";
 
 function LandingPage() {
@@ -230,6 +232,17 @@ function LandingPage() {
         );
       })
       .filter(Boolean);
+
+  /*
+   * 세션 지속 시간 초기화
+   *
+   * 세션 페이지들(눈 깜빡이기 -> 목 스트레칭 -> ...)은 페이지 이동 중에도 지속 시간을
+   * sessionStorage에 이어서 저장한다(usePersistedElapsedTime). 종료/완료로 홈에 돌아오면
+   * 다음 루틴은 0부터 다시 시작해야 하므로 여기서 초기화한다.
+   */
+  useEffect(() => {
+    clearPersistedElapsedSeconds();
+  }, []);
 
   /*
    * 최초 접속 Setup
