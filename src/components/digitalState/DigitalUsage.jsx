@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import UsageTable from "./UsageTable";
 import DigitalAnalysisCard from "./DigitalAnalysisCard";
 import DigitalScheduleCard from "./DigitalScheduleCard";
@@ -14,20 +12,11 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
-    onRecommendedTimesChange,
 }) {
     const {
         isResult,
         isSaving,
 
-        hasGeneratedResult,
-        resultVersion,
-
-        schedules,
-        alarmStates,
-        activeRecommendedTimes,
-
-        toggleAlarm,
         toggleCell,
         setCellValue,
         toggleRow,
@@ -40,15 +29,6 @@ function DigitalUsage({
         setSelected,
         onCreate,
     });
-
-    useEffect(() => {
-        onRecommendedTimesChange?.(
-            activeRecommendedTimes
-        );
-    }, [
-        activeRecommendedTimes,
-        onRecommendedTimesChange,
-    ]);
 
     return (
         <S.Container>
@@ -66,17 +46,8 @@ function DigitalUsage({
             {/* 둘 다 PC 사용 패턴 입력 여부와 무관하게 스스로 데이터를 조회해서
                 보여준다 — props 필요 없음 */}
             <S.CardRow>
-                <DigitalAnalysisCard
-                    showResult={hasGeneratedResult}
-                    resultVersion={resultVersion}
-                />
-
-                <DigitalScheduleCard
-                    showResult={hasGeneratedResult}
-                    schedules={schedules}
-                    alarmStates={alarmStates}
-                    onToggleAlarm={toggleAlarm}
-                />
+                <DigitalAnalysisCard />
+                <DigitalScheduleCard />
             </S.CardRow>
 
             <S.ActionRow $isResult={isResult}>
