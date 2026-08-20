@@ -51,6 +51,10 @@ export const StatusHeader = styled.th`
     text-align: center !important;
 `;
 
+export const NoteHeader = styled.th`
+    width: 256px;
+`;
+
 export const TableRow = styled.tr`
     height: 56px;
 
@@ -100,6 +104,19 @@ export const StatusCell = styled.td`
     padding: 17px;
 
     text-align: center;
+`;
+
+export const NoteCell = styled.td`
+    padding: 16px;
+
+    font-family: Inter;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 150%;
+
+    color: #444444;
+
+    text-align: left;
 `;
 
 export const RoutineBadge = styled.span`
