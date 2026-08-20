@@ -17,93 +17,40 @@ const DAY_INDEX_MAP = {
     SAT: 6,
 };
 
-const DIGITAL_STEP_KEY =
-    "brainfit-digital-step";
-
 const DIGITAL_SELECTED_KEY =
     "brainfit-digital-selected";
-
-const DIGITAL_USED_KEY =
-    "brainfit-digital-used";
 
 export const useDigitalState = () => {
     const [
         digitalStep,
         setDigitalStep,
-    ] = useState(() => {
-        /*
-         * 한 번이라도 Digital State를 사용했다면
-         * 새 탭에서도 result 화면부터 시작
-         */
-        const hasUsed =
-            localStorage.getItem(
-                DIGITAL_USED_KEY
-            );
-
-        if (hasUsed === "true") {
-            return "result";
-        }
-
-        return "locked";
-    });
+    ] = useState("locked");
 
     const [
         selected,
         setSelected,
-    ] = useState(() => {
-        const savedSelected =
-            localStorage.getItem(
-                DIGITAL_SELECTED_KEY
-            );
+    ] = useState({});
 
-        if (!savedSelected) {
-            return {};
-        }
+    const [
+        initialized,
+        setInitialized,
+    ] = useState(false);
 
-        try {
-            return JSON.parse(
-                savedSelected
-            );
-        } catch (error) {
-            console.error(
-                "디지털 선택값 복원 실패:",
-                error
-            );
-
-            return {};
-        }
-    });
-
-    /*
-     * 서버에 저장된 패턴 복원
-     */
     useEffect(() => {
-        const fetchDigitalPatterns =
+        const restoreDigitalState =
             async () => {
                 try {
                     const response =
                         await getDigitalPatterns();
 
-                    /*
-                     * apiClient 구조에 따라
-                     * response 자체가 배열일 수도 있고
-                     * response.data가 배열일 수도 있으므로 대응
-                     */
                     const patterns =
-                        Array.isArray(
-                            response
-                        )
+                        Array.isArray(response)
                             ? response
                             : Array.isArray(
                                   response?.data
                               )
                               ? response.data
                               : [];
-
-                    console.log(
-                        "저장된 PC 사용 패턴:",
-                        patterns
-                    );
 
                     const restoredSelected =
                         {};
@@ -135,112 +82,135 @@ export const useDigitalState = () => {
                         }
                     );
 
+                    setSelected(
+                        restoredSelected
+                    );
+
+                    localStorage.setItem(
+                        DIGITAL_SELECTED_KEY,
+                        JSON.stringify(
+                            restoredSelected
+                        )
+                    );
+
                     /*
-                     * 서버에 실제 저장된 패턴이 있다면
-                     * 이미 사용한 사용자
+                     * 핵심:
+                     * 현재 서버에 선택된 시간이
+                     * 하나라도 있을 때만 result
                      */
                     if (
                         Object.keys(
                             restoredSelected
                         ).length > 0
                     ) {
-                        setSelected(
-                            restoredSelected
-                        );
-
                         setDigitalStep(
                             "result"
                         );
-
-                        localStorage.setItem(
-                            DIGITAL_USED_KEY,
-                            "true"
-                        );
-
-                        localStorage.setItem(
-                            DIGITAL_SELECTED_KEY,
-                            JSON.stringify(
-                                restoredSelected
-                            )
-                        );
-
-                        localStorage.setItem(
-                            DIGITAL_STEP_KEY,
-                            "result"
+                    } else {
+                        setDigitalStep(
+                            "locked"
                         );
                     }
                 } catch (error) {
                     console.error(
-                        "PC 사용 패턴 조회 실패:",
+                        "디지털 패턴 복원 실패:",
                         error
                     );
 
                     /*
-                     * 서버 조회 실패해도
-                     * localStorage에 사용 기록이 있으면
-                     * 잠금으로 되돌리지 않음
+                     * 서버 조회 실패 시에는
+                     * localStorage를 보조 수단으로 사용
                      */
-                    const hasUsed =
-                        localStorage.getItem(
-                            DIGITAL_USED_KEY
+                    try {
+                        const saved =
+                            localStorage.getItem(
+                                DIGITAL_SELECTED_KEY
+                            );
+
+                        const savedSelected =
+                            saved
+                                ? JSON.parse(
+                                      saved
+                                  )
+                                : {};
+
+                        setSelected(
+                            savedSelected
                         );
 
-                    if (
-                        hasUsed ===
-                        "true"
-                    ) {
+                        if (
+                            Object.keys(
+                                savedSelected
+                            ).some(
+                                (key) =>
+                                    savedSelected[
+                                        key
+                                    ]
+                            )
+                        ) {
+                            setDigitalStep(
+                                "result"
+                            );
+                        } else {
+                            setDigitalStep(
+                                "locked"
+                            );
+                        }
+                    } catch {
+                        setSelected({});
                         setDigitalStep(
-                            "result"
+                            "locked"
                         );
                     }
+                } finally {
+                    setInitialized(true);
                 }
             };
 
-        fetchDigitalPatterns();
+        restoreDigitalState();
     }, []);
 
     /*
-     * 단계 저장
+     * 선택 상태 로컬에도 저장
      */
     useEffect(() => {
-        localStorage.setItem(
-            DIGITAL_STEP_KEY,
-            digitalStep
-        );
-    }, [digitalStep]);
+        if (!initialized) {
+            return;
+        }
 
-    /*
-     * 선택 시간 저장
-     */
-    useEffect(() => {
         localStorage.setItem(
             DIGITAL_SELECTED_KEY,
             JSON.stringify(
                 selected
             )
         );
-    }, [selected]);
+    }, [
+        selected,
+        initialized,
+    ]);
 
     const openInput = () => {
         setDigitalStep("input");
     };
 
     const showResult = () => {
-        setDigitalStep("result");
+        const hasSelectedTime =
+            Object.values(
+                selected
+            ).some(Boolean);
 
         /*
-         * 최초 생성 완료 순간부터
-         * 앞으로는 잠금 화면을 보여주지 않음
+         * 선택값이 없으면 결과 화면으로
+         * 보내지 않음
          */
-        localStorage.setItem(
-            DIGITAL_USED_KEY,
-            "true"
-        );
+        if (!hasSelectedTime) {
+            setDigitalStep(
+                "locked"
+            );
+            return;
+        }
 
-        localStorage.setItem(
-            DIGITAL_STEP_KEY,
-            "result"
-        );
+        setDigitalStep("result");
     };
 
     const editInput = () => {
@@ -251,6 +221,7 @@ export const useDigitalState = () => {
         digitalStep,
         selected,
         setSelected,
+        initialized,
 
         openInput,
         showResult,
