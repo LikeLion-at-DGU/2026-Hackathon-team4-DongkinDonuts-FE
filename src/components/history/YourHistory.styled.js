@@ -263,10 +263,19 @@ export const TableViewport = styled.div`
 
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 
-    /* 스크롤바 안 보이게 */
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: #cfcfcf transparent;
 
     &::-webkit-scrollbar {
-        display: none;
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #cfcfcf;
+        border-radius: 10px;
     }
 `;
