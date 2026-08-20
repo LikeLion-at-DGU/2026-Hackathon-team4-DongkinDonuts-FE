@@ -155,9 +155,9 @@ export function useRoutineHome({
             // 2, 3번째는 이전 세션 완료 필요
             openRoutineModal({
                 title:
-                    "이전 세션을 완료해주세요",
+                    "이전 휴식 세션을 먼저 완료해주세요",
                 description:
-                    "앞선 루틴을 완료한 후 다음 루틴을 진행할 수 있어요.",
+                    "이전 루틴을 완료한 후 이용해주세요",
             });
 
             return;
@@ -189,9 +189,9 @@ export function useRoutineHome({
         ) {
             openRoutineModal({
                 title:
-                    "이전 세션을 완료해주세요",
+                    "이전 휴식 세션을 먼저 완료해주세요",
                 description:
-                    "앞선 루틴을 완료한 후 다음 루틴을 진행할 수 있어요.",
+                    "이전 루틴을 완료한 후 이용해주세요",
             });
 
             return;

@@ -109,7 +109,7 @@ function DigitalScheduleCard() {
                     height="38"
                 />
 
-                오늘의 추천 휴식 일정
+                오늘의 권장 휴식 일정
             </S.CardTitle>
 
             {hasSchedules && (
@@ -213,7 +213,7 @@ function DigitalScheduleCard() {
                     </S.ScheduleList>
 
                     <S.Caption>
-                        ※ 추천 시간은 예상입니다. 내 상황에 맞게 조정해 사용하세요.
+                        ※ 사용 데이터를 바탕으로 설정된 권장 휴식 시간이에요. 잠시 쉬어가세요.
                     </S.Caption>
                 </S.ResultContent>
             )}
