@@ -29,6 +29,7 @@ const SessionPage = ({
   onStopSession,
   onCloseSessionEnd,
   nextSessionPath,
+  instantReset = false,
   showOverlay = true,
   cameraPreviewProps,
   dataPanelProps,
@@ -55,9 +56,14 @@ const SessionPage = ({
   // 이때도 초기화 렌더(진행바가 100%인 채로 잠깐 드러나는 프레임)가 먼저 화면에 그려지도록
   // 한 프레임 이상 기다린 뒤에 세션을 초기화한다. resetSession을 모달 close와 같은 틱에서
   // 바로 호출하면 두 상태 변화가 한 번의 렌더로 묶여 100% 프레임이 그려질 기회 자체가
-  // 사라지기 때문.
+  // 사라지기 때문. 다만 이 지연이 오히려 완료 이펙트(파동 등)가 한 번 더 재생되는 것처럼
+  // 보이는 세션(instantReset)에서는 지연 없이 즉시 초기화한다.
   useEffect(() => {
     if (!isMissionComplete || isTerminated || !hasShownCompletionModal) return;
+    if (instantReset) {
+      resetSession?.();
+      return;
+    }
     let innerId;
     const outerId = requestAnimationFrame(() => {
       innerId = requestAnimationFrame(() => {
@@ -68,7 +74,7 @@ const SessionPage = ({
       cancelAnimationFrame(outerId);
       if (innerId) cancelAnimationFrame(innerId);
     };
-  }, [hasShownCompletionModal, isMissionComplete, isTerminated, resetSession]);
+  }, [hasShownCompletionModal, isMissionComplete, isTerminated, resetSession, instantReset]);
 
   const handleCloseSessionEnd = useCallback(() => {
     if (isMissionComplete && !isTerminated) {

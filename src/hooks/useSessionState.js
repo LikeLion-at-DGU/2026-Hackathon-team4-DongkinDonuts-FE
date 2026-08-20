@@ -24,6 +24,8 @@ export const useSessionState = () => {
   const [missionRemaining, setMissionRemaining] = useState(CONFIG.timeAttackDuration);
   const [isMissionComplete, setIsMissionComplete] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
+  const [sameColorTargetType, setSameColorTargetType] = useState("green");
+  const [sequenceOrder, setSequenceOrder] = useState(["green", "blue", "pink"]);
 
   const refs = useMemo(() => ({
     ballsRef,
@@ -48,6 +50,8 @@ export const useSessionState = () => {
       setIsRunning,
       setIsMissionComplete,
       setIsTerminated,
+      setSameColorTargetType,
+      setSequenceOrder,
     });
   }, [mission, refs]);
 
@@ -64,6 +68,8 @@ export const useSessionState = () => {
       missionRemaining,
       isMissionComplete,
       isTerminated,
+      sameColorTargetType,
+      sequenceOrder,
     },
     setters: {
       setIsRunning,
@@ -76,6 +82,8 @@ export const useSessionState = () => {
       setMissionRemaining,
       setIsMissionComplete,
       setIsTerminated,
+      setSameColorTargetType,
+      setSequenceOrder,
     },
     initializeMission,
   };

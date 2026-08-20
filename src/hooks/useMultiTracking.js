@@ -5,7 +5,8 @@ import {
   PoseLandmarker,
   HandLandmarker,
 } from "@mediapipe/tasks-vision";
-import { getDistance, normalizeAngleDeg } from "../utils/handUtils";
+import { getDistance } from "../utils/handUtils";
+import { getUserMediaWithRetry } from "../utils/cameraUtils";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 
 // MediaPipe FaceLandmarker 468 랜드마크 토폴로지 기준 눈 6포인트(EAR용) 인덱스
@@ -127,29 +128,46 @@ const getHeadPose = (face) => {
   return { yaw, pitch };
 };
 
+const CAMERA_CONSTRAINTS = { video: { width: 1280, height: 720, facingMode: "user" } };
+
 export const useMultiTracking = (trackingType = "HAND", { paused = false } = {}) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const landmarkerRef = useRef(null);
+  // 진행 중인 getUserMedia() 요청을 담아둔다(중복 요청 방지용, 아래 startCamera 주석 참고).
+  const cameraRequestRef = useRef(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [trackingData, setTrackingData] = useState({});
 
   // 1. 카메라 시작
-  const startCamera = useCallback(async () => {
-    try {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, facingMode: "user" },
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setCameraReady(true);
+  const startCamera = useCallback(() => {
+    // 이미 진행 중인 요청이 있으면 새로 getUserMedia()를 또 부르지 않고 그 요청을 그대로
+    // 재사용한다. React StrictMode(개발 모드)의 mount→unmount→mount 이중 실행이나 세션 페이지를
+    // 빠르게 오갈 때 startCamera()가 응답이 오기 전에 다시 호출되면, 같은 카메라 장치를 향해
+    // getUserMedia()를 동시에 두 번 요청하게 되어 장치를 점유하지 못하고
+    // "AbortError: Timeout starting video source"로 실패하는 경우가 있었다 — 요청을 하나로
+    // 합쳐서 애초에 동시 요청 자체가 발생하지 않게 막는다.
+    if (cameraRequestRef.current) return cameraRequestRef.current;
+
+    const request = (async () => {
+      try {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        const stream = await getUserMediaWithRetry(CAMERA_CONSTRAINTS);
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setCameraReady(true);
+        }
+      } catch (err) {
+        console.error("카메라 접근 실패:", err);
+      } finally {
+        cameraRequestRef.current = null;
       }
-    } catch (err) {
-      console.error("카메라 접근 실패:", err);
-    }
+    })();
+    cameraRequestRef.current = request;
+    return request;
   }, []);
 
   // 완료 모달이 떠 있는 동안(paused) 실제 카메라 영상 재생도 멈춰서 뒤 화면이 완전히 정지된 것처럼
@@ -210,45 +228,26 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
       const pose = res.landmarks[0];
       const leftEye = pose[2];
       const rightEye = pose[5];
-      const leftEar = pose[7];
-      const rightEar = pose[8];
+      const mouthLeft = pose[9];
+      const mouthRight = pose[10];
       const leftShoulder = pose[11];
       const rightShoulder = pose[12];
 
-      // 목 기울기: 눈-라인/귀-라인처럼 서로 가까운 두 점의 각도(atan2)를 쓰면 분모(두 점 사이
-      // 거리)가 작아 랜드마크 노이즈가 각도로 크게 증폭되어 감지가 매우 불안정해진다.
-      // 대신 "머리 기준점 → 어깨 중점" 벡터(거리가 훨씬 길어 노이즈에 강함)의 기울기를 쓴다.
-      // 머리 기준점은 눈 중점과 귀 중점을 각각의 visibility로 가중 평균해 구하며, 큰 각도로
-      // 기울일수록 한쪽 귀/눈이 가려져 visibility가 낮아지므로 더 신뢰도 높은 쪽에 가중치를 싣는다.
+      // 정수리(머리 꼭대기) 근사: Pose 랜드마크에는 정수리가 없어, 눈 중점 → 입 중점 벡터로
+      // "얼굴이 향하는 아래쪽 방향"을 구한 뒤 그 반대(위쪽)로 일정 비율 더 뻗어 정수리 위치를
+      // 추정한다. 어깨 방향 벡터로 외삽하면 지금 구하려는 목 기울기 자체가 근사에 다시 섞여
+      // 들어가므로(순환 오차), 얼굴 랜드마크만으로 독립적으로 추정한다.
+      // 단, 눈-입 벡터는 두 점 사이 거리가 짧아 랜드마크 노이즈에 민감하다(외삽 비율을 키울수록
+      // 그 노이즈도 함께 증폭됨) — 30° 근처에서 값이 튀어 최대치로 튕겨나가는(overflow) 원인이
+      // 될 수 있어 외삽 비율을 크지 않게(1.1→0.6) 낮춰 안정성을 우선한다.
       const eyeMid = { x: (leftEye.x + rightEye.x) / 2, y: (leftEye.y + rightEye.y) / 2 };
-      const earMid = { x: (leftEar.x + rightEar.x) / 2, y: (leftEar.y + rightEar.y) / 2 };
-      const eyeVisibility = Math.min(leftEye.visibility ?? 1, rightEye.visibility ?? 1);
-      const earVisibility = Math.min(leftEar.visibility ?? 1, rightEar.visibility ?? 1);
-      const visibilityTotal = eyeVisibility + earVisibility;
-      const headPoint = visibilityTotal > 1e-3
-        ? {
-            x: (eyeMid.x * eyeVisibility + earMid.x * earVisibility) / visibilityTotal,
-            y: (eyeMid.y * eyeVisibility + earMid.y * earVisibility) / visibilityTotal,
-          }
-        : { x: (eyeMid.x + earMid.x) / 2, y: (eyeMid.y + earMid.y) / 2 };
+      const mouthMid = { x: (mouthLeft.x + mouthRight.x) / 2, y: (mouthLeft.y + mouthRight.y) / 2 };
+      const CROWN_EXTEND_RATIO = 0.6;
+      const headPoint = {
+        x: eyeMid.x + (eyeMid.x - mouthMid.x) * CROWN_EXTEND_RATIO,
+        y: eyeMid.y + (eyeMid.y - mouthMid.y) * CROWN_EXTEND_RATIO,
+      };
       const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
-
-      // atan2는 이론상 -180°~180°까지 반환하지만, 사람이 고개를 옆으로 기울이는 동작이나
-      // 어깨가 기울어지는 정도는 절대 ±90°를 넘지 않으므로 여기서 미리 클램프해 랜드마크
-      // 노이즈로 인한 극단값 유입을 막는다.
-      const clampAngleRad = (rad) => Math.min(Math.PI / 2, Math.max(-Math.PI / 2, rad));
-      // 이미지 좌표는 y가 아래로 증가하므로, 머리가 어깨보다 위(정상 자세)일 때 dy(=shoulderMid.y - headPoint.y)가
-      // 양수가 되도록 잡아 atan2(dx, dy)가 "수직 위"를 0°로 삼는 각도를 돌려주게 한다.
-      const headLeanAngle = clampAngleRad(
-        Math.atan2(headPoint.x - shoulderMid.x, shoulderMid.y - headPoint.y)
-      );
-      const shoulderAngle = clampAngleRad(Math.atan2(rightShoulder.y - leftShoulder.y, rightShoulder.x - leftShoulder.x));
-      // 몸 전체(또는 카메라)가 기울어진 만큼(shoulderAngle)을 빼서 어깨 대비 순수한 목 기울기만 남긴다.
-      // 원본 좌표계 기준 각도를 그대로 쓰면 화면(미러링된 화면 기준) 상 지표 이동 방향이
-      // 실제 고개를 기울이는 방향과 반대로 보이므로 부호를 반전해 방향을 일치시킨다.
-      // normalizeAngleDeg: 두 각도의 차가 ±180° 경계를 넘나들 때(예: 179° - (-179°) = 358°)
-      // 발생하는 불연속 점프를 -180~180 범위로 감싸 UI 순간이동(teleport)을 방지한다.
-      const neckTiltDeg = -normalizeAngleDeg((headLeanAngle - shoulderAngle) * (180 / Math.PI));
 
       // 어깨 으쓱: 코/귀 등 머리 랜드마크를 기준으로 삼으면 고개를 숙이거나 젖히기만 해도
       // 머리-어깨 거리가 줄어들어 "어깨를 으쓱했다"로 오인식된다. 머리 움직임과 완전히
@@ -257,7 +256,30 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
       // 보정해야 하는 페이지 쪽(ShoulderPmrRoutinePage)에서 담당한다.
       const shoulderWidth = getDistance(leftShoulder, rightShoulder) || 1e-6;
 
-      parsedMetrics = { neckTiltDeg, shoulderY: shoulderMid.y, shoulderWidth, raw: pose };
+      // 목 기울기 계산의 기준점(pivot)을 어깨 중점이 아니라 그보다 살짝 위인 "목 중앙"으로 잡는다.
+      // headPoint(정수리)-shoulderMid 직선을 따라 그대로 위로 옮기면 방향이 같아 각도 계산상
+      // 아무 의미가 없으므로(atan2는 벡터 스케일에 불변), 화면 수직 방향(image y축)으로 어깨너비에
+      // 비례한 만큼만 살짝 띄워 실제로 다른 피벗이 되도록 한다.
+      const NECK_CENTER_UP_RATIO = 0.28;
+      const neckPoint = { x: shoulderMid.x, y: shoulderMid.y - shoulderWidth * NECK_CENTER_UP_RATIO };
+
+      // 목 기울기 = "어깨선(왼쪽→오른쪽 벡터)에 목선(목 중앙→정수리 벡터)이 수직인 상태"를 0°로
+      // 삼는 부호 있는 각도. 두 벡터의 내적(dot)·외적(cross)에 atan2(dot, cross)를 취하면
+      // - 완전히 수직일 때 dot=0 → 0°
+      // - 오른쪽 어깨 쪽으로 목이 기울수록 dot>0 → 양수(+)
+      // - 왼쪽 어깨 쪽으로 목이 기울수록 dot<0 → 음수(-)
+      // 가 되고, 몸/카메라 전체가 함께 회전해도 어깨선·목선이 같이 돌아가 dot·cross 관계가
+      // 그대로 유지되므로(회전에 대해 불변) 예전처럼 어깨 기울기를 별도로 빼서 보정할 필요가
+      // 없다. atan2라 항상 -180°~180° 범위의 값을 끊김 없이(선형적으로) 돌려준다.
+      const shoulderVec = { x: rightShoulder.x - leftShoulder.x, y: rightShoulder.y - leftShoulder.y };
+      const neckVec = { x: headPoint.x - neckPoint.x, y: headPoint.y - neckPoint.y };
+      const dot = shoulderVec.x * neckVec.x + shoulderVec.y * neckVec.y;
+      const cross = shoulderVec.x * neckVec.y - shoulderVec.y * neckVec.x;
+      const neckTiltDeg = Math.atan2(dot, cross) * (180 / Math.PI);
+
+      // headPoint/neckPoint: 카메라 원본(미러링 전) 좌표 그대로 노출한다. 화면(미러링된
+      // 프리뷰) 위에 그릴 때는 그리는 쪽에서 x를 반전(1-x)해서 사용한다.
+      parsedMetrics = { neckTiltDeg, headPoint, neckPoint, shoulderY: shoulderMid.y, shoulderWidth, raw: pose };
     }
     else if (trackingType === "HAND" && res.landmarks?.length) {
       // 손마다 엄지(4)-검지(8) 핀치 거리를 계산 (양손 핀치 링 미션용)
@@ -280,10 +302,13 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
   }, [trackingType]);
 
   // 랜드마커는 모듈 캐시가 소유(다음 세션에서 재사용)하므로 여기서는 close()하지 않고
-  // 카메라 스트림(페이지별 자원)만 정리한다.
+  // 카메라 스트림(페이지별 자원)만 정리한다. srcObject도 비워서 비디오 엘리먼트가 스트림을
+  // 붙잡고 있지 않게 하면, 브라우저가 카메라 장치를 더 빨리 반납해 다음 startCamera() 호출이
+  // "장치 사용 중" 타임아웃 없이 곧바로 성공할 가능성이 높아진다.
   const cleanup = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
     landmarkerRef.current = null;
   }, []);
 

@@ -107,7 +107,6 @@ const BreathRoutinePage = () => {
       isQuitModalOpen={isQuitModalOpen}
       onCloseQuit={handleCloseQuit}
       onConfirmQuit={handleConfirmQuit}
-      navigateOnQuitConfirm={false}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={resetGame}

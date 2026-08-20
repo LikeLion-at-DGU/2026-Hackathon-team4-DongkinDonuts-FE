@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import { CONFIG } from "../config/handRoutineConfig";
 import { getDistance, lerp } from "../utils/handUtils";
+import { getUserMediaWithRetry } from "../utils/cameraUtils";
 
 const getPalmCenter = (landmarks) => {
   const points = [landmarks[0], landmarks[5], landmarks[9], landmarks[13], landmarks[17]];
@@ -32,6 +33,7 @@ const getStableHandPosition = (landmarks, previousHand) => {
 export const useHandTracking = () => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const cameraRequestRef = useRef(null);
   const handLandmarkerRef = useRef(null);
   const handsRef = useRef([]);
   const distanceRef = useRef({ value: 50, status: "적정" });
@@ -54,23 +56,40 @@ export const useHandTracking = () => {
     setCameraReady(false);
   }, []);
 
-  const startCamera = useCallback(async () => {
-    try {
-      setCameraReady(false);
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
-      if (!videoRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
-        return;
+  const startCamera = useCallback(() => {
+    // 이미 진행 중인 요청이 있으면 새로 getUserMedia()를 또 부르지 않고 그 요청을 그대로
+    // 재사용한다. 세션 페이지를 빠르게 오가거나 React StrictMode의 mount→unmount→mount
+    // 이중 실행으로 startCamera()가 응답 전에 다시 호출되면, 같은 카메라 장치를 향해
+    // getUserMedia()를 동시에 두 번 요청하게 되어 "AbortError: Timeout starting video
+    // source"로 실패하는 경우가 있었다(useMultiTracking.js의 startCamera와 동일한 문제/해법).
+    if (cameraRequestRef.current) return cameraRequestRef.current;
+
+    const request = (async () => {
+      try {
+        setCameraReady(false);
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        const stream = await getUserMediaWithRetry({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+          audio: false,
+        });
+        if (!videoRef.current) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        streamRef.current = stream;
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setCameraReady(true);
+      } catch (error) {
+        console.error("카메라를 시작하지 못했습니다.", error);
+        setCameraReady(false);
+      } finally {
+        cameraRequestRef.current = null;
       }
-      streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      setCameraReady(true);
-    } catch (error) {
-      console.error("카메라를 시작하지 못했습니다.", error);
-      setCameraReady(false);
-    }
+    })();
+    cameraRequestRef.current = request;
+    return request;
   }, []);
 
   const initializeMediaPipe = useCallback(async () => {

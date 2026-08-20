@@ -2,7 +2,7 @@ export const ROUTINE_SESSIONS = {
   "eye-blink": {
     id: "eye-blink",
     title: "지그시 눈 깜빡이기",
-    guideText: "눈을 2초간 감았다가 떠주세요. (3회 반복)",
+    guideText: "눈을 2초간 감았다가 떠주세요.",
     trackingType: "FACE_EYE",
     nextSessionPath: "/eye-tracking",
   },
@@ -29,14 +29,14 @@ export const ROUTINE_SESSIONS = {
   "focus-pinch": {
     id: "focus-pinch",
     title: "크기 맞추기",
-    guideText: "양손을 벌리고 좁혀 고리 크기에 맞춰보세요.",
+    guideText: "손을 벌리고 좁혀 고리 크기에 맞춰보세요.",
     trackingType: "HAND",
     nextSessionPath: "/wakeup-sunrise",
   },
   "wakeup-sunrise": {
     id: "wakeup-sunrise",
     title: "입 크게 벌리기",
-    guideText: "입을 크게 벌려 햇살을 끌어올렸다가, 다물어 온몸 가득 퍼뜨려보세요.",
+    guideText: "입을 크게 벌려 햇살을 끌어올렸다가, 다물어 퍼뜨려보세요.",
     trackingType: "FACE_EYE",
     nextSessionPath: "/breathroutine",
   },

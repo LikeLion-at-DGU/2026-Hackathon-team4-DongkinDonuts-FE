@@ -10,10 +10,19 @@ export const prepareCanvas = (canvas) => {
   const height = container.clientHeight;
   if (!width || !height) return null;
 
-  const dpr = window.devicePixelRatio || 1;
-  if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+  // App.jsx의 반응형 전체 배율(CSS zoom)이 적용되면 clientWidth/Height는 확대되기 전의
+  // 논리 크기를 그대로 돌려주는 반면, getBoundingClientRect()는 실제로 화면에 렌더링되는
+  // 픽셀 크기를 돌려준다. devicePixelRatio만으로 캔버스 백킹 해상도를 잡으면 이 zoom
+  // 배율만큼 해상도가 모자라 게이지가 흐릿하게 보이므로, 실제 렌더 크기와의 비율을
+  // devicePixelRatio에 곱해 보정한다.
+  const rect = container.getBoundingClientRect();
+  const zoomScale = rect.width / width;
+  const dpr = (window.devicePixelRatio || 1) * zoomScale;
+  const targetWidth = Math.round(width * dpr);
+  const targetHeight = Math.round(height * dpr);
+  if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
   }
@@ -96,25 +105,14 @@ export const drawEyeBlinkPulse = (ctx, w, h, { closeAmount = 0, popProgress = 0 
   ctx.restore();
 };
 
-// 모서리가 둥근 사각형 경로를 만든다 (여러 인디케이터에서 공용으로 사용)
-const roundedRectPath = (ctx, x, y, w, h, r) => {
-  const rr = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rr);
-  ctx.arcTo(x + w, y + h, x, y + h, rr);
-  ctx.arcTo(x, y + h, x, y, rr);
-  ctx.arcTo(x, y, x + w, y, rr);
-  ctx.closePath();
-};
-
 // ======================================================
-// 목 좌우 기울이기 — 대형 기울기 인디케이터. 화면 중앙에 가로 막대(Track)를 두고,
-// 현재 Head Roll 각도(currentDeg)에 따라 굵은 막대 인디케이터가 실제 고개를 기울이는
-// 방향과 동일한 방향으로 좌우 이동한다. 목표 각도 범위(targetMinDeg~targetMaxDeg)가
-// 막대 위에 밝게 표시되고, 인디케이터가 그 범위 안에 들어와 정렬되면(aligned) 민트색으로
-// 빛나며 하단의 유지(hold) 진행 바 + 남은 시간 숫자가 목표 유지 시간 동안 채워진다.
-// burstProgress(0~1)가 주어지면 단계 성공 순간 중앙에서 은은한 파동이 한 번 퍼지며 사라진다.
+// 목 좌우 기울이기 — 속도계 스타일의 소형 원호(Arc) 게이지. 캔버스 중앙에 ±maxDeg 범위만큼의
+// 원호 트랙(5°/10° 눈금 포함)을 두고, 중심(cx,cy)에서 뻗어나가는 니들(바늘)이 현재 Head Roll
+// 각도(currentDeg)를 가리킨다(오른쪽으로 기울이면 시계방향, 왼쪽으로 기울이면 반시계방향).
+// 목표 각도 범위(targetMinDeg~targetMaxDeg)는 원호 위 구간(파란색)으로 강조되고, 니들이 그
+// 구간에 들어와 정렬되면(aligned) 민트색으로 빛나면서 목표 유지 시간(holdProgress: 0~1) 동안
+// 이 강조 구간이 점점 양쪽으로 넓어져 유지가 끝나는 순간 게이지 전체(±maxDeg)를 가득 채운다.
+// burstProgress(0~1)가 주어지면 단계 성공 순간 중앙에서 파동이 한 번 퍼진다.
 // ======================================================
 export const drawTiltIndicator = (ctx, w, h, {
   currentDeg = 0,
@@ -123,119 +121,115 @@ export const drawTiltIndicator = (ctx, w, h, {
   maxDeg = 30,
   aligned = false,
   holdProgress = 0,
-  holdRemainingSec = 0,
-  isCalibrating = false,
   burstProgress = 0,
 }) => {
   const cx = w / 2;
-  const cy = h * 0.5;
-  const barWidth = Math.min(w * 0.78, 720);
-  const barHeight = Math.max(36, Math.min(w, h) * 0.075);
-  const markerWidth = barHeight * 0.85;
-  const markerHeight = barHeight * 2.3;
-  const usableHalfWidth = barWidth / 2 - markerWidth / 2;
-
-  const clampDeg = (d) => Math.min(maxDeg, Math.max(-maxDeg, d));
-  const degToX = (d) => cx + (clampDeg(d) / maxDeg) * usableHalfWidth;
+  const cy = h * 0.6;
+  const radius = Math.min(w, h) * 0.2;
+  const trackWidth = Math.max(8, Math.min(w, h) * 0.018);
 
   const mintColor = "rgba(160,255,210,0.95)";
   const neutralColor = "rgba(255,255,255,0.9)";
-  const activeColor = aligned ? mintColor : "rgba(120,200,255,0.75)";
+  const activeColor = aligned ? mintColor : "rgba(120,200,255,0.85)";
+
+  const clampDeg = (d) => Math.min(maxDeg, Math.max(-maxDeg, d));
+  // 0°가 원호 맨 위(12시 방향)를 가리키도록 -90°를 기준점으로 잡고 deg를 그대로 더한다.
+  // (오른쪽으로 기울이면(+deg) 시계방향, 왼쪽으로 기울이면(-deg) 반시계방향으로 회전)
+  const degToCanvasAngle = (d) => -Math.PI / 2 + clampDeg(d) * (Math.PI / 180);
 
   ctx.save();
 
-  // 배경 트랙
-  roundedRectPath(ctx, cx - barWidth / 2, cy - barHeight / 2, barWidth, barHeight, barHeight / 2);
-  ctx.fillStyle = "rgba(255,255,255,0.08)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.22)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // 정면(0°) 기준선
+  // 배경 트랙 — 풀서클이 아닌 ±maxDeg 범위만 그리는 소형 원호
+  const arcStart = degToCanvasAngle(-maxDeg);
+  const arcEnd = degToCanvasAngle(maxDeg);
   ctx.beginPath();
-  ctx.moveTo(cx, cy - barHeight / 2 - 12);
-  ctx.lineTo(cx, cy + barHeight / 2 + 12);
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = 2;
+  ctx.arc(cx, cy, radius, arcStart, arcEnd);
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = trackWidth;
+  ctx.lineCap = "round";
   ctx.stroke();
 
-  if (!isCalibrating) {
-    // 목표 각도 가이드 영역 (Target Zone: targetMinDeg ~ targetMaxDeg)
-    const zoneX0 = degToX(targetMinDeg);
-    const zoneX1 = degToX(targetMaxDeg);
-    ctx.save();
-    if (aligned) {
-      ctx.shadowColor = mintColor;
-      ctx.shadowBlur = 22;
-    }
-    roundedRectPath(
-      ctx,
-      Math.min(zoneX0, zoneX1),
-      cy - barHeight / 2,
-      Math.max(10, Math.abs(zoneX1 - zoneX0)),
-      barHeight,
-      barHeight / 2
-    );
-    ctx.fillStyle = activeColor;
-    ctx.globalAlpha = aligned ? 0.55 : 0.4;
-    ctx.fill();
-    ctx.restore();
-
-    // 현재 각도 인디케이터 막대
-    const markerX = degToX(currentDeg);
-    const markerColor = aligned ? mintColor : neutralColor;
-    ctx.save();
-    if (aligned) {
-      ctx.shadowColor = mintColor;
-      ctx.shadowBlur = 20;
-    }
-    roundedRectPath(ctx, markerX - markerWidth / 2, cy - markerHeight / 2, markerWidth, markerHeight, markerWidth / 2);
-    ctx.fillStyle = markerColor;
-    ctx.fill();
-    ctx.restore();
+  // 5°/10° 간격 눈금 (10° 단위는 길고 밝게, 5° 단위는 짧고 흐리게)
+  for (let d = -maxDeg; d <= maxDeg; d += 5) {
+    const a = degToCanvasAngle(d);
+    const isMajor = d % 10 === 0;
+    const inner = radius - trackWidth / 2 - (isMajor ? 11 : 6);
+    const outer = radius - trackWidth / 2 - 1;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+    ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+    ctx.strokeStyle = isMajor ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.18)";
+    ctx.lineWidth = isMajor ? 2 : 1;
+    ctx.stroke();
   }
 
-  // 현재 각도 숫자 (막대 위, 대형 표시)
+  // 목표 각도 가이드 구간 (Target Zone: targetMinDeg ~ targetMaxDeg)을 트랙 위 구간으로 강조.
+  // 정렬 유지 중(holdProgress: 0~1)에는 이 구간이 양쪽으로 점점 넓어져, 유지가 끝나는 순간
+  // 게이지 전체(-maxDeg~+maxDeg)를 가득 채우는 진행 표시를 겸한다.
+  const holdP = Math.min(1, Math.max(0, holdProgress));
+  const zoneMinDeg = Math.min(targetMinDeg, targetMaxDeg) + (-maxDeg - Math.min(targetMinDeg, targetMaxDeg)) * holdP;
+  const zoneMaxDeg = Math.max(targetMinDeg, targetMaxDeg) + (maxDeg - Math.max(targetMinDeg, targetMaxDeg)) * holdP;
+  const zoneStart = degToCanvasAngle(zoneMinDeg);
+  const zoneEnd = degToCanvasAngle(zoneMaxDeg);
+  ctx.save();
+  if (aligned) {
+    ctx.shadowColor = mintColor;
+    ctx.shadowBlur = 18;
+  }
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, zoneStart, zoneEnd);
+  ctx.strokeStyle = activeColor;
+  ctx.globalAlpha = aligned ? 0.9 : 0.65;
+  ctx.lineWidth = trackWidth;
+  ctx.lineCap = "round";
+  ctx.stroke();
+  ctx.restore();
+
+  // 현재 각도 니들 — 중심(허브)에서 뻗어나가 화살촉 모양으로 각도를 가리킨다
+  const needleAngle = degToCanvasAngle(currentDeg);
+  const shaftLen = radius - trackWidth / 2 - 12;
+  const tipLen = shaftLen + 14;
+  const perpAngle = needleAngle + Math.PI / 2;
+  const arrowHalfWidth = 6;
+  const shaftEndX = cx + Math.cos(needleAngle) * shaftLen;
+  const shaftEndY = cy + Math.sin(needleAngle) * shaftLen;
+  const tipX = cx + Math.cos(needleAngle) * tipLen;
+  const tipY = cy + Math.sin(needleAngle) * tipLen;
+  const markerColor = aligned ? mintColor : neutralColor;
+
+  ctx.save();
+  if (aligned) {
+    ctx.shadowColor = mintColor;
+    ctx.shadowBlur = 16;
+  }
+  // 니들 축
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(shaftEndX, shaftEndY);
+  ctx.strokeStyle = markerColor;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  // 화살촉
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(shaftEndX + Math.cos(perpAngle) * arrowHalfWidth, shaftEndY + Math.sin(perpAngle) * arrowHalfWidth);
+  ctx.lineTo(shaftEndX - Math.cos(perpAngle) * arrowHalfWidth, shaftEndY - Math.sin(perpAngle) * arrowHalfWidth);
+  ctx.closePath();
+  ctx.fillStyle = markerColor;
+  ctx.fill();
+  // 중심 허브
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.fillStyle = markerColor;
+  ctx.fill();
+  ctx.restore();
+
+  // 현재 각도 숫자 (허브 아래, 속도계 디지털 리드아웃처럼 표시)
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `700 ${Math.round(Math.min(w, h) * 0.1)}px sans-serif`;
+  ctx.font = `700 ${Math.round(Math.min(w, h) * 0.075)}px sans-serif`;
   ctx.fillStyle = aligned ? mintColor : "rgba(255,255,255,0.95)";
-  ctx.fillText(
-    isCalibrating ? "···" : `${currentDeg >= 0 ? "+" : ""}${Math.round(currentDeg)}°`,
-    cx,
-    cy - markerHeight / 2 - 48
-  );
-
-  // 목표 각도 범위 라벨 (막대 아래) — 정렬 중에는 남은 유지 시간 카운트다운으로 전환
-  ctx.font = "16px sans-serif";
-  ctx.fillStyle = aligned ? mintColor : "rgba(255,255,255,0.6)";
-  const zoneLabel = `${targetMinDeg >= 0 ? "+" : ""}${targetMinDeg}° ~ ${targetMaxDeg >= 0 ? "+" : ""}${targetMaxDeg}°`;
-  ctx.fillText(
-    isCalibrating
-      ? "정면을 향해 잠시 정렬해 주세요"
-      : aligned
-        ? `유지 중... ${Math.max(0, holdRemainingSec).toFixed(1)}s`
-        : `목표 범위 ${zoneLabel}`,
-    cx,
-    cy + markerHeight / 2 + 30
-  );
-
-  // 유지(hold) 진행 바 — 정렬 상태를 목표 시간만큼 유지해야 채워짐
-  if (!isCalibrating) {
-    const holdBarY = cy + markerHeight / 2 + 54;
-    const holdBarHeight = 6;
-    roundedRectPath(ctx, cx - barWidth / 2, holdBarY, barWidth, holdBarHeight, holdBarHeight / 2);
-    ctx.fillStyle = "rgba(255,255,255,0.15)";
-    ctx.fill();
-
-    const fillWidth = barWidth * Math.min(1, Math.max(0, holdProgress));
-    if (fillWidth > 0) {
-      roundedRectPath(ctx, cx - barWidth / 2, holdBarY, fillWidth, holdBarHeight, holdBarHeight / 2);
-      ctx.fillStyle = mintColor;
-      ctx.fill();
-    }
-  }
+  ctx.fillText(`${currentDeg >= 0 ? "+" : ""}${Math.round(currentDeg)}°`, cx, cy + 46);
 
   // 단계 성공 파동 — 중앙에서 한 번 은은하게 퍼지며 사라짐
   if (burstProgress > 0) {
@@ -244,9 +238,9 @@ export const drawTiltIndicator = (ctx, w, h, {
     [0, 0.15].forEach((delay) => {
       const rp = p - delay;
       if (rp <= 0 || rp > 1) return;
-      const radius = rp * Math.min(w, h) * 0.5;
+      const burstRadius = rp * Math.min(w, h) * 0.5;
       ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.arc(cx, cy, burstRadius, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(160,255,210,${(1 - rp) * 0.6})`;
       ctx.lineWidth = 3;
       ctx.stroke();
@@ -261,6 +255,46 @@ export const drawTiltIndicator = (ctx, w, h, {
     }
     ctx.restore();
   }
+
+  ctx.restore();
+};
+
+// ======================================================
+// 목/기준점 오버레이 — 실제 카메라 프리뷰 위에, 목 기울기 계산에 쓰이는 두 기준점
+// (정수리 근사 위치 headPoint, 목 중앙 피벗 neckPoint)을 그 프레임에 실제로 감지된 위치
+// 그대로 점으로 찍어 인식이 어디를 보고 있는지 눈으로 확인시켜준다. 이 값은 가공하지 않은
+// "진짜" 기준이며, 캔버스 쪽 게이지(drawTiltIndicator)가 이 실제 인식값을 잘 따라가는지는
+// 게이지 쪽 스무딩/보정 로직을 조정해서 맞춘다. 두 점은 useMultiTracking이 돌려주는 원본
+// (미러링 전) 정규화 좌표라, 실제 화면(미러링된 프리뷰) 기준 위치에 맞추기 위해 x를
+// 반전(1-x)해서 그린다.
+// ======================================================
+export const drawHeadShoulderPoints = (ctx, w, h, { headPoint, neckPoint }) => {
+  if (!headPoint || !neckPoint) return;
+  const toPx = (p) => ({ x: (1 - p.x) * w, y: p.y * h });
+  const head = toPx(headPoint);
+  const neck = toPx(neckPoint);
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.moveTo(head.x, head.y);
+  ctx.lineTo(neck.x, neck.y);
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const drawDot = (point, color) => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.fill();
+  };
+  drawDot(head, "rgba(160,255,210,0.95)");
+  drawDot(neck, "rgba(120,200,255,0.95)");
 
   ctx.restore();
 };

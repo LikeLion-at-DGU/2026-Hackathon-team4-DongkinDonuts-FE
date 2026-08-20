@@ -35,37 +35,36 @@ const footerMenus = [
 const Footer = () => {
     const location = useLocation();
 
-    const darkPages = [
-        "/handroutine",
-        "/breathroutine",
+    const lightPages = [
+        "/",
+        "/settings",
     ];
 
-    const isDark = darkPages.includes(
-        location.pathname
-    );
+    const isLight = lightPages.includes(location.pathname);
+    const isDark = !isLight;
 
     return (
         <S.FooterContainer $isDark={isDark}>
             <S.Footer>
                 <S.FooterContent>
                     <S.BrandArea>
-                        <S.Logo>
+                        <S.Logo $isDark={isDark}>
                             Brainfit
                         </S.Logo>
 
-                        <S.Copyright>
+                        <S.Copyright $isDark={isDark}>
                             dgu @ 2026. Brainfit
                         </S.Copyright>
                     </S.BrandArea>
 
                     {footerMenus.map((menu) => (
                         <S.MenuGroup key={menu.title}>
-                            <S.MenuTitle>
+                            <S.MenuTitle $isDark={isDark}>
                                 {menu.title}
                             </S.MenuTitle>
 
                             {menu.items.map((item) => (
-                                <S.MenuItem key={item}>
+                                <S.MenuItem $isDark={isDark} key={item}>
                                     {item}
                                 </S.MenuItem>
                             ))}
