@@ -37,9 +37,9 @@ export const DIFFICULTY_CONFIG = {
     // cycles: 좌우 왕복 반복 횟수(반복횟수, 총 단계 수 = cycles * 2)
     // neckTargetMinDeg/MaxDeg: 정렬로 인정하는 각도 구간(구간이 좁을수록 정확도 요구 높음)
     // neckAlignHoldMs: 정렬 상태를 유지해야 하는 시간(강도)
-    low: { cycles: 1, neckTargetMinDeg: 10, neckTargetMaxDeg: 25, neckAlignHoldMs: 700 },
-    medium: { cycles: 1, neckTargetMinDeg: 15, neckTargetMaxDeg: 25, neckAlignHoldMs: 1000 },
-    high: { cycles: 2, neckTargetMinDeg: 18, neckTargetMaxDeg: 25, neckAlignHoldMs: 1300 },
+    low: { cycles: 1, neckTargetMinDeg: 8, neckTargetMaxDeg: 30, neckAlignHoldMs: 700 },
+    medium: { cycles: 1, neckTargetMinDeg: 12, neckTargetMaxDeg: 30, neckAlignHoldMs: 1000 },
+    high: { cycles: 2, neckTargetMinDeg: 15, neckTargetMaxDeg: 30, neckAlignHoldMs: 1300 },
   },
   "shoulder-pmr": {
     // totalReps: 반복횟수, shoulderShrugThreshold: 으쓱으로 인정하는 최소 상승량(정확도)

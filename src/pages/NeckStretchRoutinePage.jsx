@@ -20,7 +20,8 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
   const canvasRef = useRef(null);
   const stageRef = useRef(1); // 1: 첫 번째 방향, 2: 반대쪽 방향
   const displayDegRef = useRef(0);
-  const alignStartRef = useRef(null);
+  const holdProgressRef = useRef(0);
+  const lastHoldUpdateRef = useRef(null);
   const burstRef = useRef(null);
   const finalPendingRef = useRef(false);
 
@@ -101,6 +102,8 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
       // 목표 각도 범위에 정렬된 채 neckAlignHoldMs(1초) 연속 유지하면 해당 단계 성공 처리.
       // 유지 도중 범위를 벗어나면 alignStartRef가 즉시 null로 초기화되어 타이머가 리셋된다.
+      // Progress is accumulated by elapsed frame time: it rises in range and
+      // falls linearly out of range, allowing a later re-entry to continue.
       let holdProgress = 0;
       let holdRemainingSec = LEVEL.neckAlignHoldMs / 1000;
       if (finalPendingRef.current) {
@@ -110,13 +113,21 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
         // 것처럼 보인다. 트리거 이후에는 게이지를 가득 찬 상태로 고정해 재생을 막는다.
         holdProgress = 1;
         holdRemainingSec = 0;
-      } else if (aligned) {
-        if (alignStartRef.current == null) alignStartRef.current = t;
-        const heldMs = t - alignStartRef.current;
-        holdProgress = Math.min(1, heldMs / LEVEL.neckAlignHoldMs);
-        holdRemainingSec = Math.max(0, (LEVEL.neckAlignHoldMs - heldMs) / 1000);
-        if (heldMs >= LEVEL.neckAlignHoldMs) {
-          alignStartRef.current = null;
+      } else {
+        const previousUpdate = lastHoldUpdateRef.current;
+        const elapsedSinceLastFrame = previousUpdate == null ? 0 : Math.max(0, t - previousUpdate);
+        lastHoldUpdateRef.current = t;
+
+        const progressDelta = elapsedSinceLastFrame / LEVEL.neckAlignHoldMs;
+        holdProgressRef.current = aligned
+          ? Math.min(1, holdProgressRef.current + progressDelta)
+          : Math.max(0, holdProgressRef.current - progressDelta);
+
+        holdProgress = holdProgressRef.current;
+        holdRemainingSec = Math.max(0, (1 - holdProgress) * LEVEL.neckAlignHoldMs / 1000);
+
+        if (aligned && holdProgress >= 1) {
+          holdProgressRef.current = 0;
           const currentStage = stageRef.current;
           const isFinal = currentStage >= TOTAL_STAGES;
           burstRef.current = { startedAt: t, isFinal };
@@ -128,8 +139,6 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
             finalPendingRef.current = true;
           }
         }
-      } else {
-        alignStartRef.current = null;
       }
 
       let burstProgress = 0;
@@ -174,7 +183,8 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     setStage(1);
     setSuccessCount(0);
     displayDegRef.current = 0;
-    alignStartRef.current = null;
+    holdProgressRef.current = 0;
+    lastHoldUpdateRef.current = null;
     burstRef.current = null;
     finalPendingRef.current = false;
     setIsTerminated(false);
