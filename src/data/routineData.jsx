@@ -26,7 +26,6 @@ export const routineData = [
                 주의를 전환해보세요.
             </>
         ),
-        status: "미완료",
         image: "/images/brain-reset.png",
         featured: true,
     },

@@ -6,31 +6,58 @@ function RoutineCard({
     description,
     status,
     image,
-    isLocked = false,
+    isLocked: lockedProp = false,
     isCompleted = false,
     onStart,
 }) {
+    const locked = lockedProp || status === "LOCKED" || status === "잠김";
+    const completed = isCompleted || status === "COMPLETED" || status === "완료";
+
+    const getStatusLabel = () => {
+        switch (status) {
+            case "COMPLETED":
+                return "완료";
+
+            case "AVAILABLE":
+                return "진행 가능";
+
+            case "LOCKED":
+                return "잠김";
+
+            default:
+                return status ?? "미완료";
+        }
+    };
+
     return (
-        <S.Card $image={image} $locked={isLocked}>
+        <S.Card $image={image} $locked={locked}>
             <S.Overlay />
 
             <S.Content>
                 <S.Top>
                     <S.TitleArea>
-                        <S.Title>{title}</S.Title>
+                        <S.Title>
+                            {title}
+                        </S.Title>
                     </S.TitleArea>
 
                     <S.ArrowButton
                         type="button"
-                        $locked={isLocked}
-                        $completed={isCompleted}
-                        aria-disabled={isLocked || isCompleted}
+                        $locked={locked}
+                        $completed={completed}
+                        aria-disabled={locked}
                         onClick={(e) => {
                             e.stopPropagation();
-                            onStart();
+
+                            if (locked) return;
+
+                            onStart?.();
                         }}
                     >
-                        <img src={ArrowIcon} alt="" />
+                        <img
+                            src={ArrowIcon}
+                            alt=""
+                        />
                     </S.ArrowButton>
                 </S.Top>
 
@@ -40,8 +67,8 @@ function RoutineCard({
 
                 <S.Divider />
 
-                <S.Status $completed={isCompleted}>
-                    {status}
+                <S.Status $completed={completed} $status={status}>
+                    {getStatusLabel()}
                 </S.Status>
             </S.Content>
         </S.Card>
