@@ -108,7 +108,7 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
     holdMsRef.current = 0;
     lastFrameTimeRef.current = null;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: pinchCount, difficulty, screenDistance, sessionImage: handImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

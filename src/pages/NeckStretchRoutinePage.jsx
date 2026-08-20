@@ -178,7 +178,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     burstRef.current = null;
     finalPendingRef.current = false;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

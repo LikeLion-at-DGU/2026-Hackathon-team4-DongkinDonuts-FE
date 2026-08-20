@@ -144,7 +144,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     alignStartRef.current = null;
     burstRef.current = null;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

@@ -136,7 +136,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     failRef.current = null;
     blinkCountRef.current = 0;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

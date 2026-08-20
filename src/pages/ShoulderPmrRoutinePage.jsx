@@ -155,7 +155,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     cycleCompleteRef.current = false;
     repCountRef.current = 0;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: repCount, difficulty, screenDistance, sessionImage: ShoulderImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
