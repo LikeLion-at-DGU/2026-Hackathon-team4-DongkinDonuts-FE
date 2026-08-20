@@ -4,7 +4,8 @@ export const FooterContainer = styled.footer`
     width: 100%;
 
     background: ${({ $isDark }) =>
-        $isDark ? "#17181d" : "#f4f5f6"};
+        $isDark ? "#000" : "#f4f5f6"};
+    
 
     transition: background 0.3s ease;
 `;
@@ -49,7 +50,8 @@ export const BrandArea = styled.div`
 export const Logo = styled.h3`
     margin: 0;
 
-    color: #141416;
+    color: ${({ $isDark }) =>
+        $isDark ? "#fff" : "#141416"};
 
     font-family: Poppins;
     font-size: 45px;
@@ -58,7 +60,8 @@ export const Logo = styled.h3`
 `;
 
 export const Copyright = styled.span`
-    color: #95a1bb;
+    color: ${({ $isDark }) =>
+        $isDark ? "#fff" : "#95a1bb"};
 
     font-family: Poppins;
     font-size: 12px;
@@ -76,7 +79,8 @@ export const MenuGroup = styled.div`
 export const MenuTitle = styled.h4`
     margin: 0 0 20px;
 
-    color: #3b5266;
+    color: ${({ $isDark }) =>
+        $isDark ? "#fff" : "#3b5266"};
 
     font-family: Poppins;
     font-size: 14px;
@@ -87,7 +91,8 @@ export const MenuTitle = styled.h4`
 export const MenuItem = styled.span`
     margin-bottom: 12px;
 
-    color: #353945;
+    color: ${({ $isDark }) =>
+        $isDark ? "#ffffff" : "#353945"};
 
     font-family: Poppins;
     font-size: 15px;
@@ -97,6 +102,7 @@ export const MenuItem = styled.span`
     cursor: pointer;
 
     &:hover {
-        color: #000000;
+        color: ${({ $isDark }) =>
+        $isDark ? "#b8b8b8" : "#000"};
     }
 `;
