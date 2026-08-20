@@ -2,17 +2,21 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
 import { lerp } from "../utils/handUtils";
 
-const SESSION = ROUTINE_SESSIONS["neck-stretch"];
+const BASE_ID = "neck-stretch";
 const BURST_MS = 700;
-const TOTAL_STAGES = 2;
 
-export default function NeckStretchRoutinePage() {
+export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
   const navigate = useNavigate();
+  const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
+  const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
+  // 좌우 왕복(2단계)을 cycles번 반복 — 홀수 단계는 첫 방향(+), 짝수 단계는 반대 방향(-)
+  const TOTAL_STAGES = LEVEL.cycles * 2;
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const stageRef = useRef(1); // 1: 첫 번째 방향, 2: 반대쪽 방향
@@ -29,7 +33,7 @@ export default function NeckStretchRoutinePage() {
 
   const isMissionComplete = successCount >= TOTAL_STAGES;
 
-  const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
+  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
     useMultiTracking("POSE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
@@ -84,15 +88,15 @@ export default function NeckStretchRoutinePage() {
         TRACKING_CONFIG.neckIndicatorSmoothing
       );
 
-      // 현재 단계(stage)의 목표 각도 범위: 1단계는 +15°~+25°, 2단계는 반대쪽 -25°~-15°
-      const stageSign = stageRef.current === 1 ? 1 : -1;
+      // 현재 단계(stage)의 목표 각도 범위: 홀수 단계는 +min°~+max°, 짝수 단계는 반대쪽 -max°~-min°
+      const stageSign = stageRef.current % 2 === 1 ? 1 : -1;
       const targetMinDeg = Math.min(
-        stageSign * TRACKING_CONFIG.neckTargetMinDeg,
-        stageSign * TRACKING_CONFIG.neckTargetMaxDeg
+        stageSign * LEVEL.neckTargetMinDeg,
+        stageSign * LEVEL.neckTargetMaxDeg
       );
       const targetMaxDeg = Math.max(
-        stageSign * TRACKING_CONFIG.neckTargetMinDeg,
-        stageSign * TRACKING_CONFIG.neckTargetMaxDeg
+        stageSign * LEVEL.neckTargetMinDeg,
+        stageSign * LEVEL.neckTargetMaxDeg
       );
       const aligned =
         !isMissionComplete &&
@@ -102,7 +106,7 @@ export default function NeckStretchRoutinePage() {
       // 목표 각도 범위에 정렬된 채 neckAlignHoldMs(1초) 연속 유지하면 해당 단계 성공 처리.
       // 유지 도중 범위를 벗어나면 alignStartRef가 즉시 null로 초기화되어 타이머가 리셋된다.
       let holdProgress = 0;
-      let holdRemainingSec = TRACKING_CONFIG.neckAlignHoldMs / 1000;
+      let holdRemainingSec = LEVEL.neckAlignHoldMs / 1000;
       if (finalPendingRef.current) {
         // 마지막 단계는 유지 완료로 burst가 트리거된 뒤에도 사용자가 자세를 그대로 유지하고
         // 있어 aligned가 계속 true로 남는다. 이때 alignStartRef가 null인 채로 방치하면 유지
@@ -113,16 +117,17 @@ export default function NeckStretchRoutinePage() {
       } else if (aligned) {
         if (alignStartRef.current == null) alignStartRef.current = t;
         const heldMs = t - alignStartRef.current;
-        holdProgress = Math.min(1, heldMs / TRACKING_CONFIG.neckAlignHoldMs);
-        holdRemainingSec = Math.max(0, (TRACKING_CONFIG.neckAlignHoldMs - heldMs) / 1000);
-        if (heldMs >= TRACKING_CONFIG.neckAlignHoldMs) {
+        holdProgress = Math.min(1, heldMs / LEVEL.neckAlignHoldMs);
+        holdRemainingSec = Math.max(0, (LEVEL.neckAlignHoldMs - heldMs) / 1000);
+        if (heldMs >= LEVEL.neckAlignHoldMs) {
           alignStartRef.current = null;
-          const isFinal = stageRef.current !== 1;
+          const currentStage = stageRef.current;
+          const isFinal = currentStage >= TOTAL_STAGES;
           burstRef.current = { startedAt: t, isFinal };
           if (!isFinal) {
-            stageRef.current = 2;
-            setStage(2);
-            setSuccessCount(1);
+            stageRef.current = currentStage + 1;
+            setStage(currentStage + 1);
+            setSuccessCount(currentStage);
           } else {
             finalPendingRef.current = true;
           }
@@ -166,7 +171,7 @@ export default function NeckStretchRoutinePage() {
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -195,8 +200,8 @@ export default function NeckStretchRoutinePage() {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount }),
-    [elapsedTime, successCount]
+    () => ({ elapsedTime, successCount, difficulty, screenDistance }),
+    [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
     () => ({

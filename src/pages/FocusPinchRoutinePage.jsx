@@ -2,32 +2,34 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawPinchRings } from "../engine/sessionVisuals";
 
-const SESSION = ROUTINE_SESSIONS["focus-pinch"];
+const BASE_ID = "focus-pinch";
 
 const randomTargetSize = () => Math.round(10 + Math.random() * 80); // 10~90%
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export default function FocusPinchRoutinePage() {
+export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
   const navigate = useNavigate();
+  const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
+  const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const matchSinceRef = useRef(null);
 
   const [pinchCount, setPinchCount] = useState(0);
   const [targetSize, setTargetSize] = useState(randomTargetSize);
-  const [handCount, setHandCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const targetCount = 3;
+  const targetCount = LEVEL.targetCount;
   const isMissionComplete = pinchCount >= targetCount;
 
-  const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
+  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
     useMultiTracking("HAND", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
@@ -46,9 +48,9 @@ export default function FocusPinchRoutinePage() {
     const loop = (t) => {
       const data = detectFrame(t);
       const hands = data?.hands ?? [];
-      setHandCount(hands.length);
 
-      const { pinchDistMin, pinchDistMax, pinchMatchTolerancePercent, pinchHoldMs } = TRACKING_CONFIG;
+      const { pinchDistMin, pinchDistMax } = TRACKING_CONFIG;
+      const { pinchMatchTolerancePercent, pinchHoldMs } = LEVEL;
       const rings = hands.map((hand) => ({
         x: hand.palmCenter.x,
         y: hand.palmCenter.y,
@@ -89,7 +91,7 @@ export default function FocusPinchRoutinePage() {
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, targetSize]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, targetSize, LEVEL]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -114,8 +116,8 @@ export default function FocusPinchRoutinePage() {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: pinchCount, handCount }),
-    [elapsedTime, pinchCount, handCount]
+    () => ({ elapsedTime, successCount: pinchCount, difficulty, screenDistance }),
+    [elapsedTime, pinchCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
     () => ({

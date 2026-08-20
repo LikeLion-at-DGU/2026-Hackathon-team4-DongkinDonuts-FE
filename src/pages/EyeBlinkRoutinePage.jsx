@@ -2,22 +2,26 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS } from "../config/sessionData";
-import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
 
-const SESSION = ROUTINE_SESSIONS["eye-blink"];
+const BASE_ID = "eye-blink";
 const POP_MS = 900;
 const CLOSE_EASE = 0.18;
+const FAIL_DISPLAY_MS = 1500;
 
-export default function EyeBlinkRoutinePage() {
+export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
   const navigate = useNavigate();
+  const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
+  const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const closedSinceRef = useRef(null);
   const holdCompleteRef = useRef(false);
   const closeAmountRef = useRef(0);
   const popRef = useRef(null);
+  const failRef = useRef(null);
   const blinkCountRef = useRef(0);
 
   const [blinkCount, setBlinkCount] = useState(0);
@@ -25,10 +29,10 @@ export default function EyeBlinkRoutinePage() {
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const targetCount = 3;
+  const targetCount = LEVEL.targetCount;
   const isMissionComplete = blinkCount >= targetCount;
 
-  const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
+  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
     useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
@@ -52,14 +56,25 @@ export default function EyeBlinkRoutinePage() {
       if (isBlinking) {
         if (closedSinceRef.current == null) closedSinceRef.current = t;
         const heldMs = t - closedSinceRef.current;
-        if (heldMs >= TRACKING_CONFIG.blinkHoldMs) holdCompleteRef.current = true;
+        if (heldMs >= LEVEL.blinkHoldMs) holdCompleteRef.current = true;
       } else {
-        if (closedSinceRef.current != null && holdCompleteRef.current && blinkCountRef.current < targetCount) {
-          const isFinal = blinkCountRef.current + 1 >= targetCount;
-          popRef.current = { startedAt: t, isFinal };
-          if (!isFinal) {
-            blinkCountRef.current += 1;
-            setBlinkCount(blinkCountRef.current);
+        if (closedSinceRef.current != null && blinkCountRef.current < targetCount) {
+          if (holdCompleteRef.current) {
+            const isFinal = blinkCountRef.current + 1 >= targetCount;
+            popRef.current = { startedAt: t, isFinal };
+            if (!isFinal) {
+              blinkCountRef.current += 1;
+              setBlinkCount(blinkCountRef.current);
+            }
+          } else {
+            // 목표 유지 시간(blinkHoldMs)을 채우지 못하고 눈을 뜬 경우, 실제로 몇 초
+            // 감고 있었는지 중앙에 잠깐 띄워서 얼마나 더 유지해야 하는지 알려준다.
+            const heldMs = t - closedSinceRef.current;
+            failRef.current = {
+              startedAt: t,
+              seconds: heldMs / 1000,
+              targetSeconds: LEVEL.blinkHoldMs / 1000,
+            };
           }
         }
         closedSinceRef.current = null;
@@ -86,11 +101,26 @@ export default function EyeBlinkRoutinePage() {
         }
       }
 
+      let failInfo = null;
+      if (failRef.current) {
+        const failElapsed = t - failRef.current.startedAt;
+        if (failElapsed <= FAIL_DISPLAY_MS) {
+          failInfo = {
+            seconds: failRef.current.seconds,
+            targetSeconds: failRef.current.targetSeconds,
+            progress: failElapsed / FAIL_DISPLAY_MS,
+          };
+        } else {
+          failRef.current = null;
+        }
+      }
+
       const prepared = prepareCanvas(canvasRef.current);
       if (prepared) {
         drawEyeBlinkPulse(prepared.ctx, prepared.width, prepared.height, {
           closeAmount: closeAmountRef.current,
           popProgress,
+          failInfo,
         });
       }
 
@@ -98,7 +128,7 @@ export default function EyeBlinkRoutinePage() {
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -113,6 +143,7 @@ export default function EyeBlinkRoutinePage() {
     holdCompleteRef.current = false;
     closeAmountRef.current = 0;
     popRef.current = null;
+    failRef.current = null;
     blinkCountRef.current = 0;
     setIsTerminated(false);
   }, []);
@@ -126,8 +157,8 @@ export default function EyeBlinkRoutinePage() {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: blinkCount }),
-    [elapsedTime, blinkCount]
+    () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance }),
+    [elapsedTime, blinkCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
     () => ({ missionText: SESSION.title, instructionSub: SESSION.guideText }),

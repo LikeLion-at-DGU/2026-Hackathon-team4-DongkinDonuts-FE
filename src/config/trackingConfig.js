@@ -1,9 +1,9 @@
 export const TRACKING_CONFIG = {
   // 눈 깜빡임 (EAR: Eye Aspect Ratio, 양쪽 눈 평균)
+  // blinkHoldMs(강도)는 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
   earClosedThreshold: 0.21,
-  blinkHoldMs: 1000,
 
-  // 아이-지선 노디 스캔: 코끝/턱/광대 좌표로 산출한 머리 회전(Pitch/Yaw) 원시 비율을
+  // 눈 트래킹: 코끝/턱/광대 좌표로 산출한 머리 회전(Pitch/Yaw) 원시 비율을
   // 포인터 정규화 값(-1~1 기준, ±1.4로 clamp)으로 증폭하는 배율. 낮출수록 같은 화면 거리를
   // 이동하는 데 필요한 실제 고개 회전량이 커진다 — clamp 상한(1.4)과 pointerRange는 그대로 두고
   // 이 값만 낮추면, 포인터가 도달할 수 있는 최대 거리(= 1.4 × pointerRange)는 그대로 유지한 채
@@ -17,19 +17,13 @@ export const TRACKING_CONFIG = {
   // (0.20~0.32)을 여유 있게 덮도록 유지한다.
   pointerRangeX: 0.26,
   pointerRangeY: 0.24,
-  // 포인터와 타겟 사이 정규화 화면 거리(0~1 기준)가 이 값 이하면 "온 타겟"으로 판정
-  nodTargetRadius: 0.14,
-  // 타겟에 온 상태를 이만큼(ms) 연속 유지하면 해당 단계 성공 처리
-  nodHoldMs: 800,
+  // 온타겟 판정 반경(정확도)과 유지 시간(강도)은 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
 
   // 입 벌림 (MAR: Mouth Aspect Ratio)
   mouthOpenRatioThreshold: 0.5,
 
-  // 해 뜨기: 입 벌림 정도(MAR)를 0(닫힘)~1(완전히 크게 벌림) 상승도로 매핑하는 구간
-  sunriseMouthRatioMin: 0.2,
-  sunriseMouthRatioMax: 0.85,
-  // 입을 다물 때 수렴 애니메이션이 시작되려면 그 전에 최소 이만큼 떠올라 있어야 함
-  sunrisePeakRequiredProgress: 0.7,
+  // 해 뜨기: 입 벌림 정도(MAR)를 상승도로 매핑하는 구간(강도)과 다물었을 때 성공으로 인정하는
+  // 최소 상승도(정확도)는 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
   // 상승도가 매 프레임 목표값에 다가가는 보간 비율(낮을수록 느리고 부드럽게 떠오름)
   sunriseRiseSmoothing: 0.04,
   // 입을 다문 순간부터 해가 중앙에 모여 화면이 밝아지기까지 걸리는 시간(ms)
@@ -46,20 +40,31 @@ export const TRACKING_CONFIG = {
   // 인디케이터가 각도 변화를 따라가는 부드러움 정도(LERP 계수, 1에 가까울수록 즉각 반응).
   // 감지값이 프레임 사이에 크게 튀어도 막대가 순간이동하지 않고 관성 있게 따라가도록 낮게 유지한다.
   neckIndicatorSmoothing: 0.18,
-  // 목표 각도 가이드: 과도하게 꺾지 않아도 되도록 15°~25° 범위(Target Zone) 안에만 들어오면 "정렬"로 판정
-  neckTargetMinDeg: 15,
-  neckTargetMaxDeg: 25,
-  // 목표 각도 범위에 정렬된 상태로 이만큼(ms) 연속 유지하면 해당 방향 성공 처리
-  neckAlignHoldMs: 1000,
+  // 목표 각도 범위(정확도)와 유지 시간(강도)은 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
 
   // 어깨 으쓱: normalizedShrugScore = (baseline 어깨 y - 현재 어깨 y) / 어깨너비.
-  // 이 값이 이 임계값을 넘어야 "으쓱"으로 인정하고, releaseThreshold(임계값의 절반) 아래로
-  // 떨어져야 "내렸다(release)"로 인정한다 (중간 구간은 히스테리시스로 흔들림 방지).
-  shoulderShrugThreshold: 0.13,
+  // "으쓱"으로 인정하는 임계값(정확도)과 유지 시간(강도)은 세션 난이도에 따라 달라지므로
+  // difficultyConfig.js로 옮겼다. releaseThreshold는 그 임계값의 절반 아래로 떨어져야
+  // "내렸다(release)"로 인정한다 (중간 구간은 히스테리시스로 흔들림 방지).
 
   // 엄지-검지 핀치 거리(정규화 좌표) -> 핀치 링 크기(%)
   pinchDistMin: 0.03,
   pinchDistMax: 0.22,
-  pinchMatchTolerancePercent: 12,
-  pinchHoldMs: 2000,
+  // 목표 크기와의 허용 오차(정확도)와 유지 시간(강도)은 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
+
+  // 화면 거리 측정(useMultiTracking): 트래킹 타입별 크기 지표(손 = 손목-중지 MCP 거리,
+  // 얼굴 = 양쪽 광대 사이 거리, 포즈 = 어깨너비)가 far~near 구간이면 "적정", 그 밖이면
+  // 너무 멀거나 가깝다고 판정한다. HandRoutinePage(useHandTracking)의 손 거리 판정(0.15/0.32)을
+  // 그대로 가져오고, 얼굴/포즈는 실측 데이터가 아닌 초기 추정치이므로 실사용 중 조정이 필요할 수 있다.
+  distanceUpdateInterval: 100,
+  distanceLostMaxFrames: 15,
+  handDistanceFar: 0.15,
+  handDistanceNear: 0.32,
+  handDistanceClose: 0.42,
+  faceDistanceFar: 0.15,
+  faceDistanceNear: 0.33,
+  faceDistanceClose: 0.44,
+  poseDistanceFar: 0.3,
+  poseDistanceNear: 0.55,
+  poseDistanceClose: 0.7,
 };

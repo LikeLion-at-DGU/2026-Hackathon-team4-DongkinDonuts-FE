@@ -50,7 +50,7 @@ const EYE_PULSE_PARTICLE_COLORS = [
 ];
 const EYE_PULSE_PARTICLE_COUNT = 14;
 
-export const drawEyeBlinkPulse = (ctx, w, h, { closeAmount = 0, popProgress = 0 }) => {
+export const drawEyeBlinkPulse = (ctx, w, h, { closeAmount = 0, popProgress = 0, failInfo = null }) => {
   const cx = w / 2;
   const cy = h / 2;
   const baseRadius = Math.min(w, h) * 0.13;
@@ -99,6 +99,54 @@ export const drawEyeBlinkPulse = (ctx, w, h, { closeAmount = 0, popProgress = 0 
       ctx.shadowBlur = 8;
       ctx.fill();
     }
+    ctx.restore();
+  }
+
+  // 성공 조건(blinkHoldMs)을 채우지 못하고 눈을 뜬 경우, "목표 대비 얼마나 부족했는지"가
+  // 한눈에 보이도록 목표 전체를 점선 링으로 두고 실제로 유지한 만큼만 경고색 아크로 채워
+  // 그 차이(부족분)를 시각적으로 드러낸다. 중앙에는 실제 유지 시간을, 그 아래 작게 필요한
+  // 목표 시간을 함께 적어 "이만큼 부족했다"는 원인을 바로 읽을 수 있게 한다.
+  if (failInfo) {
+    const target = failInfo.targetSeconds || 1;
+    const p = Math.min(1, Math.max(0, failInfo.progress));
+    const fadeAlpha = p < 0.12 ? p / 0.12 : p > 0.75 ? 1 - (p - 0.75) / 0.25 : 1;
+    // 부족분이 항상 눈에 보이도록 아크가 완전히 닫히지는 않게 살짝 캡을 둔다
+    const ratio = Math.min(0.94, Math.max(0.04, target > 0 ? failInfo.seconds / target : 0));
+    const indicatorRadius = baseRadius + 16;
+    const shortR = 255;
+    const shortG = 122;
+    const shortB = 105;
+
+    ctx.save();
+    ctx.globalAlpha = fadeAlpha;
+
+    // 목표치 전체를 나타내는 은은한 점선 가이드 링
+    ctx.beginPath();
+    ctx.arc(cx, cy, indicatorRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([4, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 실제로 유지한 시간만큼만 채운 경고색 아크 — 링과의 빈틈이 곧 "부족했던 만큼"
+    ctx.beginPath();
+    ctx.arc(cx, cy, indicatorRadius, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2);
+    ctx.strokeStyle = `rgba(${shortR}, ${shortG}, ${shortB}, 0.95)`;
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.shadowColor = `rgba(${shortR}, ${shortG}, ${shortB}, 0.6)`;
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 중앙에 실제 유지 시간을 큼직하게, 그 아래 필요한 목표 시간을 작게 덧붙인다
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = `600 ${Math.round(Math.min(w, h) * 0.075)}px sans-serif`;
+    ctx.fillStyle = `rgba(${shortR}, ${shortG + 30}, ${shortB + 30}, 1)`;
+    ctx.fillText(`${failInfo.seconds.toFixed(1)}초`, cx, cy + Math.min(w, h) * 0.02);
+
     ctx.restore();
   }
 
@@ -300,166 +348,72 @@ export const drawHeadShoulderPoints = (ctx, w, h, { headPoint, neckPoint }) => {
 };
 
 // ======================================================
-// 어깨 으쓱 — 화면 중앙에 놓인 실제 조약돌 같은 울퉁불퉁한 스톤. 어깨를 으쓱 올려
-// 긴장하는 동안(phase:'hold', squeezeAmount: 0~1) 돌이 점점 조밀하게 웅크러들며
-// 표면이 어둡고 단단하게 다져진다 (1.5초 유지 유도). 어깨를 툭 떨어뜨리는 순간
-// (phase:'release', releaseProgress: 0~1) 돌이 형태를 잃고 미세한 파스텔 가루
-// 입자로 부서지며 아래로 스르륵 쏟아져 내린다.
+// 어깨 으쓱 — 화면 중앙의 원. 어깨를 으쓱 올려 긴장하는 동안(squeezeAmount: 0~1)
+// 원이 점점 작게 스퀴즈되며 차분한 색에서 긴장을 나타내는 색으로 서서히 물들고,
+// 어깨를 툭 떨어뜨리면 같은 값을 거꾸로 따라가며 원래 크기/색으로 그대로
+// 원상복구된다 (별도의 등장/소멸 연출 없이 squeezeAmount 하나로만 왕복).
 // ======================================================
-const STONE_PARTICLE_COUNT = 36;
-const STONE_PARTICLE_COLORS = [
-  [223, 219, 232], // stone dust lavender-grey
-  [236, 220, 210], // pastel clay
-  [214, 228, 224], // pastel sage
-  [226, 216, 236], // pastel lilac
-  [232, 230, 220], // pastel sand
-];
-
-// seed로부터 0~1 사이 값을 결정론적으로 생성 (프레임마다 위치가 흔들리지 않도록 Math.random 대신 사용)
-const pseudoRandom = (seed) => {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
-};
-
-// 조약돌의 울퉁불퉁한 윤곽 — 각 꼭짓점의 각도 흔들림/반지름 배율을 한 번만 결정론적으로
-// 생성해 고정된 "돌 모양"으로 재사용한다 (프레임마다 흔들리지 않도록).
-const STONE_VERTEX_COUNT = 11;
-const STONE_SHAPE = Array.from({ length: STONE_VERTEX_COUNT }, (_, i) => {
-  const angle = (Math.PI * 2 * i) / STONE_VERTEX_COUNT;
-  const angleJitter = (pseudoRandom(i * 4.7 + 11) - 0.5) * 0.4;
-  const radiusMult = 0.72 + pseudoRandom(i * 8.3 + 21) * 0.34;
-  return { angle: angle + angleJitter, radiusMult };
-});
-// 표면 얼룩(스펙클) 위치 — 돌 텍스처를 표현하는 작은 반점들
-const STONE_SPECKLE_COUNT = 12;
-const STONE_SPECKLES = Array.from({ length: STONE_SPECKLE_COUNT }, (_, i) => ({
-  x: (pseudoRandom(i * 6.1 + 31) - 0.5) * 1.5,
-  y: (pseudoRandom(i * 3.9 + 41) - 0.5) * 1.5,
-  r: 0.05 + pseudoRandom(i * 7.3 + 51) * 0.09,
-  a: 0.1 + pseudoRandom(i * 2.9 + 61) * 0.16,
-}));
-
-// 부드러운 다각형 윤곽선을 그린다 (꼭짓점 사이를 이차 곡선으로 이어 둥글둥글한 돌 느낌을 낸다)
-const traceStonePath = (ctx, halfW, halfH, roundness) => {
-  const pts = STONE_SHAPE.map(({ angle, radiusMult }) => {
-    const mult = lerpValue(radiusMult, 1, roundness);
-    return { x: Math.cos(angle) * halfW * mult, y: Math.sin(angle) * halfH * mult };
-  });
-  const n = pts.length;
-  const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
-  const start = mid(pts[n - 1], pts[0]);
-  ctx.beginPath();
-  ctx.moveTo(start.x, start.y);
-  for (let i = 0; i < n; i += 1) {
-    const cur = pts[i];
-    const next = pts[(i + 1) % n];
-    const m = mid(cur, next);
-    ctx.quadraticCurveTo(cur.x, cur.y, m.x, m.y);
-  }
-  ctx.closePath();
-};
-
-export const drawShoulderStone = (ctx, w, h, { phase = "idle", squeezeAmount = 0, releaseProgress = 0 }) => {
+export const drawShoulderCircle = (ctx, w, h, { squeezeAmount = 0 }) => {
   const cx = w / 2;
   const cy = h * 0.54;
-  const baseHalfW = Math.min(w, h) * 0.17;
-  const baseHalfH = Math.min(w, h) * 0.145;
+  const baseR = Math.min(w, h) * 0.17;
 
   const squeeze = Math.min(1, Math.max(0, squeezeAmount));
-  const scale = 1 - squeeze * 0.18;
-  const halfW = baseHalfW * scale;
-  const halfH = baseHalfH * scale;
-  // 긴장이 쌓일수록 표면 굴곡이 매끈하게 다져지는 느낌 (0: 울퉁불퉁 ~ 1: 둥글게 다져짐)
-  const roundness = squeeze * 0.35;
+  const r = baseR * (1 - squeeze * 0.32);
 
-  const p = Math.min(1, Math.max(0, releaseProgress));
-  const dissolve = phase === "release" ? Math.min(1, p / 0.3) : 0;
-  const stoneAlpha = phase === "release" ? 1 - dissolve : 0.55 + squeeze * 0.45;
+  const tone = (a, b) => Math.round(lerpValue(a, b, squeeze));
+  // 이완: 차분한 파스텔 스카이블루 → 긴장: 따뜻한 코랄
+  const bodyTop = [tone(214, 255), tone(232, 158), tone(255, 128)];
+  const bodyMid = [tone(168, 244), tone(198, 108), tone(240, 96)];
+  const bodyEdge = [tone(120, 210), tone(150, 74), tone(214, 70)];
 
   ctx.save();
 
-  // 바닥 그림자 — 긴장이 쌓일수록 짙고 좁게 고정되고, 이완되면 옅어지며 흩어진다
-  const shadowW = halfW * (1.5 - squeeze * 0.25);
-  const shadowAlpha = (0.22 + squeeze * 0.2) * stoneAlpha;
-  if (shadowAlpha > 0.01) {
-    const shadowY = cy + baseHalfH * 0.92;
-    const shadowGlow = ctx.createRadialGradient(cx, shadowY, 0, cx, shadowY, shadowW);
-    shadowGlow.addColorStop(0, `rgba(20,20,24,${shadowAlpha})`);
-    shadowGlow.addColorStop(1, "rgba(20,20,24,0)");
+  // 바닥 그림자 — 긴장이 쌓일수록 살짝 짙어지고 좁아진다
+  const shadowW = r * 1.4;
+  const shadowAlpha = 0.16 + squeeze * 0.14;
+  const shadowY = cy + baseR * 0.92;
+  const shadowGlow = ctx.createRadialGradient(cx, shadowY, 0, cx, shadowY, shadowW);
+  shadowGlow.addColorStop(0, `rgba(20,20,24,${shadowAlpha})`);
+  shadowGlow.addColorStop(1, "rgba(20,20,24,0)");
+  ctx.beginPath();
+  ctx.ellipse(cx, shadowY, shadowW, shadowW * 0.32, 0, 0, Math.PI * 2);
+  ctx.fillStyle = shadowGlow;
+  ctx.fill();
+
+  // 긴장이 쌓일수록 또렷해지는 은은한 외곽 글로우
+  const glowAlpha = squeeze * 0.35;
+  if (glowAlpha > 0.01) {
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, r * 1.6);
+    glow.addColorStop(0, `rgba(${bodyEdge[0]},${bodyEdge[1]},${bodyEdge[2]},${glowAlpha})`);
+    glow.addColorStop(1, `rgba(${bodyEdge[0]},${bodyEdge[1]},${bodyEdge[2]},0)`);
     ctx.beginPath();
-    ctx.ellipse(cx, shadowY, shadowW, shadowW * 0.32, 0, 0, Math.PI * 2);
-    ctx.fillStyle = shadowGlow;
+    ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
     ctx.fill();
   }
 
-  if (stoneAlpha > 0.01) {
-    ctx.save();
-    ctx.globalAlpha = stoneAlpha;
-    ctx.translate(cx, cy);
+  // 원 몸체 — 좌상단에서 비치는 조명을 받는 그라데이션
+  const body = ctx.createRadialGradient(
+    cx - r * 0.35, cy - r * 0.4, r * 0.1,
+    cx, cy, r * 1.05
+  );
+  body.addColorStop(0, `rgb(${bodyTop[0]},${bodyTop[1]},${bodyTop[2]})`);
+  body.addColorStop(0.6, `rgb(${bodyMid[0]},${bodyMid[1]},${bodyMid[2]})`);
+  body.addColorStop(1, `rgb(${bodyEdge[0]},${bodyEdge[1]},${bodyEdge[2]})`);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = body;
+  ctx.fill();
 
-    const tone = (a, b) => Math.round(lerpValue(a, b, squeeze));
+  // 긴장이 쌓일수록 또렷해지는 얇은 엣지 하이라이트
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(255,255,255,${0.15 + squeeze * 0.25})`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
-    traceStonePath(ctx, halfW, halfH, roundness);
-
-    // 좌상단에서 비치는 조명을 받는 몸체 — 긴장이 쌓일수록 어둡고 짙은 회색 돌로 다져진다
-    const body = ctx.createRadialGradient(
-      -halfW * 0.35, -halfH * 0.45, Math.min(halfW, halfH) * 0.1,
-      0, 0, Math.max(halfW, halfH) * 1.15
-    );
-    body.addColorStop(0, `rgb(${tone(214, 158)},${tone(210, 154)},${tone(218, 164)})`);
-    body.addColorStop(0.55, `rgb(${tone(170, 116)},${tone(166, 112)},${tone(176, 122)})`);
-    body.addColorStop(1, `rgb(${tone(112, 66)},${tone(108, 64)},${tone(118, 72)})`);
-    ctx.fillStyle = body;
-    ctx.fill();
-
-    // 표면 얼룩 — 돌의 자연스러운 질감
-    ctx.save();
-    ctx.clip();
-    STONE_SPECKLES.forEach((s) => {
-      ctx.beginPath();
-      ctx.ellipse(s.x * halfW, s.y * halfH, s.r * halfW, s.r * halfH * 0.8, 0, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${tone(70, 40)},${tone(66, 38)},${tone(74, 44)},${s.a})`;
-      ctx.fill();
-    });
-    ctx.restore();
-
-    // 긴장이 쌓일수록 또렷해지는 얇은 엣지 하이라이트
-    traceStonePath(ctx, halfW, halfH, roundness);
-    ctx.strokeStyle = `rgba(255,255,255,${0.1 + squeeze * 0.25})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.restore();
-  }
   ctx.restore();
-
-  if (phase === "release" && p > 0) {
-    ctx.save();
-    const fall = easeOutCubic(p) * h * 0.5;
-    for (let i = 0; i < STONE_PARTICLE_COUNT; i += 1) {
-      const seedX = pseudoRandom(i * 3.1 + 1);
-      const seedY = pseudoRandom(i * 7.7 + 2);
-      const seedSpeed = pseudoRandom(i * 5.3 + 3);
-      const seedDrift = pseudoRandom(i * 9.1 + 4);
-      const seedSize = pseudoRandom(i * 2.3 + 5);
-
-      const startX = cx + (seedX - 0.5) * baseHalfW * 2;
-      const startY = cy + (seedY - 0.5) * baseHalfH * 2;
-      const speed = 0.6 + seedSpeed * 0.8;
-
-      const x = startX + Math.sin(p * Math.PI * (1 + seedDrift)) * (seedDrift - 0.5) * 26;
-      const y = startY + fall * speed;
-      const alpha = Math.max(0, 1 - p) * (0.55 + seedSize * 0.45);
-      const size = 1.2 + seedSize * 2;
-
-      const [r, g, b] = STONE_PARTICLE_COLORS[i % STONE_PARTICLE_COLORS.length];
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
-      ctx.fill();
-    }
-    ctx.restore();
-  }
 };
 
 // ======================================================
