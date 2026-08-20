@@ -11,6 +11,7 @@ function UsageTable({
     toggleRow,
     resetAll,
     readOnly = false,
+    isResultMode = false,
 }) {
     const selectedCount =
         Object.values(selected).filter(Boolean).length;
@@ -24,7 +25,7 @@ function UsageTable({
                     </S.Title>
 
                     <S.Description>
-                        {readOnly
+                        {isResultMode
                             ? "입력한 PC 사용 패턴을 바탕으로 분석을 완료했어요."
                             : "요일별 사용 시간대를 선택하세요. 칸을 클릭해 켜고 끌 수 있어요."}
                     </S.Description>

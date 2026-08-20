@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import DigitalUsage from "./DigitalUsage";
 import LockIcon from "../../assets/icons/LockIcon.svg";
+import { getDigitalPatternStatus } from "../../api/digitalState";
 import { useDigitalState } from "../../hooks/useDigitalState";
 
 import * as S from "./DigitalState.styled";
@@ -16,7 +17,6 @@ function DigitalState() {
         editInput,
     } = useDigitalState();
 
-    const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,7 +25,9 @@ function DigitalState() {
                 const statusData =
                     await getDigitalPatternStatus();
 
-                setStatus(statusData);
+                if (statusData?.has_any_pattern) {
+                    showResult();
+                }
             } catch (error) {
                 console.error(
                     "디지털 상태 조회 실패:",
@@ -37,7 +39,7 @@ function DigitalState() {
         };
 
         fetchDigitalState();
-    }, []);
+    }, [showResult]);
 
     if (loading) {
         return null;

@@ -2,6 +2,12 @@ import ClockIcon from "../../assets/icons/ClockIcon.svg";
 
 import * as S from "./DigitalUsage.styled";
 
+const OPEN_RECOVERY_SLOT_STATUSES = new Set([
+    "RECOMMENDED",
+    "SCHEDULED",
+    "CHANGED",
+]);
+
 function DigitalScheduleCard({
     showResult,
     schedules = [],
@@ -25,6 +31,36 @@ function DigitalScheduleCard({
         );
     };
 
+    const notificationTimeForSchedule = (schedule) =>
+        schedule.effective_time ??
+        schedule.user_changed_at ??
+        schedule.scheduled_at ??
+        schedule.recommended_at;
+
+    const upcomingSchedules = schedules
+        .map((schedule) => ({
+            ...schedule,
+            notificationTime:
+                notificationTimeForSchedule(schedule),
+        }))
+        .filter((schedule) => {
+            const date = schedule.notificationTime
+                ? new Date(schedule.notificationTime)
+                : null;
+
+            return (
+                OPEN_RECOVERY_SLOT_STATUSES.has(schedule.status) &&
+                date &&
+                !Number.isNaN(date.getTime()) &&
+                date.getTime() >= Date.now()
+            );
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.notificationTime).getTime() -
+                new Date(b.notificationTime).getTime()
+        );
+
     return (
         <S.InfoCard $schedule>
             <S.CardTitle>
@@ -34,7 +70,7 @@ function DigitalScheduleCard({
                     width="38"
                     height="38"
                 />
-                오늘의 추천 휴식 일정
+                오늘의 권장 휴식 일정
             </S.CardTitle>
 
             {!showResult ? (
@@ -67,8 +103,8 @@ function DigitalScheduleCard({
                     </S.ScheduleDescription>
 
                     <S.ScheduleList>
-                        {schedules.length > 0 ? (
-                            schedules.map(
+                        {upcomingSchedules.length > 0 ? (
+                            upcomingSchedules.map(
                                 (schedule) => (
                                     <S.ScheduleItem
                                         key={
@@ -80,7 +116,7 @@ function DigitalScheduleCard({
 
                                             <span>
                                                 {formatTime(
-                                                    schedule.effective_time
+                                                    schedule.notificationTime
                                                 )}
                                             </span>
                                         </S.TimeArea>
@@ -125,7 +161,7 @@ function DigitalScheduleCard({
                     </S.ScheduleList>
 
                     <S.Caption>
-                        ※ 추천 시간은 예상입니다. 내 상황에 맞게 조정해 사용하세요.
+                        ※ 알림 시간은 내 상황에 맞게 조정해 사용할 수 있어요.
                     </S.Caption>
                 </S.ResultContent>
             )}

@@ -16,7 +16,7 @@ function DigitalUsage({
     const {
         isResult,
         isSaving,
-        hasGeneratedResult,
+        showResult,
         resultVersion,
         schedules,
         alarmStates,
@@ -31,6 +31,7 @@ function DigitalUsage({
         selected,
         setSelected,
         onCreate,
+        onEdit,
     });
 
     return (
@@ -41,18 +42,19 @@ function DigitalUsage({
                     toggleCell={toggleCell}
                     toggleRow={toggleRow}
                     resetAll={resetAll}
-                    readOnly={isResult}
+                    readOnly={false}
+                    isResultMode={isResult}
                 />
             </S.UsageCard>
 
             <S.CardRow>
                 <DigitalAnalysisCard
-                    showResult={hasGeneratedResult}
+                    showResult={showResult}
                     resultVersion={resultVersion}
                 />
 
                 <DigitalScheduleCard
-                    showResult={hasGeneratedResult}
+                    showResult={showResult}
                     schedules={schedules}
                     alarmStates={alarmStates}
                     onToggleAlarm={toggleAlarm}

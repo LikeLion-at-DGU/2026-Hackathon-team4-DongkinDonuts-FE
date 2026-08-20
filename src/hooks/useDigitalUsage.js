@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
 import { ensureTodayGenerationInputs } from "../api/context";
 
 import {
-    generateAIRecoveryPlan,
+    generateRecoveryPlan,
+    getTodayRecoverySlots,
     updateRecoverySlotNotification,
 } from "../api/plans";
 
@@ -25,6 +26,7 @@ export function useDigitalUsage({
     selected,
     setSelected,
     onCreate,
+    onEdit,
 }) {
     const [isSaving, setIsSaving] =
         useState(false);
@@ -34,6 +36,8 @@ export function useDigitalUsage({
 
     const [alarmStates, setAlarmStates] =
         useState({});
+    const hasLoadedExistingSchedulesRef =
+        useRef(false);
 
     // 이전에 한 번이라도 결과를 생성했는지
     const [
@@ -50,13 +54,67 @@ export function useDigitalUsage({
     // 현재 표가 결과 모드인지
     const isResult =
         mode === "result";
+    const showResult =
+        isResult || hasGeneratedResult;
+
+    const enterEditModeIfNeeded = () => {
+        if (isResult) {
+            onEdit?.();
+        }
+    };
+
+    const applySchedules = useCallback((slots) => {
+        const safeSlots =
+            Array.isArray(slots) ? slots : [];
+
+        setSchedules(safeSlots);
+        setAlarmStates(
+            Object.fromEntries(
+                safeSlots.map((slot) => [
+                    slot.id,
+                    slot.notification_enabled ??
+                        false,
+                ])
+            )
+        );
+    }, []);
+
+    useEffect(() => {
+        if (
+            !showResult ||
+            hasGeneratedResult ||
+            schedules.length > 0 ||
+            hasLoadedExistingSchedulesRef.current
+        ) {
+            return;
+        }
+
+        hasLoadedExistingSchedulesRef.current = true;
+
+        getTodayRecoverySlots()
+            .then((slots) => {
+                applySchedules(slots);
+                setResultVersion((prev) => prev + 1);
+            })
+            .catch((error) => {
+                console.error(
+                    "오늘 추천 휴식 일정 조회 실패:",
+                    error
+                );
+            });
+    }, [
+        hasGeneratedResult,
+        schedules.length,
+        showResult,
+        applySchedules,
+    ]);
 
     // 개별 칸 선택
     const toggleCell = (
         rowIndex,
         colIndex
     ) => {
-        if (isResult) return;
+        enterEditModeIfNeeded();
 
         const key =
             `${rowIndex}-${colIndex}`;
@@ -71,7 +129,7 @@ export function useDigitalUsage({
     const toggleRow = (
         rowIndex
     ) => {
-        if (isResult) return;
+        enterEditModeIfNeeded();
 
         setSelected((prev) => {
             const rowKeys =
@@ -103,7 +161,7 @@ export function useDigitalUsage({
 
     // 전체 초기화
     const resetAll = () => {
-        if (isResult) return;
+        enterEditModeIfNeeded();
 
         setSelected({});
     };
@@ -183,7 +241,7 @@ export function useDigitalUsage({
             await savePatterns();
         };
 
-    // PC 패턴 저장 → AI 회복 계획 생성
+    // PC 패턴 저장 → 회복 계획 생성
     const handleCreate =
         async () => {
             try {
@@ -204,45 +262,25 @@ export function useDigitalUsage({
                     "PC 패턴 저장 완료"
                 );
 
-                // 3. AI 생성에 필요한
+                // 3. 계획 생성에 필요한
                 // 오늘 상태/활동 데이터 보장
                 await ensureTodayGenerationInputs();
 
-                // 4. AI 회복 계획 생성
+                // 4. 회복 계획 생성
                 const recoveryPlan =
-                    await generateAIRecoveryPlan({
+                    await generateRecoveryPlan({
                         notificationEnabled:
                             true,
                     });
 
                 console.log(
-                    "AI 오늘 회복 계획:",
+                    "오늘 회복 계획:",
                     recoveryPlan
                 );
 
                 // 5. 새 추천 슬롯 저장
-                const slots =
-                    recoveryPlan?.slots ??
-                    [];
-
-                setSchedules(
-                    slots
-                );
-
-                // 6. 새 슬롯의 알림 상태 반영
-                const initialAlarmStates =
-                    Object.fromEntries(
-                        slots.map(
-                            (slot) => [
-                                slot.id,
-                                slot.notification_enabled ??
-                                    false,
-                            ]
-                        )
-                    );
-
-                setAlarmStates(
-                    initialAlarmStates
+                applySchedules(
+                    recoveryPlan?.slots
                 );
 
                 // 7. 결과가 존재한다고 표시
@@ -333,6 +371,7 @@ export function useDigitalUsage({
 
     return {
         isResult,
+        showResult,
         isSaving,
 
         // 추가
