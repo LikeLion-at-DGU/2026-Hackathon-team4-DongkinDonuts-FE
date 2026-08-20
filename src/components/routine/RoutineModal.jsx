@@ -4,7 +4,7 @@ import * as S from "./RoutineModal.styled";
 function RoutineModal({
     title = (
         <>
-            이전 루틴을
+            이전 휴식 세션을
             <br />
             먼저 완료해주세요
         </>

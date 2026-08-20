@@ -32,6 +32,53 @@ function ActivityStep({
     onSkip,
     onComplete,
 }) {
+    const handleCustomTimeChange = (e) => {
+        const value = e.target.value;
+
+        // 숫자만 허용
+        if (!/^\d*$/.test(value)) {
+            return;
+        }
+
+        setCustomTime(value);
+    };
+
+    const handleSubmitCustomTime = () => {
+        if (!customTime) {
+            return;
+        }
+
+        const minutes = Number(customTime);
+
+        if (minutes < 45) {
+            window.alert(
+                "활동 시간은 최소 45분 이상으로 입력해주세요."
+            );
+            return;
+        }
+
+        submitCustomTime();
+    };
+
+    const handleComplete = () => {
+        /*
+         * 직접 입력한 시간이 선택된 경우
+         * 최소 45분 검증
+         */
+        if (
+            customTime &&
+            selectedTime === customTime &&
+            Number(customTime) < 45
+        ) {
+            window.alert(
+                "활동 시간은 최소 45분 이상으로 입력해주세요."
+            );
+            return;
+        }
+
+        onComplete();
+    };
+
     return (
         <>
             <S.Title>
@@ -52,6 +99,7 @@ function ActivityStep({
                 {ACTIVITY_OPTIONS.map((option) => (
                     <S.OptionButton
                         key={option}
+                        type="button"
                         $selected={
                             selectedActivity === option
                         }
@@ -82,17 +130,16 @@ function ActivityStep({
                                 submitCustomActivity();
                             }
                         }}
-                        onBlur={
-                            submitCustomActivity
-                        }
+                        onBlur={submitCustomActivity}
                     />
                 ) : (
                     <S.OptionButton
+                        type="button"
                         onClick={openActivityInput}
                         $selected={
                             customActivity !== "" &&
                             selectedActivity ===
-                                customActivity
+                            customActivity
                         }
                     >
                         {customActivity ||
@@ -109,6 +156,7 @@ function ActivityStep({
                 {TIME_OPTIONS.map((option) => (
                     <S.OptionButton
                         key={option}
+                        type="button"
                         $selected={
                             selectedTime === option
                         }
@@ -127,30 +175,29 @@ function ActivityStep({
                 {isTimeInputOpen ? (
                     <S.CustomInput
                         autoFocus
+                        inputMode="numeric"
                         value={customTime}
                         placeholder="시간 입력"
-                        onChange={(e) =>
-                            setCustomTime(
-                                e.target.value
-                            )
-                        }
+                        onChange={handleCustomTimeChange}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                                submitCustomTime();
+                                handleSubmitCustomTime();
                             }
                         }}
-                        onBlur={submitCustomTime}
+                        onBlur={handleSubmitCustomTime}
                     />
                 ) : (
                     <S.OptionButton
+                        type="button"
                         onClick={openTimeInput}
                         $selected={
                             customTime !== "" &&
                             selectedTime === customTime
                         }
                     >
-                        {customTime ||
-                            "+ 직접입력"}
+                        {customTime
+                            ? `${customTime}분`
+                            : "+ 직접입력"}
                     </S.OptionButton>
                 )}
             </S.OptionGroup>
@@ -167,12 +214,14 @@ function ActivityStep({
                     {mode !== "reset" && (
                         <>
                             <S.SkipButton
+                                type="button"
                                 onClick={onSkip}
                             >
                                 건너뛰기
                             </S.SkipButton>
 
                             <S.SecondaryButton
+                                type="button"
                                 onClick={onPrev}
                             >
                                 이전
@@ -181,7 +230,8 @@ function ActivityStep({
                     )}
 
                     <S.PrimaryButton
-                        onClick={onComplete}
+                        type="button"
+                        onClick={handleComplete}
                         disabled={isSubmitting}
                     >
                         {isSubmitting

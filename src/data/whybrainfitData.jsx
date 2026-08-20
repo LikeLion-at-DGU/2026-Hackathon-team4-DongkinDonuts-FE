@@ -79,6 +79,7 @@ export const whyBrainfitData = [
                 즉각적인 피드백을 통해 능동적인 상호작용을 만들어냅니다.
             </>
         ),
+        image: "/images/movement.png",
         cardCategory: "MOVEMENT INPUT",
         cardTitle: "움직임 기반 입력",
         cardDescription: (

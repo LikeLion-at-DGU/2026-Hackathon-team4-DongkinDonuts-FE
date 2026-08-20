@@ -256,6 +256,17 @@ export const SecondaryButton = styled.button`
     cursor: pointer;
 `;
 
+export const InputNotice = styled.p`
+    margin: 8px 0 0 8px;
+
+    font-family: Poppins;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+
+    color: #8f8f8f;
+`;
+
 export const PrimaryButton = styled.button`
     width: 145px;
     height: 55px;
