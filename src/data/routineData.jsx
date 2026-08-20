@@ -1,4 +1,6 @@
 import brainResetImage from "../assets/images/brain-reset.png";
+import waterImage from "../assets/images/water.jpg";
+import breathImage from "../assets/images/breath.jpg";
 
 export const routineData = [
     {
@@ -28,7 +30,7 @@ export const routineData = [
                 주의를 전환해보세요.
             </>
         ),
-        image: brainResetImage,
+        image: waterImage,
         featured: true,
     },
     {
@@ -43,6 +45,6 @@ export const routineData = [
             </>
         ),
         status: "미완료",
-        image: brainResetImage,
+        image: breathImage,
     },
 ];
