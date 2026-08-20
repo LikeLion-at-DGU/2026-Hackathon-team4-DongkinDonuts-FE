@@ -41,12 +41,12 @@ export function getRecoverySlot(slotId) {
 }
 
 /**
- * AI 기반 오늘의 회복 계획 생성
+ * 정책 기반 오늘의 회복 계획 생성.
  *
- * contextSnapshot, nextActivityPlan을 생략하면
- * 백엔드가 오늘 생성된 최신 값을 사용한다.
+ * contextSnapshot, nextActivityPlan을 생략하면 백엔드가 오늘 생성된 최신 값을 사용한다.
+ * URL은 기존 호환을 위해 /ai-generate/를 유지하지만, 서버 내부에서는 LLM을 호출하지 않는다.
  */
-export function generateAIRecoveryPlan({
+export function generateRecoveryPlan({
   contextSnapshot,
   nextActivityPlan,
   notificationEnabled = true,
@@ -68,6 +68,8 @@ export function generateAIRecoveryPlan({
     body
   );
 }
+
+export const generateAIRecoveryPlan = generateRecoveryPlan;
 
 /**
  * 특정 회복 슬롯의 예정 시간 변경.

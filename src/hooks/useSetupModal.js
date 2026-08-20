@@ -125,7 +125,7 @@ export const useSetupModal = ({
     };
 
     // 1단계 완료: 현재 상태는 항상 새 스냅샷으로 저장한다. 이후 활동이 아직 유효하면
-    // 기존 활동/시간과 그 활동에 붙은 기존 상태를 유지하고 바로 AI 계획 생성으로 넘긴다.
+    // 기존 활동/시간과 그 활동에 붙은 기존 상태를 유지하고 바로 계획 생성으로 넘긴다.
     const submitCurrentState = async () => {
         setIsSubmitting(true);
         setSubmitError(null);

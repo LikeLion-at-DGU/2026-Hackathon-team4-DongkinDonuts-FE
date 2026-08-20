@@ -68,7 +68,7 @@ function DigitalAnalysisCard({
                     <S.EmptyDescription>
                         상단 표에 사용 시간을 체크하고
                         <br />
-                        이 패턴으로 AI 휴식 타이머 생성 버튼을 눌러
+                        이 패턴으로 휴식 타이머 생성 버튼을 눌러
                         <br />
                         맞춤 분석을 받아보세요
                     </S.EmptyDescription>
