@@ -16,8 +16,6 @@ function DigitalUsage({
     const {
         isResult,
         isSaving,
-        hasGeneratedResult,
-        resultVersion,
 
         toggleCell,
         toggleRow,
@@ -43,14 +41,10 @@ function DigitalUsage({
                 />
             </S.UsageCard>
 
+            {/* 둘 다 PC 사용 패턴 입력 여부와 무관하게 스스로 데이터를 조회해서
+                보여준다 — props 필요 없음 */}
             <S.CardRow>
-                <DigitalAnalysisCard
-                    showResult={hasGeneratedResult}
-                    resultVersion={resultVersion}
-                />
-
-                {/* PC 사용 패턴 입력 여부와 무관하게 스스로 오늘 예정된 일정을
-                    조회해서 보여준다 — props 필요 없음 */}
+                <DigitalAnalysisCard />
                 <DigitalScheduleCard />
             </S.CardRow>
 
