@@ -1,36 +1,45 @@
 import Warning from "../../assets/icons/Warning.svg";
-import * as S from "./RoutineModal.styled";
+
+import * as S from "../common/SessionConfirmModal.styled";
 
 function RoutineModal({
-    title = (
-        <>
-            이전 휴식 세션을
-            <br />
-            먼저 완료해주세요
-        </>
-    ),
     description = "이전 루틴을 완료한 후 이용해주세요",
     onClose,
 }) {
     return (
-        <S.ModalOverlay onClick={onClose}>
-            <S.ModalBox onClick={(e) => e.stopPropagation()}>
-                <S.ModalIcon>
-                    <img src={Warning} alt="경고" />
-                </S.ModalIcon>
-                <S.ModalTitle>
-                    {title}
-                </S.ModalTitle>
+        <S.Overlay onClick={onClose}>
+            <S.Modal
+                onClick={(e) =>
+                    e.stopPropagation()
+                }
+            >
+                <S.CheckIcon>
+                    <img
+                        src={Warning}
+                        alt="경고"
+                    />
+                </S.CheckIcon>
 
-                <S.ModalDescription>
+                <S.Title>
+                    이전 휴식 세션을
+                    <br />
+                    먼저 완료해주세요
+                </S.Title>
+
+                <S.Description>
                     {description}
-                </S.ModalDescription>
+                </S.Description>
 
-                <S.ModalButton onClick={onClose}>
-                    확인
-                </S.ModalButton>
-            </S.ModalBox>
-        </S.ModalOverlay>
+                <S.SingleButtonRow>
+                    <S.StartButton
+                        type="button"
+                        onClick={onClose}
+                    >
+                        확인
+                    </S.StartButton>
+                </S.SingleButtonRow>
+            </S.Modal>
+        </S.Overlay>
     );
 }
 

@@ -1,3 +1,5 @@
+import CheckIcon from "../../assets/icons/CheckIcon.png";
+
 import * as S from "./SessionConfirmModal.styled";
 
 function RoutineReadyModal({
@@ -7,7 +9,10 @@ function RoutineReadyModal({
         <S.Overlay>
             <S.Modal>
                 <S.CheckIcon>
-                    ✓
+                    <img
+                        src={CheckIcon}
+                        alt="완료"
+                    />
                 </S.CheckIcon>
 
                 <S.Title>
