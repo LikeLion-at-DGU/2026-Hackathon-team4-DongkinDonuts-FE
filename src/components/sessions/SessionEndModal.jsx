@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, ModalTitle, ModalDescription, ModalButtons, CloseButton, ConfirmButton } from "./Modal.styled";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
-import SetupModal from "../SetupModal";
+import SetupModal from "../common/SetupModal";
 
 const SessionEndModal = ({
   isMissionComplete,
