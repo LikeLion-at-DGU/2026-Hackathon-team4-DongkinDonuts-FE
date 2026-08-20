@@ -28,6 +28,10 @@ import { useRecoveryTimeSettings } from "../hooks/useRecoveryTimeSettings";
 
 import { useNextReset } from "../hooks/useNextReset";
 import { usePushSubscription } from "../hooks/usePushSubscription";
+import {
+  notifyUpcomingScheduleChanged,
+  useUpcomingSchedule,
+} from "../hooks/useUpcomingSchedule";
 
 import {
   generateAIRecoveryPlan,
@@ -110,6 +114,11 @@ function LandingPage() {
             true,
         });
 
+        // "오늘의 추천 휴식 일정" 카드는 PC 사용 패턴 흐름과 별개로 독립돼있어서
+        // ("내 계획 다시 설정"만으로 만든 계획도 보여야 하니), 여기서도 새로
+        // 조회하라고 알려줘야 한다.
+        notifyUpcomingScheduleChanged();
+
         await Promise.all([
           refreshNextReset(),
           routineHome.loadRoutineSlot(),
@@ -153,6 +162,49 @@ function LandingPage() {
       resetTimeLabel,
       refreshNextReset,
     });
+
+  /*
+   * 오늘의 추천 휴식 일정 — PC 사용 패턴 입력 여부와 무관하게 독립적으로
+   * 조회한다. "시간 변경하기" 모달에서 자동 알림이 켜진 추천 시간을
+   * 강조해서 보여줄 때 이 데이터를 그대로 쓴다.
+   */
+  const upcomingSchedule =
+    useUpcomingSchedule();
+
+  useEffect(() => {
+    const formatTime = (dateTime) => {
+      if (!dateTime) return null;
+
+      return new Date(dateTime).toLocaleTimeString(
+        "ko-KR",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      );
+    };
+
+    const activeTimes = upcomingSchedule.schedules
+      .filter(
+        (schedule) =>
+          upcomingSchedule.alarmStates?.[
+            schedule.id
+          ] === true
+      )
+      .map((schedule) =>
+        formatTime(schedule.effective_time)
+      )
+      .filter(Boolean);
+
+    timeSettings.setActiveRecommendedTimes(
+      activeTimes
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    upcomingSchedule.schedules,
+    upcomingSchedule.alarmStates,
+  ]);
 
   /*
    * 최초 접속 Setup

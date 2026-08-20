@@ -136,3 +136,22 @@ export const DistanceMarker = styled.div`
   background: #FFF;
   transition: left 0.18s ease-out;
 `;
+
+// 데이터 패널 밑에 표시되는 세션 이미지
+export const SessionImageWrap = styled.div`
+  position: absolute;
+  top: 372px;
+  right: 55px;
+  width: 308.235px;
+  border-radius: 40px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 20;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+`;

@@ -50,8 +50,15 @@ export function useHistoryData(date) {
                     ? result
                     : (result?.results ?? []);
 
+                // "진행 예정"(아직 시작 전인 미래 알림)은 여기(Your History)가 아니라
+                // "오늘의 추천 휴식 일정" 카드에 뜬다 — History에는 이미 지나간/끝난
+                // 기록(완료·취소·진행중·미완료)만 남긴다.
+                const pastOrActiveSlots = slots.filter(
+                    (slot) => slot.history_status_label !== "진행 예정"
+                );
+
                 setRows(
-                    slots.map((slot) => ({
+                    pastOrActiveSlots.map((slot) => ({
                         id: slot.id,
                         time: slot.start_time ?? "--:--",
                         activity: buildActivityLabel(
