@@ -55,10 +55,14 @@ function HistoryTable({
                             </S.ActivityCell>
 
                             <S.RoutineCell>
-                                {history.routine ? (
-                                    <S.RoutineBadge>
-                                        {history.routine}
-                                    </S.RoutineBadge>
+                                {history.routines?.length > 0 ? (
+                                    history.routines.map((routine, index) => (
+                                        <S.RoutineBadge
+                                            key={`${history.id}-${routine}-${index}`}
+                                        >
+                                            {routine}
+                                        </S.RoutineBadge>
+                                    ))
                                 ) : (
                                     "-"
                                 )}

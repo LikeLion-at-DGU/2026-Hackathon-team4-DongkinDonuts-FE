@@ -4,11 +4,10 @@ import { formatDateParam } from "../utils/dateUtils";
 
 // recommended_routines에는 슬롯 하나당 Wake/Shift/Reset 3개가 다 들어있는데, 개인화가
 // 실제로 적용되는 건 Brain Shift 하나뿐이라 표에는 그것만 대표로 보여준다.
-function pickShiftRoutineName(routines) {
-    const shift = (routines ?? []).find(
-        (routine) => routine.stage_type === "BRAIN_SHIFT"
-    );
-    return shift?.activity?.name ?? null;
+function getRoutineNames(routines) {
+    return (routines ?? [])
+        .map((routine) => routine.activity?.name)
+        .filter(Boolean);
 }
 
 // "코딩 / 피곤함"처럼 이후 활동 태그와 그 순간 상태를 슬래시로 이어 붙인다.
@@ -59,7 +58,7 @@ export function useHistoryData(date) {
                             slot.context_snapshot_detail,
                             slot.next_activity_plan_detail
                         ),
-                        routine: pickShiftRoutineName(
+                        routines: getRoutineNames(
                             slot.recommended_routines
                         ),
                         status: slot.history_status_label,
