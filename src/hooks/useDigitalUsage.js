@@ -1,5 +1,4 @@
 import {
-    useEffect,
     useState,
 } from "react";
 
@@ -17,12 +16,7 @@ import {
 import {
     generateAIRecoveryPlan,
     getTodayRecoverySlots,
-    updateRecoverySlotNotification,
 } from "../api/plans";
-
-import {
-    useDigitalUsageSession,
-} from "./useDigitalUsageSession";
 
 import {
     notifyUpcomingScheduleChanged,
@@ -71,26 +65,6 @@ function hourSetsEqual(a, b) {
     return true;
 }
 
-/*
- * 서버 응답에서 자동 알림 여부 읽기
- * 백엔드 필드명이 조금 달라도 대응
- */
-function getNotificationEnabled(slot) {
-    const value =
-        slot?.notification_enabled ??
-        slot?.notificationEnabled ??
-        slot?.is_notification_enabled ??
-        slot?.isNotificationEnabled ??
-        false;
-
-    // 혹시 서버에서 "true" 문자열로 내려오는 경우까지 대응
-    return (
-        value === true ||
-        value === "true" ||
-        value === 1
-    );
-}
-
 export function useDigitalUsage({
     mode,
     selected,
@@ -102,119 +76,8 @@ export function useDigitalUsage({
         setIsSaving,
     ] = useState(false);
 
-    const [
-        schedules,
-        setSchedules,
-    ] = useState([]);
-
-    const [
-        alarmStates,
-        setAlarmStates,
-    ] = useState({});
-
-    const {
-        hasGeneratedResult,
-        setHasGeneratedResult,
-        resultVersion,
-        setResultVersion,
-    } = useDigitalUsageSession();
-
     const isResult =
         mode === "result";
-
-    // -------------------------
-    // 시간 포맷
-    // -------------------------
-
-    const formatScheduleTime = (
-        dateTime
-    ) => {
-        if (!dateTime) {
-            return null;
-        }
-
-        const date =
-            new Date(dateTime);
-
-        return date.toLocaleTimeString(
-            "ko-KR",
-            {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            }
-        );
-    };
-
-    // -------------------------
-    // 오늘 일정 서버에서 복원
-    // -------------------------
-
-    useEffect(() => {
-        const loadTodaySchedules =
-            async () => {
-                try {
-                    const result =
-                        await getTodayRecoverySlots();
-
-                    const slots =
-                        Array.isArray(result)
-                            ? result
-                            : result?.results ??
-                            [];
-
-                    setSchedules(slots);
-
-                    const initialAlarmStates =
-                        Object.fromEntries(
-                            slots.map(
-                                (slot) => [
-                                    slot.id,
-                                    getNotificationEnabled(
-                                        slot
-                                    ),
-                                ]
-                            )
-                        );
-
-                    setAlarmStates(
-                        initialAlarmStates
-                    );
-
-                    console.log(
-                        "오늘 추천 일정:",
-                        slots
-                    );
-
-                    console.log(
-                        "초기 알림 상태:",
-                        initialAlarmStates
-                    );
-
-                    if (
-                        slots.length > 0
-                    ) {
-                        setHasGeneratedResult(
-                            true
-                        );
-                    }
-                } catch (error) {
-                    console.error(
-                        "오늘 추천 휴식 일정 조회 실패:",
-                        error
-                    );
-
-                    setSchedules([]);
-                    setAlarmStates({});
-                }
-            };
-
-        loadTodaySchedules();
-    }, [
-        setHasGeneratedResult,
-    ]);
-
-
 
     // -------------------------
     // 표 선택
@@ -490,50 +353,11 @@ export function useDigitalUsage({
                     );
                 }
 
-                /*
-                 * 생성/재사용 뒤 서버에서
-                 * 최신 일정 다시 조회
-                 */
-                const latestSlotsResult =
-                    await getTodayRecoverySlots();
-
-                const slots =
-                    Array.isArray(
-                        latestSlotsResult
-                    )
-                        ? latestSlotsResult
-                        : latestSlotsResult
-                            ?.results ??
-                        [];
-
-                setSchedules(slots);
-
-                const initialAlarmStates =
-                    Object.fromEntries(
-                        slots.map(
-                            (slot) => [
-                                slot.id,
-                                getNotificationEnabled(
-                                    slot
-                                ),
-                            ]
-                        )
-                    );
-
-                setAlarmStates(
-                    initialAlarmStates
-                );
-
+                // "오늘의 추천 휴식 일정"/"분석 결과" 카드는 이제 둘 다 PC
+                // 패턴 흐름과 완전히 독립된 컴포넌트라서, 여기서 직접 값을 넣어주는
+                // 대신 "다시 조회해줘"라고만 알린다 — 카드가 항상 서버의 실제
+                // 최신 상태를 스스로 가져온다.
                 notifyUpcomingScheduleChanged();
-
-                setHasGeneratedResult(
-                    true
-                );
-
-                setResultVersion(
-                    (prev) =>
-                        prev + 1
-                );
 
                 onCreate();
             } catch (error) {
@@ -546,153 +370,9 @@ export function useDigitalUsage({
             }
         };
 
-    // -------------------------
-    // 자동 알림 ON/OFF
-    // -------------------------
-
-    const toggleAlarm =
-        async (schedule) => {
-            const slotId =
-                typeof schedule ===
-                    "object"
-                    ? schedule.id
-                    : schedule;
-
-            const targetSlot =
-                typeof schedule ===
-                    "object"
-                    ? schedule
-                    : schedules.find(
-                        (item) =>
-                            item.id ===
-                            slotId
-                    );
-
-            if (!slotId) {
-                return;
-            }
-
-            const current =
-                alarmStates[
-                slotId
-                ] ?? false;
-
-            const next =
-                !current;
-
-            /*
-             * 화면 즉시 반영
-             */
-            setAlarmStates(
-                (prev) => ({
-                    ...prev,
-                    [slotId]: next,
-                })
-            );
-
-            /*
-             * schedules 내부 값도 같이 맞춤
-             * 두 상태가 서로 따로 놀지 않게 함
-             */
-            setSchedules(
-                (prev) =>
-                    prev.map(
-                        (item) =>
-                            item.id ===
-                                slotId
-                                ? {
-                                    ...item,
-                                    notification_enabled:
-                                        next,
-                                    notificationEnabled:
-                                        next,
-                                }
-                                : item
-                    )
-            );
-
-            try {
-                await updateRecoverySlotNotification(
-                    slotId,
-                    {
-                        notificationEnabled:
-                            next,
-
-                        repeatRule:
-                            targetSlot
-                                ?.repeat_rule ??
-                            "",
-                    }
-                );
-
-                console.log(
-                    "알림 설정 변경 성공:",
-                    slotId,
-                    next
-                );
-
-                notifyUpcomingScheduleChanged();
-
-                window.dispatchEvent(
-                    new CustomEvent(
-                        "brainfit-alarm-toggle",
-                        {
-                            detail: {
-                                slotId,
-                                enabled: next,
-                            },
-                        }
-                    )
-                );
-            } catch (error) {
-                console.error(
-                    "알림 설정 변경 실패:",
-                    error
-                );
-
-                /*
-                 * 실패하면 alarmStates 원복
-                 */
-                setAlarmStates(
-                    (prev) => ({
-                        ...prev,
-                        [slotId]:
-                            current,
-                    })
-                );
-
-                /*
-                 * schedules도 원복
-                 */
-                setSchedules(
-                    (prev) =>
-                        prev.map(
-                            (item) =>
-                                item.id ===
-                                    slotId
-                                    ? {
-                                        ...item,
-                                        notification_enabled:
-                                            current,
-                                        notificationEnabled:
-                                            current,
-                                    }
-                                    : item
-                        )
-                );
-            }
-        };
-
     return {
         isResult,
         isSaving,
-
-        hasGeneratedResult,
-        resultVersion,
-
-        schedules,
-        alarmStates,
-        toggleAlarm,
 
         toggleCell,
         setCellValue,
