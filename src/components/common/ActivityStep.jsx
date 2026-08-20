@@ -81,7 +81,7 @@ function ActivityStep({
     return (
         <>
             <S.Title>
-                짧은 리셋 후, 어떤 활동에 몰입할 계획인가요?
+                짧은 휴식 후, 어떤 활동에 몰입할 계획인가요?
             </S.Title>
 
             <S.Description>
