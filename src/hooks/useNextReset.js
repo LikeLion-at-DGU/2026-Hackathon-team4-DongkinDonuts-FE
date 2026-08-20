@@ -158,8 +158,14 @@ export function useNextReset(onAlertClick) {
         return () => clearInterval(timer);
     }, []);
 
-    // 탭이 열려있는 동안, 카운트다운이 0이 되는 순간 딱 한 번 알림음 + 브라우저
-    // 알림을 준다(서버 푸시 아니라 클라이언트 타이머 기반 — 탭 닫으면 안 옴).
+    // 탭이 열려있는 동안, 카운트다운이 0이 되는 순간 딱 한 번 알림음을 준다(서버
+    // 푸시 아니라 클라이언트 타이머 기반 — 탭 닫으면 안 옴).
+    //
+    // 브라우저 알림 팝업(showBrowserNotification)은 usePushSubscription()의 진짜
+    // Web Push 구독이 이미 있으면 건너뛴다 — 원래 이건 "Push 구독이 안 되는
+    // 브라우저/권한 거부 상황의 최소 대안"으로 만든 건데, Notification.permission만
+    // 보고 구독 여부는 안 따져서 최신 브라우저에서는 서버 푸시 알림("회복 세션
+    // 알림")과 이 팝업이 항상 같이 떠서 알림이 중복으로 두 번 나오는 문제가 있었다.
     useEffect(() => {
         if (!nextResetAt || !recoverySlotId) return;
         if (now.getTime() < nextResetAt.getTime()) return;
@@ -170,7 +176,22 @@ export function useNextReset(onAlertClick) {
         alertedKeyRef.current = key;
         writeAlertedKey(key);
         playBeep();
-        showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?", onAlertClick);
+
+        (async () => {
+            try {
+                if ("serviceWorker" in navigator && "PushManager" in window) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    const subscription = await registration?.pushManager.getSubscription();
+                    // 활성 Push 구독이 있으면 서버가 이미 "회복 세션 알림"을 보내주니
+                    // 여기서 또 띄우면 중복이다.
+                    if (subscription) return;
+                }
+            } catch {
+                // 구독 여부 확인 자체가 실패하면, 안전하게 폴백 알림을 띄운다.
+            }
+
+            showBrowserNotification("회복 타이머가 끝났어요. 잠깐 쉬어갈까요?", onAlertClick);
+        })();
     }, [now, nextResetAt, recoverySlotId, onAlertClick]);
 
     // 계획이 생기는 시점에 자연스럽게 알림 권한을 한 번 물어본다(이미 허용/거부된
