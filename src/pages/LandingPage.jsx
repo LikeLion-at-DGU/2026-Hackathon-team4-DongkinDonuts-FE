@@ -427,10 +427,9 @@ function LandingPage() {
       {showSetupModal && (
         <SetupModal
           mode={setupModalMode}
-          onClose={() => {
-            setShowSetupModal(false);
-            handleGenerateRecoveryPlan();
-          }}
+          hasExistingPlan={hasPlan}
+          onClose={() => setShowSetupModal(false)}
+          onGenerate={handleGenerateRecoveryPlan}
         />
       )}
 
