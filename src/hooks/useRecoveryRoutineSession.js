@@ -10,8 +10,10 @@ import {
 } from "../api/sessions";
 import {
   buildRecoveryRoutinePath,
+  frontendBaseIdForActivityCode,
   findNextRoutine,
 } from "../config/recoveryRouting";
+import { rememberCompletedRoutineDifficulty } from "../utils/routineDifficultyFeedback";
 
 export function useRecoveryRoutineSession({
   isMissionComplete,
@@ -125,6 +127,16 @@ export function useRecoveryRoutineSession({
       metrics,
     })
       .then(async (completedSession) => {
+        const baseId = frontendBaseIdForActivityCode(
+          completedSession?.activity?.code
+        );
+
+        rememberCompletedRoutineDifficulty({
+          slotId,
+          baseId,
+          difficulty: metrics?.difficulty,
+        });
+
         if (typeof completedSession?.remaining_session_count === "number") {
           setRemainingCount(completedSession.remaining_session_count);
         }
@@ -144,6 +156,7 @@ export function useRecoveryRoutineSession({
     isMissionComplete,
     metrics,
     refreshNextPath,
+    slotId,
   ]);
 
   const abortSession = useCallback(async () => {
