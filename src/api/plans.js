@@ -20,6 +20,27 @@ export async function getNextResetTime() {
 }
 
 /**
+ * 오늘 활성 회복 계획에 포함된 슬롯 목록 조회.
+ */
+export function getTodayRecoverySlots() {
+  return apiClient.get("/plans/recovery-slots/today/");
+}
+
+/**
+ * 현재 가장 먼저 수행할 회복 슬롯 상세 조회.
+ */
+export function getNextRecoverySlot() {
+  return apiClient.get("/plans/recovery-slots/next/");
+}
+
+/**
+ * 특정 회복 슬롯 상세 조회.
+ */
+export function getRecoverySlot(slotId) {
+  return apiClient.get(`/plans/recovery-slots/${slotId}/`);
+}
+
+/**
  * AI 기반 오늘의 회복 계획 생성
  *
  * contextSnapshot, nextActivityPlan을 생략하면
@@ -110,12 +131,4 @@ export function getRecoverySlotHistory(date) {
   return apiClient.get("/plans/recovery-slots/history/", {
     params: { date },
   });
-}
-
-/**
- * 오늘 active plan의 회복 슬롯 목록 조회(재생성 없이 조회만). AI 재생성 없이도
- * "오늘의 추천 휴식 일정" 카드를 채울 때 쓴다.
- */
-export function getTodayRecoverySlots() {
-  return apiClient.get("/plans/recovery-slots/today/");
 }

@@ -6,8 +6,13 @@ function RoutineCard({
     description,
     status,
     image,
+    isLocked: lockedProp = false,
+    isCompleted = false,
     onStart,
 }) {
+    const locked = lockedProp || status === "LOCKED" || status === "잠김";
+    const completed = isCompleted || status === "COMPLETED" || status === "완료";
+
     const getStatusLabel = () => {
         switch (status) {
             case "COMPLETED":
@@ -20,14 +25,12 @@ function RoutineCard({
                 return "잠김";
 
             default:
-                return "미완료";
+                return status ?? "미완료";
         }
     };
 
-    const isLocked = status === "LOCKED";
-
     return (
-        <S.Card $image={image}>
+        <S.Card $image={image} $locked={locked}>
             <S.Overlay />
 
             <S.Content>
@@ -39,13 +42,16 @@ function RoutineCard({
                     </S.TitleArea>
 
                     <S.ArrowButton
-                        disabled={isLocked}
+                        type="button"
+                        $locked={locked}
+                        $completed={completed}
+                        aria-disabled={locked}
                         onClick={(e) => {
                             e.stopPropagation();
 
-                            if (isLocked) return;
+                            if (locked) return;
 
-                            onStart();
+                            onStart?.();
                         }}
                     >
                         <img
@@ -61,7 +67,7 @@ function RoutineCard({
 
                 <S.Divider />
 
-                <S.Status $status={status}>
+                <S.Status $completed={completed} $status={status}>
                     {getStatusLabel()}
                 </S.Status>
             </S.Content>

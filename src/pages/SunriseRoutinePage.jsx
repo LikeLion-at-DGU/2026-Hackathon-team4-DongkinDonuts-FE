@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
+import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
@@ -156,17 +157,32 @@ export default function SunriseRoutinePage() {
     () => ({ progressPercent: (sunriseCount / targetCount) * 100 }),
     [sunriseCount]
   );
+  const recoverySession = useRecoveryRoutineSession({
+    isMissionComplete,
+    metrics: {
+      elapsedTime,
+      sunriseCount,
+      stage,
+    },
+  });
+  const nextSessionPath = recoverySession.isBackendRoutine
+    ? recoverySession.nextSessionPath
+    : SESSION?.nextSessionPath;
 
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
       onCloseQuit={handleCloseQuit}
-      onConfirmQuit={handleConfirmQuit}
+      onConfirmQuit={() => {
+        recoverySession.abortSession();
+        handleConfirmQuit();
+      }}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={SESSION?.nextSessionPath}
+      nextSessionPath={nextSessionPath}
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}
