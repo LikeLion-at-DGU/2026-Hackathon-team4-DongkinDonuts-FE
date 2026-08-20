@@ -5,7 +5,6 @@ import {
 import { DAYS } from "../config/usageTableConfig";
 import { getDigitalPatterns, saveDigitalPatterns } from "../api/digitalState";
 import { ensureTodayGenerationInputs } from "../api/context";
-import { useDigitalUsageSession } from "./useDigitalUsageSession";
 import { notifyUpcomingScheduleChanged } from "./useUpcomingSchedule";
 
 import {
@@ -53,14 +52,6 @@ export function useDigitalUsage({
 }) {
     const [isSaving, setIsSaving] =
         useState(false);
-
-    const {
-        hasGeneratedResult,
-        setHasGeneratedResult,
-
-        resultVersion,
-        setResultVersion,
-    } = useDigitalUsageSession();
 
     const isResult =
         mode === "result";
@@ -286,21 +277,13 @@ export function useDigitalUsage({
                     );
                 }
 
+                // 7. "오늘의 추천 휴식 일정"/"분석 결과" 카드는 이제 둘 다 PC
+                // 패턴 흐름과 완전히 독립된 컴포넌트라서, 여기서 직접 값을 넣어주는
+                // 대신 "다시 조회해줘"라고만 알린다 — 카드가 항상 서버의 실제
+                // 최신 상태를 스스로 가져온다.
                 notifyUpcomingScheduleChanged();
 
-                // 8. 결과가 존재한다고 표시
-                setHasGeneratedResult(
-                    true
-                );
-
-                // 9. 분석 카드가
-                // 새로운 패턴 분석을 다시 조회하도록 버전 증가
-                setResultVersion(
-                    (prev) =>
-                        prev + 1
-                );
-
-                // 10. 결과 화면으로 전환
+                // 8. 결과 화면으로 전환
                 onCreate();
             } catch (error) {
                 console.error(
@@ -315,9 +298,6 @@ export function useDigitalUsage({
     return {
         isResult,
         isSaving,
-
-        hasGeneratedResult,
-        resultVersion,
 
         toggleCell,
         toggleRow,
