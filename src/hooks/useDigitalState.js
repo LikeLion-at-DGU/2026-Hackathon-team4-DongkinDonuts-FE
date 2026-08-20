@@ -39,9 +39,7 @@ const getSavedSelected = () => {
     }
 };
 
-const hasSelectedTime = (
-    selected
-) => {
+const hasSelectedTime = (selected) => {
     return Object.values(
         selected
     ).some(Boolean);
@@ -49,20 +47,12 @@ const hasSelectedTime = (
 
 export const useDigitalState = () => {
     /*
-     * 최초 렌더링부터 localStorage 복원
-     *
-     * 저장값 있음
-     * → 바로 result
-     *
-     * 저장값 없음
-     * → locked
+     * 마지막으로 실제 저장된 패턴만 복원
      */
-    const [
-        selected,
-        setSelected,
-    ] = useState(() =>
-        getSavedSelected()
-    );
+    const [selected, setSelected] =
+        useState(() =>
+            getSavedSelected()
+        );
 
     const [
         digitalStep,
@@ -83,118 +73,47 @@ export const useDigitalState = () => {
         setInitialized,
     ] = useState(false);
 
-    /*
-     * 첫 렌더링 완료
-     */
     useEffect(() => {
         setInitialized(true);
     }, []);
 
     /*
-     * 선택값이 바뀔 때마다
-     * localStorage에 그대로 저장
-     */
-    useEffect(() => {
-        if (!initialized) {
-            return;
-        }
-
-        const hasSelection =
-            hasSelectedTime(
-                selected
-            );
-
-        /*
-         * 선택된 시간이 하나라도 있으면 저장
-         */
-        if (hasSelection) {
-            localStorage.setItem(
-                DIGITAL_SELECTED_KEY,
-                JSON.stringify(
-                    selected
-                )
-            );
-
-            return;
-        }
-
-        /*
-         * 선택된 시간이 하나도 없으면
-         * 저장 데이터 삭제
-         *
-         * 단 input 화면에서는
-         * 사용자가 다시 선택할 수 있어야 하므로
-         * 바로 잠그지는 않음
-         */
-        localStorage.removeItem(
-            DIGITAL_SELECTED_KEY
-        );
-    }, [
-        selected,
-        initialized,
-    ]);
-
-    /*
      * 잠금 화면 → 입력 화면
      */
     const openInput = () => {
-        setDigitalStep(
-            "input"
-        );
+        setDigitalStep("input");
     };
 
     /*
-     * 패턴 생성/저장 완료
+     * 저장 버튼을 눌렀을 때만
+     * 현재 선택값을 실제 저장
      */
     const showResult = () => {
         const hasSelection =
-            hasSelectedTime(
-                selected
-            );
+            hasSelectedTime(selected);
 
-        /*
-         * 하나도 선택하지 않았다면
-         * 다시 잠금
-         */
         if (!hasSelection) {
-            localStorage.removeItem(
-                DIGITAL_SELECTED_KEY
-            );
-
-            setDigitalStep(
-                "locked"
-            );
-
             return;
         }
 
-        /*
-         * 현재 선택 상태 확실히 저장
-         */
         localStorage.setItem(
             DIGITAL_SELECTED_KEY,
-            JSON.stringify(
-                selected
-            )
+            JSON.stringify(selected)
         );
 
-        setDigitalStep(
-            "result"
-        );
+        setDigitalStep("result");
     };
 
     /*
      * 다시 수정
      */
     const editInput = () => {
-        setDigitalStep(
-            "input"
-        );
+        setDigitalStep("input");
     };
 
     /*
-     * 전체 선택 해제 후
-     * 잠금 화면으로 돌릴 때 사용
+     * 실제 저장값까지 삭제하고
+     * 잠금 상태로 변경할 때만 사용
      */
     const lockDigitalState = () => {
         setSelected({});
@@ -203,9 +122,7 @@ export const useDigitalState = () => {
             DIGITAL_SELECTED_KEY
         );
 
-        setDigitalStep(
-            "locked"
-        );
+        setDigitalStep("locked");
     };
 
     return {

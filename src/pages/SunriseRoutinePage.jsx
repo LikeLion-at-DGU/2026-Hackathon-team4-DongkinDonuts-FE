@@ -7,6 +7,7 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawSunrise } from "../engine/sessionVisuals";
 import mouthImage from "../assets/images/mouthImage.png";
+import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "wakeup-sunrise";
 
@@ -121,7 +122,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     stageRef.current = "idle";
     setStage("idle");
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
@@ -167,7 +168,8 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={SESSION.nextSessionPath}
+      nextSessionPath={nextSessionPath}
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
