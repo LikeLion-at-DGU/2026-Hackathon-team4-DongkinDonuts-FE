@@ -13,7 +13,7 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);
 
-    // 추천 시간 클릭 등으로 smooth scroll 애니메이션을 프로그램적으로 실행시키는 동안엔,
+    // 시간 값 클릭 등으로 smooth scroll 애니메이션을 프로그램적으로 실행시키는 동안엔,
     // 그 애니메이션이 중간중간 발생시키는 onScroll 이벤트가 selectedTime을 엉뚱한
     // 값으로 계속 덮어써버리는 문제가 있었다(예: "16:00" 클릭했는데 애니메이션 도중
     // 값이 흔들리다가 "07:00"으로 저장됨). 이 플래그가 켜져있는 동안은 onScroll이
@@ -57,26 +57,6 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
         window.setTimeout(clearSuppress, 500);
 
         element.scrollTo({ top, behavior: "smooth" });
-    };
-
-    const scrollToTime = (time) => {
-        const [hour, minute] = time.split(":");
-
-        scrollElementTo(
-            hourRef.current,
-            HOURS.indexOf(hour) * ITEM_HEIGHT,
-            suppressHourScrollRef
-        );
-        scrollElementTo(
-            minuteRef.current,
-            MINUTES.indexOf(minute) * ITEM_HEIGHT,
-            suppressMinuteScrollRef
-        );
-    };
-
-    const handleRecommendedTime = (time) => {
-        setSelectedTime(time);
-        scrollToTime(time);
     };
 
     const handleHourScroll = () => {
@@ -173,7 +153,6 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
         hourRef,
         minuteRef,
 
-        handleRecommendedTime,
         handleHourScroll,
         handleMinuteScroll,
         handleHourChange,

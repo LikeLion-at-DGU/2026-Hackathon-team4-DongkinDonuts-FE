@@ -3,7 +3,6 @@ import CloseButton from "../../assets/icons/CloseButton.svg";
 
 import { useTimeChangeModal } from "../../hooks/useTimeChangeModal";
 import {
-    RECOMMENDED_TIMES,
     HOURS,
     MINUTES,
 } from "../../config/timeChangeConfig";
@@ -78,7 +77,6 @@ function TimeChangeModal({
         isSaving,
         hourRef,
         minuteRef,
-        handleRecommendedTime,
         handleHourScroll,
         handleMinuteScroll,
         handleHourChange,
@@ -268,9 +266,7 @@ function TimeChangeModal({
                                             $basis={item.basis}
                                         >
                                             <span>{item.time}</span>
-                                            {item.isCurrent && (
-                                                <small>다음</small>
-                                            )}
+                                            {item.isCurrent}
                                         </S.ScheduledTimeChip>
                                     ))
                                 ) : (
@@ -285,40 +281,6 @@ function TimeChangeModal({
                                     저장하면 선택 시간 이전 알림 {previousNotificationCount}개가 정리돼요.
                                 </S.ScheduleNotice>
                             )}
-                        </S.Section>
-
-                        <S.Divider />
-
-                        <S.Section>
-                            <S.SectionTitle>
-                                추천 시간
-                            </S.SectionTitle>
-
-                            <S.SectionDescription>
-                                사용 패턴과 입력 내용을 바탕으로 설정한 최적의 시간이에요.
-                            </S.SectionDescription>
-
-                            <S.RecommendedTimes>
-                                {RECOMMENDED_TIMES.map(
-                                    (time) => (
-                                        <S.TimeButton
-                                            key={time}
-                                            type="button"
-                                            $active={
-                                                selectedTime ===
-                                                time
-                                            }
-                                            onClick={() =>
-                                                handleRecommendedTime(
-                                                    time
-                                                )
-                                            }
-                                        >
-                                            {time}
-                                        </S.TimeButton>
-                                    )
-                                )}
-                            </S.RecommendedTimes>
                         </S.Section>
 
                         <S.Divider />

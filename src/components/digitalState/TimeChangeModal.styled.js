@@ -173,50 +173,6 @@ export const SectionDescription = styled.p`
     line-height: 1.5;
 `;
 
-/* 추천 시간 */
-
-export const RecommendedTimes = styled.div`
-    display: grid;
-
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(72px, 1fr)
-    );
-
-    gap: 10px;
-
-    width: 100%;
-
-    margin-top: 15px;
-`;
-
-export const TimeButton = styled.button`
-    width: 100%;
-    min-width: 0;
-    height: 38px;
-
-    padding: 0 8px;
-
-    border: 1px solid
-        ${({ $active }) => ($active ? "#e04141" : "#777")};
-
-    border-radius: 6px;
-
-    background: transparent;
-
-    color: ${({ $active }) => ($active ? "#e04141" : "#ddd")};
-
-    font-family: Poppins;
-    font-size: 12px;
-    font-weight: 400;
-
-    cursor: pointer;
-
-    &:hover {
-        border-color: #e04141;
-    }
-`;
-
 /* 예정 알림 */
 
 export const ScheduledTimeList = styled.div`

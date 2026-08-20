@@ -1,10 +1,3 @@
-export const RECOMMENDED_TIMES = [
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-];
-
 export const ITEM_HEIGHT = 31;
 
 export const HOURS = Array.from(
