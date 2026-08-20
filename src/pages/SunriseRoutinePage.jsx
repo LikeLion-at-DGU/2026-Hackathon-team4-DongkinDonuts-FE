@@ -7,6 +7,7 @@ import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawSunrise } from "../engine/sessionVisuals";
+import mouthImage from "../assets/images/mouthImage.png";
 
 const BASE_ID = "wakeup-sunrise";
 
@@ -143,7 +144,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance }),
+    () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage }),
     [elapsedTime, sunriseCount, difficulty, screenDistance]
   );
   const instructionSub = useMemo(() => {

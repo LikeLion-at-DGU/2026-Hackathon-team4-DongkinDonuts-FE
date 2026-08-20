@@ -8,6 +8,7 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { lerp, getDistance, getSafeTargetPosition } from "../utils/handUtils";
 import { prepareCanvas, drawGazeNodTargets } from "../engine/sessionVisuals";
+import eyeTrackingImage from "../assets/images/eyeTrackingImage.png";
 
 const BASE_ID = "eye-tracking";
 const BURST_MS = 700;
@@ -164,7 +165,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, difficulty, screenDistance }),
+    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage }),
     [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(

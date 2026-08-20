@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { formatTime } from "../../utils/handUtils";
 import { DIFFICULTY_LABELS } from "../../config/difficultyConfig";
-import { LiveTime, LiveDot, DataArea, DataCard, DataTitle, DataRow, DistanceCard, DistanceHeader, DistanceBar, DistanceMarker } from "./SessionDataPanel.styled";
+import { LiveTime, LiveDot, DataArea, DataCard, DataTitle, DataRow, DistanceCard, DistanceHeader, DistanceBar, DistanceMarker, SessionImageWrap } from "./SessionDataPanel.styled";
 
-const SessionDataPanel = ({ elapsedTime = 0, successCount, handCount, difficulty, screenDistance }) => {
+const SessionDataPanel = ({ elapsedTime = 0, successCount, handCount, difficulty, screenDistance, sessionImage }) => {
   const hasHandMetrics = successCount !== undefined || handCount !== undefined || difficulty !== undefined || screenDistance;
   const distanceStatus = screenDistance?.status ?? "인식되지 않음";
 
@@ -33,6 +33,11 @@ const SessionDataPanel = ({ elapsedTime = 0, successCount, handCount, difficulty
             )}
           </DistanceCard>
         </DataArea>
+      )}
+      {hasHandMetrics && sessionImage && (
+        <SessionImageWrap>
+          <img src={sessionImage} alt="" />
+        </SessionImageWrap>
       )}
     </>
   );
