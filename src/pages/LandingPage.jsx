@@ -333,7 +333,7 @@ function LandingPage() {
             <S.Title>
               나를 위한
               <br />
-              맞춤 회복 루틴,
+              맞춤 휴식 루틴,
               Brainfit
             </S.Title>
 
