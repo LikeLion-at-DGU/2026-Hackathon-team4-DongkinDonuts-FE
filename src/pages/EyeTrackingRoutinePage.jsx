@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { lerp, getDistance, getSafeTargetPosition } from "../utils/handUtils";
@@ -69,7 +69,9 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
       if (data?.headYaw != null) {
         const targetYaw = clamp(data.headYaw * TRACKING_CONFIG.headYawSensitivity, -1.4, 1.4);
-        const targetPitch = clamp(data.headPitch * TRACKING_CONFIG.headPitchSensitivity, -1.4, 1.4);
+        const pitchSensitivity =
+          data.headPitch >= 0 ? TRACKING_CONFIG.headPitchUpSensitivity : TRACKING_CONFIG.headPitchDownSensitivity;
+        const targetPitch = clamp(data.headPitch * pitchSensitivity, -1.4, 1.4);
         displayYawRef.current = lerp(displayYawRef.current, targetYaw, TRACKING_CONFIG.headPoseSmoothing);
         displayPitchRef.current = lerp(displayPitchRef.current, targetPitch, TRACKING_CONFIG.headPoseSmoothing);
 
@@ -148,7 +150,6 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     targetsRef.current = generateTargets(TOTAL_STAGES);
     setStage(1);
     setSuccessCount(0);
-    setElapsedTime(0);
     displayYawRef.current = 0;
     displayPitchRef.current = 0;
     alignStartRef.current = null;
@@ -165,18 +166,18 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage }),
+    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
     () => ({
       missionText: SESSION.title,
-      instructionSub:`${SESSION.guideText}`,
+      instructionSub: SESSION.guideText,
     }),
     [stage, isMissionComplete]
   );
   const progressProps = useMemo(
-    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100 }),
+    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100, current: successCount, total: TOTAL_STAGES }),
     [successCount]
   );
   const recoverySession = useRecoveryRoutineSession({
@@ -187,6 +188,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       stage,
       difficulty,
     },
+    localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
@@ -206,6 +208,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       onStopSession={handleStopSession}
       nextSessionPath={nextSessionPath}
       isNextSessionPending={recoverySession.isPreparingNextSession}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

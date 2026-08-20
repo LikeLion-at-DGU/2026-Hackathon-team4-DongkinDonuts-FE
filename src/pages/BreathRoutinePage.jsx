@@ -174,7 +174,7 @@ const BreathRoutinePage = () => {
     });
   }, [navigate]);
 
-  const dataPanelProps = useMemo(() => ({ elapsedTime }), [elapsedTime]);
+  const dataPanelProps = useMemo(() => ({ elapsedTime, sessionStage: "finish" }), [elapsedTime]);
   const instructionProps = useMemo(
     () => ({ mission: BREATH_MISSION, phase }),
     [phase]
@@ -199,6 +199,7 @@ const BreathRoutinePage = () => {
         onStopSession={handleStopGame}
         nextSessionPath={nextSessionPath}
         isNextSessionPending={recoverySession.isPreparingNextSession}
+        remainingSessionsCount={recoverySession.remainingSessionsCount}
         showCompletionModal={false}
         showNextSessionControl={false}
         showOverlay={isUIOverlayVisible}

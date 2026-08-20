@@ -5,7 +5,7 @@ export const Instruction = styled.div`
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 73px;
+  bottom: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,8 +25,6 @@ export const InstructionPill = styled.span`
   max-width: 90%;
   padding: 14px 30px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(6px);
 `;
 
 export const MissionText = styled.span`

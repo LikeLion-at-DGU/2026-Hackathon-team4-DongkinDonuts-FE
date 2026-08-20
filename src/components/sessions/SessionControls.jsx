@@ -9,12 +9,15 @@ const SessionControls = ({
   handleStopGame,
   nextSession,
   showNextSession = true,
+  isNextSessionDisabled = false,
 }) => {
   return (
     <ControlArea>
       <StopButton onClick={handleStopGame}>종료</StopButton>
       {showNextSession && (
-        <ResetButton onClick={nextSession}>다음 세션</ResetButton>
+        <ResetButton onClick={nextSession} disabled={isNextSessionDisabled}>
+          다음 세션
+        </ResetButton>
       )}
     </ControlArea>
   );

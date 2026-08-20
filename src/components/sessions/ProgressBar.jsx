@@ -1,8 +1,18 @@
 import { memo } from "react";
-import { ProgressSection, ProgressBarContainer, ProgressFill, Steps } from "./ProgressBar.styled";
+import { ProgressSection, ProgressBarContainer, ProgressFill, StepsRow, StepLabel } from "./ProgressBar.styled";
 
-const ProgressBar = ({ missionType, sequenceIndex = 0, missionProgress = 0, phases, elapsedInCycle = 0, progressPercent: progressPercentProp }) => {
+const ProgressBar = ({
+  missionType,
+  sequenceIndex = 0,
+  missionProgress = 0,
+  phases,
+  elapsedInCycle = 0,
+  progressPercent: progressPercentProp,
+  current: currentProp,
+  total = 3,
+}) => {
   let progressPercent;
+  let current = currentProp;
 
   if (progressPercentProp !== undefined) {
     progressPercent = progressPercentProp;
@@ -16,15 +26,33 @@ const ProgressBar = ({ missionType, sequenceIndex = 0, missionProgress = 0, phas
         ? 100
         : (1 - (time - inhale - hold) / exhale) * 100;
   } else {
-    progressPercent = ((missionType === "SEQUENCE" ? sequenceIndex : missionProgress) / 3) * 100;
+    current = current ?? (missionType === "SEQUENCE" ? sequenceIndex : missionProgress);
+    progressPercent = (current / 3) * 100;
   }
+
+  const clampedPercent = Math.max(0, Math.min(100, progressPercent));
 
   return (
     <ProgressSection>
       <ProgressBarContainer>
-        <ProgressFill style={{ width: `${Math.max(0, Math.min(100, progressPercent))}%` }} />
+        <ProgressFill style={{ width: `${clampedPercent}%` }} />
       </ProgressBarContainer>
-      {!phases?.length && <Steps><span>0%</span><span>50%</span><span>100%</span></Steps>}
+      <StepsRow>
+        {!phases?.length &&
+          Array.from({ length: total }, (_, i) => {
+            const step = i + 1;
+            return (
+              <StepLabel
+                key={step}
+                $align={step === total ? "end" : "middle"}
+                $active={current != null && step <= current}
+                style={{ left: `${(step / total) * 100}%` }}
+              >
+                {step}회
+              </StepLabel>
+            );
+          })}
+      </StepsRow>
     </ProgressSection>
   );
 };

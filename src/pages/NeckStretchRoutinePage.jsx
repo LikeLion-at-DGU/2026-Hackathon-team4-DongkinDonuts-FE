@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
@@ -189,7 +189,6 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     alignStartRef.current = null;
     burstRef.current = null;
     finalPendingRef.current = false;
-    setElapsedTime(0);
     setIsTerminated(false);
   }, []);
 
@@ -202,7 +201,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage }),
+    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
@@ -213,7 +212,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [stage, isMissionComplete]
   );
   const progressProps = useMemo(
-    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100 }),
+    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100, current: successCount, total: TOTAL_STAGES }),
     [successCount]
   );
   const recoverySession = useRecoveryRoutineSession({
@@ -224,6 +223,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       stage,
       difficulty,
     },
+    localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
@@ -244,6 +244,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       onStopSession={handleStopSession}
       nextSessionPath={nextSessionPath}
       isNextSessionPending={recoverySession.isPreparingNextSession}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

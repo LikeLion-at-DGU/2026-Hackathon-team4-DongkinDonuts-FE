@@ -10,6 +10,7 @@ import {
 } from "../api/sessions";
 import {
   buildRecoveryRoutinePath,
+  countRemainingRoutines,
   findNextRoutine,
 } from "../config/recoveryRouting";
 
@@ -17,6 +18,7 @@ export function useRecoveryRoutineSession({
   isMissionComplete,
   metrics = null,
   accuracy = 100,
+  localRemainingCount = 0,
 } = {}) {
   const [searchParams] = useSearchParams();
   const slotId = searchParams.get("slot");
@@ -25,6 +27,7 @@ export function useRecoveryRoutineSession({
 
   const [backendSession, setBackendSession] = useState(null);
   const [nextSessionPath, setNextSessionPath] = useState(null);
+  const [remainingCount, setRemainingCount] = useState(0);
   const [sessionError, setSessionError] = useState(null);
   const [isCompletingSession, setIsCompletingSession] = useState(false);
 
@@ -46,6 +49,7 @@ export function useRecoveryRoutineSession({
       : "/";
 
     setNextSessionPath(path);
+    setRemainingCount(countRemainingRoutines(slot, routineInstanceId));
     return path;
   }, [routineInstanceId, slotId]);
 
@@ -151,6 +155,7 @@ export function useRecoveryRoutineSession({
   return {
     isBackendRoutine,
     nextSessionPath,
+    remainingSessionsCount: isBackendRoutine ? remainingCount : localRemainingCount,
     isPreparingNextSession: isCompletingSession,
     sessionError,
     slotId,

@@ -191,6 +191,19 @@ export function findNextRoutine(slot, currentRoutineId) {
   );
 }
 
+export function countRemainingRoutines(slot, currentRoutineId) {
+  const routines = sortedRoutineInstances(slot);
+  const currentIndex = routines.findIndex(
+    (routine) => routine.id === currentRoutineId
+  );
+
+  if (currentIndex < 0) return 0;
+
+  return routines
+    .slice(currentIndex + 1)
+    .filter((routine) => !DONE_STATUSES.has(routine.status)).length;
+}
+
 export function buildRecoveryRoutinePath(slot, routine) {
   if (!slot?.id || !routine?.id) return "/";
 

@@ -10,19 +10,20 @@ import QuitConfirmModal from "../components/sessions/QuitConfirmModal";
 import { preloadTracking } from "../hooks/useMultiTracking";
 import { getTrackingTypeForPath } from "../config/sessionData";
 import {
-  HandRoutineGlobalStyle,
+  SessionGlobalStyle,
   RoutineContainer,
   ContentWrapper,
   PlayContainer,
   ControlsWrapper,
   PlayArea,
-} from "./HandRoutinePage.styled";
+} from "./SessionPage.styled";
 
 const SessionPage = ({
   isQuitModalOpen,
   onCloseQuit,
   onConfirmQuit,
   navigateOnQuitConfirm = true,
+  remainingSessionsCount = 0,
   isMissionComplete,
   isTerminated,
   resetSession,
@@ -43,8 +44,13 @@ const SessionPage = ({
   const navigate = useNavigate();
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
 
+  // 최초 1회 미션을 통과해 완료 모달을 본 적이 있어야 "다음 세션" 버튼을 쓸 수 있다.
+  // hasShownCompletionModal은 한 번 true가 되면 이후 세션이 반복 초기화되어도 계속 true로
+  // 유지되므로, 통과 이력이 있는 한 버튼은 계속 활성 상태를 유지한다.
+  const isNextSessionDisabled = !hasShownCompletionModal && !isMissionComplete;
+
   const handleNextSession = useCallback(() => {
-    if (isNextSessionPending) return;
+    if (isNextSessionPending || isNextSessionDisabled) return;
 
     if (nextSessionPath) {
       navigate(
@@ -57,7 +63,7 @@ const SessionPage = ({
     }
 
     navigate("/recovery-session");
-  }, [isNextSessionPending, navigate, nextSessionPath]);
+  }, [isNextSessionDisabled, isNextSessionPending, navigate, nextSessionPath]);
 
   // 현재 세션이 진행되는 동안, 다음 세션에 필요한 MediaPipe 모델을 백그라운드에서 미리 로드해둔다.
   // "다음 세션" 버튼을 눌렀을 때 모델 초기화 대기 없이 즉시 카메라가 뜨도록 하기 위함.
@@ -120,13 +126,14 @@ const SessionPage = ({
 
   return (
     <>
-      <HandRoutineGlobalStyle />
+      <SessionGlobalStyle />
       <RoutineContainer>
         <QuitConfirmModal
           isOpen={isQuitModalOpen}
           onClose={onCloseQuit}
           onConfirm={onConfirmQuit}
           navigateOnConfirm={navigateOnQuitConfirm}
+          remainingCount={remainingSessionsCount}
         />
 
         <ContentWrapper>
@@ -157,6 +164,7 @@ const SessionPage = ({
               handleStopGame={onStopSession}
               nextSession={handleNextSession}
               showNextSession={showNextSessionControl}
+              isNextSessionDisabled={isNextSessionDisabled}
             />
           </ControlsWrapper>
         </ContentWrapper>

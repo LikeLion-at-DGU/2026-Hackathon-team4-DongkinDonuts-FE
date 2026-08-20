@@ -12,9 +12,9 @@ import {
 } from "../config/recoveryRouting";
 
 import {
-    HandRoutineGlobalStyle,
-    RoutineContainer,
-} from "./HandRoutinePage.styled";
+  SessionGlobalStyle,
+  RoutineContainer,
+} from "./SessionPage.styled";
 
 const pageStyle = {
     minHeight: "calc(100vh - 160px)",
@@ -149,35 +149,25 @@ function RecoverySessionStartPage() {
         location.state,
     ]);
 
-    return (
-        <>
-            <HandRoutineGlobalStyle />
-
-            <RoutineContainer>
-                <div style={pageStyle}>
-                    <div>
-                        <h1>
-                            {message}
-                        </h1>
-
-                        <button
-                            type="button"
-                            style={
-                                buttonStyle
-                            }
-                            onClick={() =>
-                                navigate(
-                                    "/"
-                                )
-                            }
-                        >
-                            홈으로
-                        </button>
-                    </div>
-                </div>
-            </RoutineContainer>
-        </>
-    );
+  return (
+    <>
+      <HandRoutineGlobalStyle />
+      <RoutineContainer>
+        <div style={pageStyle}>
+          <div>
+            <h1>{message}</h1>
+            <button
+              type="button"
+              style={buttonStyle}
+              onClick={() => navigate("/")}
+            >
+              홈으로
+            </button>
+          </div>
+        </div>
+      </RoutineContainer>
+    </>
+  );
 }
 
 export default RecoverySessionStartPage;

@@ -58,7 +58,7 @@ export const setupMission = ({
         y: 0.55 + Math.random() * 0.15,
         radius: 0.13,
         color: BALL_TYPES[sameColor.targetType]?.color || "#8EA9B8",
-        label: "모으기",
+        label: "목표",
       },
     ];
     return;

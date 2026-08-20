@@ -35,8 +35,14 @@ export const ResetButton = styled.button`
   border: 1px solid #777;
 
   &:disabled {
-    opacity: 0.3;
+    color: #666 !important;
+    border-color: #444;
+    opacity: 0.55;
     cursor: not-allowed;
     pointer-events: none;
+
+    &:hover {
+      background: transparent;
+    }
   }
 `;

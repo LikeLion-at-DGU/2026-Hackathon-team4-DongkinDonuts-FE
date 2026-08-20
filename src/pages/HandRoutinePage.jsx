@@ -224,7 +224,7 @@ const HandRoutinePage = () => {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, handCount, screenDistance, sessionImage: handImage }),
+    () => ({ elapsedTime, successCount, handCount, screenDistance, sessionImage: handImage, sessionStage: "wakeup" }),
     [elapsedTime, successCount, handCount, screenDistance]
   );
   const instructionProps = useMemo(

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawSunrise } from "../engine/sessionVisuals";
@@ -125,7 +125,6 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
 
   const handleReset = useCallback(() => {
     setSunriseCount(0);
-    setElapsedTime(0);
     wasMouthOpenRef.current = false;
     riseRef.current = 0;
     peakRiseRef.current = 0;
@@ -144,7 +143,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage }),
+    () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, sunriseCount, difficulty, screenDistance]
   );
   const instructionSub = useMemo(() => {
@@ -158,7 +157,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     [instructionSub]
   );
   const progressProps = useMemo(
-    () => ({ progressPercent: (sunriseCount / targetCount) * 100 }),
+    () => ({ progressPercent: (sunriseCount / targetCount) * 100, current: sunriseCount, total: targetCount }),
     [sunriseCount]
   );
   const recoverySession = useRecoveryRoutineSession({
@@ -169,6 +168,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       stage,
       difficulty,
     },
+    localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
@@ -186,8 +186,8 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={nextSessionPath}
-      isNextSessionPending={recoverySession.isPreparingNextSession}
+      nextSessionPath={SESSION.nextSessionPath}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

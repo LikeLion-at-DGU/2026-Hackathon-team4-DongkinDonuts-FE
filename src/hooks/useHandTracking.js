@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import { CONFIG } from "../config/handRoutineConfig";
+import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { getDistance, lerp } from "../utils/handUtils";
 import { getUserMediaWithRetry } from "../utils/cameraUtils";
 
@@ -114,8 +115,15 @@ export const useHandTracking = () => {
         const wrist = landmarksList[0][0];
         const middleBase = landmarksList[0][9];
         const handSize = Math.hypot(wrist.x - middleBase.x, wrist.y - middleBase.y);
-        const status = handSize < 0.15 ? "너무 멀어요" : handSize < 0.32 ? "적정" : "너무 가까워요";
-        const rawValue = handSize < 0.15 ? (handSize / 0.15) * 35 : handSize < 0.32 ? 35 + ((handSize - 0.15) / 0.1) * 30 : 65 + Math.min(35, ((handSize - 0.32) / 0.1) * 35);
+        // useMultiTracking(HAND)과 동일한 판정 로직/공식을 공유한다 (TRACKING_CONFIG.handDistance*)
+        const { handDistanceFar: far, handDistanceNear: near, handDistanceClose: close } = TRACKING_CONFIG;
+        const status = handSize < far ? "너무 멀어요" : handSize < near ? "적정" : "너무 가까워요";
+        const rawValue =
+          handSize < far
+            ? (handSize / far) * 35
+            : handSize < near
+              ? 35 + ((handSize - far) / (near - far)) * 30
+              : 65 + Math.min(35, ((handSize - near) / (close - near)) * 35);
         const value = Math.max(0, Math.min(100, rawValue));
         const smoothValue = distanceRef.current.value * 0.75 + value * 0.25;
         distanceRef.current = { value: smoothValue, status };

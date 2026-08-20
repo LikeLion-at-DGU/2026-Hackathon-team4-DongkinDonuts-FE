@@ -5,7 +5,7 @@ export const ProgressSection = styled.div`
   position: absolute;
   left: 7%;
   right: 7%;
-  bottom: 17px;
+  bottom: 10px;
   z-index: 15;
 `;
 
@@ -24,10 +24,17 @@ export const ProgressFill = styled.div`
   transition: width 0.3s ease;
 `;
 
-export const Steps = styled.div`
-  display: flex;
-  justify-content: space-between;
+export const StepsRow = styled.div`
+  position: relative;
   margin-top: 12px;
-  color: #888;
+  height: 20px;
+`;
+
+export const StepLabel = styled.span`
+  position: absolute;
+  top: 0;
+  transform: translateX(${({ $align }) => ($align === "end" ? "-100%" : "-50%")});
+  color: ${({ $active }) => ($active ? "#557bc5" : "#888")};
   font-size: 17px;
+  white-space: nowrap;
 `;
