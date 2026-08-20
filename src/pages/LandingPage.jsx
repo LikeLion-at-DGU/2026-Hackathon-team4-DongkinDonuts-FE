@@ -407,7 +407,7 @@ function LandingPage() {
           <S.ReportBox>
             <S.ReportTop>
               <S.ReportLabel>
-                다음 리셋 시간
+                다음 휴식 시간
               </S.ReportLabel>
 
               <S.AiBadge>
@@ -436,7 +436,7 @@ function LandingPage() {
             <S.ReportBottom>
               <S.ReportBottomText>
                 <S.ReportBottomLabel>
-                  다음 리셋까지
+                  다음 휴식까지
                 </S.ReportBottomLabel>
 
                 <S.ReportBottomDescription>
