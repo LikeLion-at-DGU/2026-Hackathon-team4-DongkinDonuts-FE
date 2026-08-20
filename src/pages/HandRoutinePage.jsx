@@ -216,7 +216,7 @@ const HandRoutinePage = () => {
 
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
-    : "/eye-blink";
+    : "/eye-blink-medium";
 
   const cameraPreviewProps = useMemo(
     () => ({ videoRef, cameraReady, isTerminated }),
@@ -252,7 +252,8 @@ const HandRoutinePage = () => {
       isTerminated={isTerminated}
       resetSession={resetGame}
       onStopSession={handleStopGame}
-      nextSessionPath="/eye-blink-medium"
+      nextSessionPath={nextSessionPath}
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}

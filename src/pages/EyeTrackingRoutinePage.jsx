@@ -184,6 +184,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       elapsedTime,
       successCount,
       stage,
+      difficulty,
     },
   });
   const nextSessionPath = recoverySession.isBackendRoutine

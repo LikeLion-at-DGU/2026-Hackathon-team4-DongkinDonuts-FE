@@ -36,6 +36,11 @@ const router = createBrowserRouter([
       // 세션마다 난이도(low/medium/high)별로 페이지 id 자체가 다른 경로를 갖는다
       // (예: /eye-blink-low, /eye-blink-medium, /eye-blink-high). 같은 컴포넌트를
       // difficulty prop만 다르게 주입해 재사용하며, 새 페이지를 만들지는 않는다.
+      // 난이도 없는 기본 경로는 컴포넌트의 DEFAULT_DIFFICULTY("medium")를 사용한다.
+      {
+        path: "/eye-blink",
+        element: <EyeBlinkRoutinePage key="/eye-blink" />,
+      },
       {
         path: "/eye-blink-low",
         element: <EyeBlinkRoutinePage difficulty="low" key="/eye-blink-low" />,
@@ -47,6 +52,10 @@ const router = createBrowserRouter([
       {
         path: "/eye-blink-high",
         element: <EyeBlinkRoutinePage difficulty="high" key="/eye-blink-high" />,
+      },
+      {
+        path: "/eye-tracking",
+        element: <EyeTrackingRoutinePage key="/eye-tracking" />,
       },
       {
         path: "/eye-tracking-low",
@@ -61,6 +70,10 @@ const router = createBrowserRouter([
         element: <EyeTrackingRoutinePage difficulty="high" key="/eye-tracking-high" />,
       },
       {
+        path: "/neck-stretch",
+        element: <NeckStretchRoutinePage key="/neck-stretch" />,
+      },
+      {
         path: "/neck-stretch-low",
         element: <NeckStretchRoutinePage difficulty="low" key="/neck-stretch-low" />,
       },
@@ -71,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "/neck-stretch-high",
         element: <NeckStretchRoutinePage difficulty="high" key="/neck-stretch-high" />,
+      },
+      {
+        path: "/shoulder-pmr",
+        element: <ShoulderPmrRoutinePage key="/shoulder-pmr" />,
       },
       {
         path: "/shoulder-pmr-low",
@@ -85,6 +102,10 @@ const router = createBrowserRouter([
         element: <ShoulderPmrRoutinePage difficulty="high" key="/shoulder-pmr-high" />,
       },
       {
+        path: "/focus-pinch",
+        element: <FocusPinchRoutinePage key="/focus-pinch" />,
+      },
+      {
         path: "/focus-pinch-low",
         element: <FocusPinchRoutinePage difficulty="low" key="/focus-pinch-low" />,
       },
@@ -95,6 +116,10 @@ const router = createBrowserRouter([
       {
         path: "/focus-pinch-high",
         element: <FocusPinchRoutinePage difficulty="high" key="/focus-pinch-high" />,
+      },
+      {
+        path: "/wakeup-sunrise",
+        element: <SunriseRoutinePage key="/wakeup-sunrise" />,
       },
       {
         path: "/wakeup-sunrise-low",

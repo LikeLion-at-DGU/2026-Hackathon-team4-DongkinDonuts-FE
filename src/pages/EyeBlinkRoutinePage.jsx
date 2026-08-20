@@ -174,6 +174,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     metrics: {
       elapsedTime,
       blinkCount,
+      difficulty,
     },
   });
   const nextSessionPath = recoverySession.isBackendRoutine
