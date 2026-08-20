@@ -94,13 +94,15 @@ export const ActivityCell = styled.td`
 
 export const RoutineCell = styled.td`
     padding: 16px;
-    text-align: center;
+
     font-family: "SUIT", sans-serif;
     font-size: 17px;
     font-weight: 500;
     line-height: 150%;
 
     color: #24272a;
+
+    text-align: center;
 `;
 
 export const StatusCell = styled.td`
@@ -130,6 +132,7 @@ export const RoutineBadge = styled.span`
 
     height: 35px;
 
+    margin: 3px 4px;
     padding: 3px 12px;
 
     border-radius: 20px;
