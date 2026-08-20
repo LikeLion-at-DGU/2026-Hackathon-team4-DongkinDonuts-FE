@@ -49,7 +49,8 @@ export const BrandArea = styled.div`
 export const Logo = styled.h3`
     margin: 0;
 
-    color: #141416;
+    color: ${({ $isDark }) =>
+        $isDark ? "#f5f9fc" : "#141416"};
 
     font-family: Poppins;
     font-size: 45px;
@@ -76,7 +77,8 @@ export const MenuGroup = styled.div`
 export const MenuTitle = styled.h4`
     margin: 0 0 20px;
 
-    color: #3b5266;
+    color: ${({ $isDark }) =>
+        $isDark ? "#d9e2ec" : "#3b5266"};
 
     font-family: Poppins;
     font-size: 14px;
@@ -87,7 +89,8 @@ export const MenuTitle = styled.h4`
 export const MenuItem = styled.span`
     margin-bottom: 12px;
 
-    color: #353945;
+    color: ${({ $isDark }) =>
+        $isDark ? "#b7c4d2" : "#353945"};
 
     font-family: Poppins;
     font-size: 15px;
@@ -97,6 +100,7 @@ export const MenuItem = styled.span`
     cursor: pointer;
 
     &:hover {
-        color: #000000;
+        color: ${({ $isDark }) =>
+            $isDark ? "#ffffff" : "#000000"};
     }
 `;

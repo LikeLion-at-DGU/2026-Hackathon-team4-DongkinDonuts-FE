@@ -36,8 +36,15 @@ const Footer = () => {
     const location = useLocation();
 
     const darkPages = [
+        "/recovery-session",
         "/handroutine",
         "/breathroutine",
+        "/eye-blink",
+        "/eye-tracking",
+        "/neck-stretch",
+        "/shoulder-pmr",
+        "/focus-pinch",
+        "/wakeup-sunrise",
     ];
 
     const isDark = darkPages.includes(
@@ -49,7 +56,7 @@ const Footer = () => {
             <S.Footer>
                 <S.FooterContent>
                     <S.BrandArea>
-                        <S.Logo>
+                        <S.Logo $isDark={isDark}>
                             Brainfit
                         </S.Logo>
 
@@ -60,12 +67,15 @@ const Footer = () => {
 
                     {footerMenus.map((menu) => (
                         <S.MenuGroup key={menu.title}>
-                            <S.MenuTitle>
+                            <S.MenuTitle $isDark={isDark}>
                                 {menu.title}
                             </S.MenuTitle>
 
                             {menu.items.map((item) => (
-                                <S.MenuItem key={item}>
+                                <S.MenuItem
+                                    key={item}
+                                    $isDark={isDark}
+                                >
                                     {item}
                                 </S.MenuItem>
                             ))}
