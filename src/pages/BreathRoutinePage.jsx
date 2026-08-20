@@ -92,6 +92,16 @@ const BreathRoutinePage = () => {
   const phase = useMemo(() => BREATH_PHASES[phaseIndex].key, [phaseIndex]);
   const isUIOverlayVisible = !isTerminated;
 
+  const dataPanelProps = useMemo(() => ({ elapsedTime }), [elapsedTime]);
+  const instructionProps = useMemo(
+    () => ({ mission: BREATH_MISSION, phase }),
+    [phase]
+  );
+  const progressProps = useMemo(
+    () => ({ phases: phaseDurations, elapsedInCycle }),
+    [phaseDurations, elapsedInCycle]
+  );
+
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
@@ -103,12 +113,9 @@ const BreathRoutinePage = () => {
       resetSession={resetGame}
       onStopSession={handleStopGame}
       showOverlay={isUIOverlayVisible}
-      dataPanelProps={{ elapsedTime }}
-      instructionProps={{ mission: BREATH_MISSION, phase }}
-      progressProps={{
-        phases: phaseDurations,
-        elapsedInCycle,
-      }}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
     >
       <BreathPlayArea />
     </SessionPage>

@@ -1,76 +1,132 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
-import { prepareCanvas, drawInfinityPath } from "../engine/sessionVisuals";
+import { lerp, getDistance, getSafeTargetPosition } from "../utils/handUtils";
+import { prepareCanvas, drawGazeNodTargets } from "../engine/sessionVisuals";
 
 const SESSION = ROUTINE_SESSIONS["eye-tracking"];
-
-const PATH_LOOP_MS = 12000;
-const PROGRESS_STEP = 0.6;
-
-// 렘니스케이트(∞) 궤적 위 목표 지점을 중심(0,0) 기준 편차로 반환
-const getInfinityTarget = (elapsedMs) => {
-  const t = ((elapsedMs % PATH_LOOP_MS) / PATH_LOOP_MS) * Math.PI * 2;
-  const denom = 1 + Math.sin(t) * Math.sin(t);
-  return { x: Math.cos(t) / denom, y: (Math.sin(t) * Math.cos(t)) / denom };
-};
+const BURST_MS = 700;
+const TOTAL_STAGES = 3;
+const STAGE_ORDINAL = { 1: "첫 번째", 2: "두 번째", 3: "세 번째" };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+// 매 세션마다 3개 타겟을 handUtils의 getSafeTargetPosition으로 재배치한다.
+// 안전한 공 위치 로직과 동일하게(재시도 + 최소 간격) 화면 중심에서 먼 위치에 무작위로 뜨고,
+// 서로 겹치지 않는다.
+const generateTargets = () => {
+  const targets = [];
+  for (let i = 0; i < TOTAL_STAGES; i += 1) {
+    targets.push(getSafeTargetPosition(targets));
+  }
+  return targets;
+};
+
 export default function EyeTrackingRoutinePage() {
   const navigate = useNavigate();
+  const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  const startTimeRef = useRef(null);
+  const stageRef = useRef(1); // 1~3: 현재 맞춰야 하는 타겟 순번
+  const targetsRef = useRef(generateTargets());
+  const displayYawRef = useRef(0);
+  const displayPitchRef = useRef(0);
+  const alignStartRef = useRef(null);
+  const burstRef = useRef(null);
 
-  const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState(1);
+  const [successCount, setSuccessCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const isMissionComplete = progress >= 100;
+  const isMissionComplete = successCount >= TOTAL_STAGES;
 
   const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("FACE_EYE");
+    useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
     initLandmarker().then(startCamera);
     return () => cleanup();
   }, [initLandmarker, startCamera, cleanup]);
 
+  // 무작위 배치된 타겟을 순서대로 고개(Pitch/Yaw)로 맞추는 트래킹
   useEffect(() => {
     let animId;
     const loop = (t) => {
       const data = detectFrame(t);
 
-      if (data?.gaze) {
-        if (startTimeRef.current == null) startTimeRef.current = t;
-        const target = getInfinityTarget(t - startTimeRef.current);
+      if (data?.headYaw != null) {
+        const targetYaw = clamp(data.headYaw * TRACKING_CONFIG.headYawSensitivity, -1.4, 1.4);
+        const targetPitch = clamp(data.headPitch * TRACKING_CONFIG.headPitchSensitivity, -1.4, 1.4);
+        displayYawRef.current = lerp(displayYawRef.current, targetYaw, TRACKING_CONFIG.headPoseSmoothing);
+        displayPitchRef.current = lerp(displayPitchRef.current, targetPitch, TRACKING_CONFIG.headPoseSmoothing);
 
-        const gaze = {
-          x: clamp((data.gaze.x - 0.5) * TRACKING_CONFIG.gazeSensitivity, -1, 1),
-          y: clamp((data.gaze.y - 0.5) * TRACKING_CONFIG.gazeSensitivity, -1, 1),
+        // 머리 회전 값을 타겟과 동일한 정규화 화면 좌표(0~1)로 매핑
+        const pointer = {
+          x: clamp(0.5 + displayYawRef.current * TRACKING_CONFIG.pointerRangeX, 0, 1),
+          y: clamp(0.5 - displayPitchRef.current * TRACKING_CONFIG.pointerRangeY, 0, 1),
         };
-        const trackingError = Math.hypot(gaze.x - target.x, gaze.y - target.y);
-        const onTarget = trackingError < TRACKING_CONFIG.gazeTolerance;
 
-        if (onTarget && !isMissionComplete) {
-          setProgress((prev) => Math.min(prev + PROGRESS_STEP, 100));
+        const currentStage = stageRef.current;
+        const activeTarget = targetsRef.current[currentStage - 1];
+        const onTarget = getDistance(pointer, activeTarget) <= TRACKING_CONFIG.nodTargetRadius;
+
+        const aligned = onTarget && !isMissionComplete;
+
+        let holdProgress = 0;
+        if (aligned) {
+          if (alignStartRef.current == null) alignStartRef.current = t;
+          const heldMs = t - alignStartRef.current;
+          holdProgress = Math.min(1, heldMs / TRACKING_CONFIG.nodHoldMs);
+          if (heldMs >= TRACKING_CONFIG.nodHoldMs) {
+            alignStartRef.current = null;
+            burstRef.current = { startedAt: t, targetIndex: currentStage - 1 };
+            if (currentStage < TOTAL_STAGES) {
+              stageRef.current = currentStage + 1;
+              setStage(currentStage + 1);
+              setSuccessCount(currentStage);
+            } else {
+              setSuccessCount(TOTAL_STAGES);
+            }
+          }
+        } else {
+          alignStartRef.current = null;
         }
 
-        const prepared = prepareCanvas(previewCanvasRef.current);
+        let burstProgress = 0;
+        let burstIndex = 0;
+        if (burstRef.current) {
+          const burstElapsed = t - burstRef.current.startedAt;
+          if (burstElapsed <= BURST_MS) {
+            burstProgress = burstElapsed / BURST_MS;
+            burstIndex = burstRef.current.targetIndex;
+          } else {
+            burstRef.current = null;
+          }
+        }
+
+        const prepared = prepareCanvas(canvasRef.current);
         if (prepared) {
-          drawInfinityPath(prepared.ctx, prepared.width, prepared.height, { target, gaze, onTarget });
+          drawGazeNodTargets(prepared.ctx, prepared.width, prepared.height, {
+            pointer,
+            targets: targetsRef.current,
+            activeIndex: stageRef.current - 1,
+            onTarget,
+            holdProgress,
+            burstProgress,
+            burstIndex,
+          });
         }
       }
 
       animId = requestAnimationFrame(loop);
     };
-    if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
+    if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -79,26 +135,58 @@ export default function EyeTrackingRoutinePage() {
   }, [isTerminated, isQuitModalOpen, isMissionComplete]);
 
   const handleReset = useCallback(() => {
-    setProgress(0);
+    stageRef.current = 1;
+    targetsRef.current = generateTargets();
+    setStage(1);
+    setSuccessCount(0);
     setElapsedTime(0);
-    startTimeRef.current = null;
+    displayYawRef.current = 0;
+    displayPitchRef.current = 0;
+    alignStartRef.current = null;
+    burstRef.current = null;
     setIsTerminated(false);
   }, []);
+
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
+
+  const cameraPreviewProps = useMemo(
+    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
+    [videoRef, cameraReady, isTerminated]
+  );
+  const dataPanelProps = useMemo(
+    () => ({ elapsedTime, successCount }),
+    [elapsedTime, successCount]
+  );
+  const instructionProps = useMemo(
+    () => ({
+      missionText: SESSION.title,
+      instructionSub:`${SESSION.guideText}`,
+    }),
+    [stage, isMissionComplete]
+  );
+  const progressProps = useMemo(
+    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100 }),
+    [successCount]
+  );
 
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
-      onCloseQuit={() => setIsQuitModalOpen(false)}
-      onConfirmQuit={() => navigate("/")}
+      onCloseQuit={handleCloseQuit}
+      onConfirmQuit={handleConfirmQuit}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
-      onStopSession={() => setIsQuitModalOpen(true)}
+      onStopSession={handleStopSession}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated, fullBleed: true }}
-      dataPanelProps={{ elapsedTime, successCount: isMissionComplete ? 1 : 0 }}
-      instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
-      progressProps={{ progressPercent: progress }}
-    />
+      cameraPreviewProps={cameraPreviewProps}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
+    >
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+    </SessionPage>
   );
 }

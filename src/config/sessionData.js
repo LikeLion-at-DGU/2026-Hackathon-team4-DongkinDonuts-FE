@@ -2,87 +2,49 @@ export const ROUTINE_SESSIONS = {
   "eye-blink": {
     id: "eye-blink",
     title: "지그시 눈 깜빡이기",
-    category: "눈 피로 해소",
-    durationSec: 30,
-    guideText: "화면을 바라보며 눈을 3초간 천천히 감았다가 떠주세요.",
-    cameraRequired: true,
+    guideText: "눈을 2초간 감았다가 떠주세요. (3회 반복)",
     trackingType: "FACE_EYE",
     nextSessionPath: "/eye-tracking",
-    steps: [
-      { step: 1, text: "카메라 정면을 똑바로 바라봅니다." },
-      { step: 2, text: "안내 타이머에 맞춰 눈을 완전히 감습니다." },
-      { step: 3, text: "3초 후 눈을 뜨고 화면의 가이드에 맞춥니다." },
-    ],
   },
   "eye-tracking": {
     id: "eye-tracking",
-    title: "∞ 궤도 시선 추적",
-    category: "눈 피로 해소",
-    durationSec: 45,
-    guideText: "화면에 그려지는 무한대(∞) 궤적을 시선으로 천천히 따라가세요.",
-    cameraRequired: true,
+    title: "타겟 바라보기",
+    guideText: "타겟을 눈으로 바라보며 고개를 움직이세요.",
     trackingType: "FACE_EYE",
     nextSessionPath: "/neck-stretch",
-    steps: [
-      { step: 1, text: "머리를 고정한 채 눈동자만 움직입니다." },
-      { step: 2, text: "원형 가이드를 시선으로 놓치지 않고 따라갑니다." },
-    ],
   },
   "neck-stretch": {
     id: "neck-stretch",
-    title: "목 측면 신전 스트레칭",
-    category: "몸 이완",
-    durationSec: 40,
-    guideText: "손을 머리 위로 올려 목을 좌우로 천천히 지그시 당겨주세요.",
-    cameraRequired: true,
-    trackingType: "HAND_POSE",
+    title: "목 스트레칭",
+    guideText: "목을 좌우로 기울려 1초간 유지해주세요.",
+    trackingType: "POSE",
     nextSessionPath: "/shoulder-pmr",
-    steps: [
-      { step: 1, text: "한 손으로 반대쪽 머리를 감싸 잡습니다." },
-      { step: 2, text: "어깨가 올라가지 않게 고정하고 옆으로 당깁니다." },
-    ],
   },
   "shoulder-pmr": {
     id: "shoulder-pmr",
-    title: "어깨 점진적 근육 이완(PMR)",
-    category: "몸 이완",
-    durationSec: 40,
-    guideText: "주먹을 쥐고 어깨를 으쓱 올려 긴장시킨 후 한번에 툭 떨어뜨리세요.",
-    cameraRequired: true,
-    trackingType: "HAND_POSE",
+    title: "어깨 스트레칭",
+    trackingType: "POSE",
     nextSessionPath: "/focus-pinch",
-    steps: [
-      { step: 1, text: "양손 주먹을 쥐고 어깨를 귀 가까이 올립니다." },
-      { step: 2, text: "5초간 힘을 주고 대기합니다." },
-      { step: 3, text: "숨을 내쉬며 어깨 힘을 한 번에 뺍니다." },
-    ],
   },
   "focus-pinch": {
     id: "focus-pinch",
-    title: "양손 핀치 링 맞추기",
-    category: "집중력 향상",
-    durationSec: 30,
-    guideText: "양손을 벌리고 좁혀 링 크기를 목표 크기에 맞춰보세요.",
-    cameraRequired: true,
+    title: "크기 맞추기",
+    guideText: "양손을 벌리고 좁혀 고리 크기에 맞춰보세요.",
     trackingType: "HAND",
-    nextSessionPath: "/drowsy-ice",
-    steps: [
-      { step: 1, text: "양손을 화면에 모두 보이게 듭니다." },
-      { step: 2, text: "손 사이 간격을 벌리고 좁혀 목표 크기에 맞춥니다." },
-    ],
+    nextSessionPath: "/wakeup-sunrise",
   },
-  "drowsy-ice": {
-    id: "drowsy-ice",
-    title: "얼음 조각 깨기",
-    category: "졸음 깨기",
-    durationSec: 25,
-    guideText: "입을 크게 벌렸다가 다물어보세요. 입을 다물 때마다 얼음이 깨져요.",
-    cameraRequired: true,
+  "wakeup-sunrise": {
+    id: "wakeup-sunrise",
+    title: "입 크게 벌리기",
+    guideText: "입을 크게 벌려 햇살을 끌어올렸다가, 다물어 온몸 가득 퍼뜨려보세요.",
     trackingType: "FACE_EYE",
     nextSessionPath: "/breathroutine",
-    steps: [
-      { step: 1, text: "카메라 정면을 바라보고 입을 크게 벌립니다." },
-      { step: 2, text: "다시 입을 다물면 얼음 조각이 하나 깨집니다." },
-    ],
   },
+};
+
+// SESSION.nextSessionPath("/eye-tracking" 등)로부터 해당 세션이 쓰는 MediaPipe 트래킹 타입을 조회.
+// 세션 전환 시 다음 모델을 미리 로드(preload)할 때 사용 (일치하는 세션이 없으면 null - 예: 심호흡 세션은 카메라 미사용)
+export const getTrackingTypeForPath = (path) => {
+  const session = Object.values(ROUTINE_SESSIONS).find((item) => `/${item.id}` === path);
+  return session?.trackingType ?? null;
 };

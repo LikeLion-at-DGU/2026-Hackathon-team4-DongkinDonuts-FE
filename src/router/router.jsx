@@ -8,7 +8,7 @@ import EyeTrackingRoutinePage from "../pages/EyeTrackingRoutinePage";
 import NeckStretchRoutinePage from "../pages/NeckStretchRoutinePage";
 import ShoulderPmrRoutinePage from "../pages/ShoulderPmrRoutinePage";
 import FocusPinchRoutinePage from "../pages/FocusPinchRoutinePage";
-import DrowsyIceRoutinePage from "../pages/DrowsyIceRoutinePage";
+import SunriseRoutinePage from "../pages/SunriseRoutinePage";
 import SettingsPage from "../pages/SettingsPage";
 
 const router = createBrowserRouter([
@@ -49,8 +49,8 @@ const router = createBrowserRouter([
         element: <FocusPinchRoutinePage key="/focus-pinch" />,
       },
       {
-        path: "/drowsy-ice",
-        element: <DrowsyIceRoutinePage key="/drowsy-ice" />,
+        path: "/wakeup-sunrise",
+        element: <SunriseRoutinePage key="/wakeup-sunrise" />,
       },
       {
         path: "/",
