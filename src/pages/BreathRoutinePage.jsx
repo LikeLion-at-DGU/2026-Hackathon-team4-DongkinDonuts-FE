@@ -8,6 +8,8 @@ import {
 } from "../components/sessions/BrainResetPostSessionModals";
 import { getNextResetTime } from "../api/plans";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
+import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { getPersistedElapsedSeconds } from "../utils/sessionDurationStorage";
 import SessionPage from "./SessionPage";
 
 const BREATH_PHASES = [
@@ -36,7 +38,7 @@ const getPhase = (cycleTime) => {
 
 const BreathRoutinePage = () => {
   const navigate = useNavigate();
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
   const [elapsedInCycle, setElapsedInCycle] = useState(0);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
@@ -45,6 +47,10 @@ const BreathRoutinePage = () => {
   const [postSessionStep, setPostSessionStep] = useState(null);
   const [shouldCheckNextRest, setShouldCheckNextRest] = useState(false);
   const startedAtRef = useRef(null);
+  // 이 페이지 진입 전까지 이전 세션들에서 쌓인 지속 시간(오프셋). 아래 인터벌은 이 페이지
+  // 자신의 경과 시간(0~TOTAL_DURATION)만 계산하므로, 화면에 표시되는 elapsedTime은 항상
+  // 이 오프셋 + 페이지 자체 경과 시간으로 이어서 계산해야 이전 세션의 지속 시간이 끊기지 않는다.
+  const baseElapsedRef = useRef(null);
   const hasStartedPostSessionFlowRef = useRef(false);
 
   const phaseDurations = useMemo(
@@ -56,6 +62,7 @@ const BreathRoutinePage = () => {
     if (isTerminated || isMissionComplete) return undefined;
 
     startedAtRef.current ??= performance.now();
+    baseElapsedRef.current ??= getPersistedElapsedSeconds();
 
     const timer = window.setInterval(() => {
       const elapsed = Math.min(
@@ -66,7 +73,8 @@ const BreathRoutinePage = () => {
       const cycleTime = elapsed % CYCLE_DURATION;
       const nextPhaseIndex = getPhase(Math.floor(cycleTime));
 
-      setElapsedTime((previous) => previous === wholeSeconds ? previous : wholeSeconds);
+      const totalElapsed = baseElapsedRef.current + wholeSeconds;
+      setElapsedTime((previous) => previous === totalElapsed ? previous : totalElapsed);
       setElapsedInCycle(cycleTime);
       setPhaseIndex((previous) => previous === nextPhaseIndex ? previous : nextPhaseIndex);
 
@@ -93,6 +101,7 @@ const BreathRoutinePage = () => {
 
   const resetGame = useCallback(() => {
     startedAtRef.current = performance.now();
+    baseElapsedRef.current = 0;
     hasStartedPostSessionFlowRef.current = false;
     setIsQuitModalOpen(false);
     setIsTerminated(false);

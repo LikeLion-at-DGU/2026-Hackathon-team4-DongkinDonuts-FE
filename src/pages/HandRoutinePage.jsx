@@ -255,6 +255,7 @@ const HandRoutinePage = () => {
       onStopSession={handleStopGame}
       nextSessionPath={nextSessionPath}
       isNextSessionPending={recoverySession.isPreparingNextSession}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}

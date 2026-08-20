@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
+import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -42,7 +43,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
   const [stage, setStage] = useState(1);
   const [successCount, setSuccessCount] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 

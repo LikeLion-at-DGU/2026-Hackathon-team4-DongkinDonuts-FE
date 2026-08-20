@@ -58,7 +58,6 @@ export const setupMission = ({
         y: 0.55 + Math.random() * 0.15,
         radius: 0.13,
         color: BALL_TYPES[sameColor.targetType]?.color || "#8EA9B8",
-        label: "목표",
       },
     ];
     return;
@@ -66,12 +65,12 @@ export const setupMission = ({
 
   if (nextMission.type === "MOVING_TARGET") {
     ballsRef.current = createMovingTargetBalls();
+    const { xMin, xMax, yMin, yMax } = CONFIG.movingTargetBounds;
     movingTargetRef.current = {
-      x: 0.22 + Math.random() * 0.56,
-      y: 0.28 + Math.random() * 0.28,
+      x: xMin + Math.random() * (xMax - xMin),
+      y: yMin + Math.random() * (yMax - yMin),
       radius: 0.11,
       color: "#BBBBBB",
-      label: "목표",
       vx: (Math.random() > 0.5 ? 1 : -1) * 0.00042,
       vy: (Math.random() > 0.5 ? 1 : -1) * 0.00024,
     };
@@ -97,7 +96,6 @@ export const setupMission = ({
       y: 0.55 + Math.random() * 0.15,
       radius: 0.11,
       color: BALL_TYPES.green.color,
-      label: "초록",
     },
     {
       id: "blue",
@@ -105,7 +103,6 @@ export const setupMission = ({
       y: 0.55 + Math.random() * 0.15,
       radius: 0.11,
       color: BALL_TYPES.blue.color,
-      label: "파랑",
     },
     {
       id: "pink",
@@ -113,7 +110,6 @@ export const setupMission = ({
       y: 0.55 + Math.random() * 0.15,
       radius: 0.11,
       color: BALL_TYPES.pink.color,
-      label: "핑크",
     },
   ];
 };

@@ -10,14 +10,18 @@ export const updateMovingTarget = ({ mission, movingTargetRef }) => {
   target.x += target.vx;
   target.y += target.vy;
 
-  if (target.x > 0.65 || target.x < 0.22) {
+  // 좌상단 카메라 미리보기 박스와 겹치지 않도록 CONFIG.movingTargetBounds 범위 안에서만
+  // 움직이게 한다 (자세한 산출 근거는 handRoutineConfig.js 주석 참고).
+  const { xMin, xMax, yMin, yMax } = CONFIG.movingTargetBounds;
+
+  if (target.x > xMax || target.x < xMin) {
     target.vx *= -1;
-    target.x = Math.max(0.22, Math.min(0.65, target.x));
+    target.x = Math.max(xMin, Math.min(xMax, target.x));
   }
 
-  if (target.y > 0.58 || target.y < 0.25) {
+  if (target.y > yMax || target.y < yMin) {
     target.vy *= -1;
-    target.y = Math.max(0.25, Math.min(0.58, target.y));
+    target.y = Math.max(yMin, Math.min(yMax, target.y));
   }
 };
 
