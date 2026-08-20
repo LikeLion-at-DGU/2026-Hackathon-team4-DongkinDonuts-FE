@@ -3,17 +3,20 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawSunrise } from "../engine/sessionVisuals";
 
-const SESSION = ROUTINE_SESSIONS["wakeup-sunrise"];
+const BASE_ID = "wakeup-sunrise";
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
-export default function SunriseRoutinePage() {
+export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
   const navigate = useNavigate();
+  const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
+  const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const wasMouthOpenRef = useRef(false);
@@ -28,10 +31,10 @@ export default function SunriseRoutinePage() {
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const targetCount = 5;
+  const targetCount = LEVEL.targetCount;
   const isMissionComplete = sunriseCount >= targetCount;
 
-  const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
+  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
     useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
@@ -55,8 +58,8 @@ export default function SunriseRoutinePage() {
 
       if (!isMissionComplete && !convergingRef.current) {
         const target = clamp01(
-          (mouthRatio - TRACKING_CONFIG.sunriseMouthRatioMin) /
-            (TRACKING_CONFIG.sunriseMouthRatioMax - TRACKING_CONFIG.sunriseMouthRatioMin)
+          (mouthRatio - LEVEL.mouthRatioMin) /
+            (LEVEL.mouthRatioMax - LEVEL.mouthRatioMin)
         );
         riseRef.current = lerp(riseRef.current, target, TRACKING_CONFIG.sunriseRiseSmoothing);
         if (riseRef.current > peakRiseRef.current) peakRiseRef.current = riseRef.current;
@@ -64,7 +67,7 @@ export default function SunriseRoutinePage() {
         if (
           !isMouthOpen &&
           wasMouthOpenRef.current &&
-          peakRiseRef.current >= TRACKING_CONFIG.sunrisePeakRequiredProgress
+          peakRiseRef.current >= LEVEL.peakRequiredProgress
         ) {
           convergingRef.current = { startedAt: t, fromRise: riseRef.current };
         }
@@ -73,7 +76,7 @@ export default function SunriseRoutinePage() {
 
       let nextStage = "idle";
       if (convergingRef.current) nextStage = "converging";
-      else if (isMouthOpen && riseRef.current >= TRACKING_CONFIG.sunrisePeakRequiredProgress) nextStage = "ready";
+      else if (isMouthOpen && riseRef.current >= LEVEL.peakRequiredProgress) nextStage = "ready";
       else if (isMouthOpen) nextStage = "rising";
       if (nextStage !== stageRef.current) {
         stageRef.current = nextStage;
@@ -111,7 +114,7 @@ export default function SunriseRoutinePage() {
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -140,8 +143,8 @@ export default function SunriseRoutinePage() {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: sunriseCount }),
-    [elapsedTime, sunriseCount]
+    () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance }),
+    [elapsedTime, sunriseCount, difficulty, screenDistance]
   );
   const instructionSub = useMemo(() => {
     if (stage === "converging") return "햇살이 번지고 있어요";
@@ -181,8 +184,7 @@ export default function SunriseRoutinePage() {
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={nextSessionPath}
-      isNextSessionPending={recoverySession.isPreparingNextSession}
+      nextSessionPath={SESSION.nextSessionPath}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

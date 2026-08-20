@@ -252,8 +252,7 @@ const HandRoutinePage = () => {
       isTerminated={isTerminated}
       resetSession={resetGame}
       onStopSession={handleStopGame}
-      nextSessionPath={nextSessionPath}
-      isNextSessionPending={recoverySession.isPreparingNextSession}
+      nextSessionPath="/eye-blink-medium"
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}

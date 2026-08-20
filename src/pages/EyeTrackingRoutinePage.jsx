@@ -3,35 +3,37 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { lerp, getDistance, getSafeTargetPosition } from "../utils/handUtils";
 import { prepareCanvas, drawGazeNodTargets } from "../engine/sessionVisuals";
 
-const SESSION = ROUTINE_SESSIONS["eye-tracking"];
+const BASE_ID = "eye-tracking";
 const BURST_MS = 700;
-const TOTAL_STAGES = 3;
-const STAGE_ORDINAL = { 1: "첫 번째", 2: "두 번째", 3: "세 번째" };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-// 매 세션마다 3개 타겟을 handUtils의 getSafeTargetPosition으로 재배치한다.
+// 매 세션마다 totalStages개 타겟을 handUtils의 getSafeTargetPosition으로 재배치한다.
 // 안전한 공 위치 로직과 동일하게(재시도 + 최소 간격) 화면 중심에서 먼 위치에 무작위로 뜨고,
 // 서로 겹치지 않는다.
-const generateTargets = () => {
+const generateTargets = (totalStages) => {
   const targets = [];
-  for (let i = 0; i < TOTAL_STAGES; i += 1) {
+  for (let i = 0; i < totalStages; i += 1) {
     targets.push(getSafeTargetPosition(targets));
   }
   return targets;
 };
 
-export default function EyeTrackingRoutinePage() {
+export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
   const navigate = useNavigate();
+  const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
+  const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
+  const TOTAL_STAGES = LEVEL.totalStages;
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  const stageRef = useRef(1); // 1~3: 현재 맞춰야 하는 타겟 순번
-  const targetsRef = useRef(generateTargets());
+  const stageRef = useRef(1); // 1~TOTAL_STAGES: 현재 맞춰야 하는 타겟 순번
+  const targetsRef = useRef(generateTargets(TOTAL_STAGES));
   const displayYawRef = useRef(0);
   const displayPitchRef = useRef(0);
   const alignStartRef = useRef(null);
@@ -45,7 +47,7 @@ export default function EyeTrackingRoutinePage() {
 
   const isMissionComplete = successCount >= TOTAL_STAGES;
 
-  const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
+  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
     useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export default function EyeTrackingRoutinePage() {
 
         const currentStage = stageRef.current;
         const activeTarget = targetsRef.current[currentStage - 1];
-        const onTarget = getDistance(pointer, activeTarget) <= TRACKING_CONFIG.nodTargetRadius;
+        const onTarget = getDistance(pointer, activeTarget) <= LEVEL.nodTargetRadius;
 
         const aligned = onTarget && !isMissionComplete;
 
@@ -86,8 +88,8 @@ export default function EyeTrackingRoutinePage() {
         if (aligned) {
           if (alignStartRef.current == null) alignStartRef.current = t;
           const heldMs = t - alignStartRef.current;
-          holdProgress = Math.min(1, heldMs / TRACKING_CONFIG.nodHoldMs);
-          if (heldMs >= TRACKING_CONFIG.nodHoldMs) {
+          holdProgress = Math.min(1, heldMs / LEVEL.nodHoldMs);
+          if (heldMs >= LEVEL.nodHoldMs) {
             alignStartRef.current = null;
             burstRef.current = { startedAt: t, targetIndex: currentStage - 1 };
             if (currentStage < TOTAL_STAGES) {
@@ -132,7 +134,7 @@ export default function EyeTrackingRoutinePage() {
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -142,7 +144,7 @@ export default function EyeTrackingRoutinePage() {
 
   const handleReset = useCallback(() => {
     stageRef.current = 1;
-    targetsRef.current = generateTargets();
+    targetsRef.current = generateTargets(TOTAL_STAGES);
     setStage(1);
     setSuccessCount(0);
     setElapsedTime(0);
@@ -162,8 +164,8 @@ export default function EyeTrackingRoutinePage() {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount }),
-    [elapsedTime, successCount]
+    () => ({ elapsedTime, successCount, difficulty, screenDistance }),
+    [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
     () => ({

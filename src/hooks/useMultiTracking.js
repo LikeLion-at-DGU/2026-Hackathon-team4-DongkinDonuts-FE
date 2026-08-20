@@ -130,14 +130,25 @@ const getHeadPose = (face) => {
 
 const CAMERA_CONSTRAINTS = { video: { width: 1280, height: 720, facingMode: "user" } };
 
+// 트래킹 타입별 화면 거리 판정 임계값(정규화 좌표 기준 크기 지표) 매핑
+const DISTANCE_THRESHOLDS = {
+  HAND: { far: TRACKING_CONFIG.handDistanceFar, near: TRACKING_CONFIG.handDistanceNear, close: TRACKING_CONFIG.handDistanceClose },
+  FACE_EYE: { far: TRACKING_CONFIG.faceDistanceFar, near: TRACKING_CONFIG.faceDistanceNear, close: TRACKING_CONFIG.faceDistanceClose },
+  POSE: { far: TRACKING_CONFIG.poseDistanceFar, near: TRACKING_CONFIG.poseDistanceNear, close: TRACKING_CONFIG.poseDistanceClose },
+};
+
 export const useMultiTracking = (trackingType = "HAND", { paused = false } = {}) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const landmarkerRef = useRef(null);
   // 진행 중인 getUserMedia() 요청을 담아둔다(중복 요청 방지용, 아래 startCamera 주석 참고).
   const cameraRequestRef = useRef(null);
+  const distanceRef = useRef({ value: 50, status: "적정" });
+  const lastDistanceUpdateRef = useRef(0);
+  const distanceLostCountRef = useRef(0);
   const [cameraReady, setCameraReady] = useState(false);
   const [trackingData, setTrackingData] = useState({});
+  const [screenDistance, setScreenDistance] = useState({ value: 50, status: "적정" });
 
   // 1. 카메라 시작
   const startCamera = useCallback(() => {
@@ -199,9 +210,13 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
 
     const res = detector.detectForVideo(video, timestamp);
     let parsedMetrics = {};
+    // 화면 거리 지표: 손 = 손목-중지 MCP 거리, 얼굴 = 양쪽 광대 사이 거리, 포즈 = 어깨너비.
+    // 각 분기에서 랜드마크가 감지된 경우에만 채워지며, 아래에서 DISTANCE_THRESHOLDS로 판정한다.
+    let distanceSize = null;
 
     if (trackingType === "FACE_EYE" && res.faceLandmarks?.[0]) {
       const face = res.faceLandmarks[0];
+      distanceSize = getDistance(face[LEFT_CHEEK], face[RIGHT_CHEEK]);
 
       // EAR (Eye Aspect Ratio): 눈 크기로 정규화되어 카메라 거리와 무관하게 동작
       const earAvg = (getEAR(face, RIGHT_EYE) + getEAR(face, LEFT_EYE)) / 2;
@@ -277,6 +292,8 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
       const cross = shoulderVec.x * neckVec.y - shoulderVec.y * neckVec.x;
       const neckTiltDeg = Math.atan2(dot, cross) * (180 / Math.PI);
 
+      distanceSize = shoulderWidth;
+
       // headPoint/neckPoint: 카메라 원본(미러링 전) 좌표 그대로 노출한다. 화면(미러링된
       // 프리뷰) 위에 그릴 때는 그리는 쪽에서 x를 반전(1-x)해서 사용한다.
       parsedMetrics = { neckTiltDeg, headPoint, neckPoint, shoulderY: shoulderMid.y, shoulderWidth, raw: pose };
@@ -287,6 +304,8 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
         palmCenter: { x: 1 - hand[9].x, y: hand[9].y },
         pinchDist: getDistance(hand[4], hand[8]),
       }));
+      // 화면 거리는 첫 번째 손의 손목(0)-중지 MCP(9) 거리로 판정 (useHandTracking과 동일한 지표)
+      distanceSize = getDistance(res.landmarks[0][0], res.landmarks[0][9]);
 
       parsedMetrics = {
         isPinching: hands[0] ? hands[0].pinchDist < 0.05 : false,
@@ -295,6 +314,27 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
         handCount: hands.length,
         raw: res.landmarks,
       };
+    }
+
+    if (distanceSize != null) {
+      distanceLostCountRef.current = 0;
+      const { far, near, close } = DISTANCE_THRESHOLDS[trackingType];
+      const status = distanceSize < far ? "너무 멀어요" : distanceSize < near ? "적정" : "너무 가까워요";
+      const rawValue =
+        distanceSize < far
+          ? (distanceSize / far) * 35
+          : distanceSize < near
+            ? 35 + ((distanceSize - far) / (near - far)) * 30
+            : 65 + Math.min(35, ((distanceSize - near) / (close - near)) * 35);
+      const value = Math.max(0, Math.min(100, rawValue));
+      const smoothValue = distanceRef.current.value * 0.75 + value * 0.25;
+      distanceRef.current = { value: smoothValue, status };
+      if (timestamp - lastDistanceUpdateRef.current >= TRACKING_CONFIG.distanceUpdateInterval) {
+        lastDistanceUpdateRef.current = timestamp;
+        setScreenDistance({ value: smoothValue, status });
+      }
+    } else if (++distanceLostCountRef.current >= TRACKING_CONFIG.distanceLostMaxFrames) {
+      setScreenDistance((current) => (current.status === "인식하지 못함" ? current : { value: 5, status: "인식하지 못함" }));
     }
 
     setTrackingData(parsedMetrics);
@@ -312,5 +352,5 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
     landmarkerRef.current = null;
   }, []);
 
-  return { videoRef, cameraReady, trackingData, startCamera, initLandmarker, detectFrame, cleanup };
+  return { videoRef, cameraReady, trackingData, screenDistance, startCamera, initLandmarker, detectFrame, cleanup };
 };

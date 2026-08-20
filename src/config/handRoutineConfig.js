@@ -10,6 +10,4 @@ export const CONFIG = {
   lostHandGraceTime: 350,
   distanceUpdateInterval: 100,
   handLostMaxFrames: 15,
-
-  timeAttackDuration: 20,
 };
