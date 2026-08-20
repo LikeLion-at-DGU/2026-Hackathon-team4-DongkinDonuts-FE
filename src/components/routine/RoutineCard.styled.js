@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Card = styled.article`
   position: relative;
@@ -109,7 +110,7 @@ export const Description = styled.p`
 
   color: #ffffff;
 
-  font-family: Poppins;
+  font-family: ${FONT_POPPINS};
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
@@ -197,7 +198,7 @@ export const Status = styled.span`
 
   text-align: center;
 
-  font-family: Poppins;
+  font-family: ${FONT_POPPINS};
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;

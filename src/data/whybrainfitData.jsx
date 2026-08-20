@@ -1,3 +1,7 @@
+import problemImage from "../assets/images/problem.png";
+import interactionImage from "../assets/images/interaction.png";
+import movementImage from "../assets/images/movement.png";
+
 export const whyBrainfitData = [
     {
         id: 1,
@@ -13,7 +17,7 @@ export const whyBrainfitData = [
                 소비하는 '디지털 피로의 역설'이 발생하고 있습니다.
             </>
         ),
-        image: "/images/problem.png",
+        image: problemImage,
         cardCategory: "CONTENTS CONSUMPTION",
         cardTitle: "콘텐츠 소비",
         cardDescription: (
@@ -46,7 +50,7 @@ export const whyBrainfitData = [
                 반응하고, 감각을 깨우는 방식을 택합니다.
             </>
         ),
-        image: "/images/interaction.png",
+        image: interactionImage,
         cardCategory: "ACTIVE INTERACTION",
         cardTitle: "능동적인 상호작용",
         cardDescription: (
@@ -79,7 +83,7 @@ export const whyBrainfitData = [
                 즉각적인 피드백을 통해 능동적인 상호작용을 만들어냅니다.
             </>
         ),
-        image: "/images/movement.png",
+        image: movementImage,
         cardCategory: "MOVEMENT INPUT",
         cardTitle: "움직임 기반 입력",
         cardDescription: (

@@ -15,7 +15,7 @@ function DigitalScheduleCard() {
         toggleAlarm,
     } = useUpcomingSchedule();
 
-    const formatTime = (dateTime) => {
+    const formatScheduleTime = (dateTime) => {
         if (!dateTime) {
             return "--:--";
         }
@@ -202,7 +202,7 @@ function DigitalScheduleCard() {
                                         <S.Circle />
 
                                         <span>
-                                            {formatTime(
+                                            {formatScheduleTime(
                                                 schedule.effective_time
                                             )}
                                         </span>

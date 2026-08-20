@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const TopArea = styled.div`
     display: flex;
@@ -10,7 +11,7 @@ export const TopArea = styled.div`
 export const Title = styled.h3`
     margin: 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 30px;
     font-weight: 600;
     line-height: 40.232px;
@@ -22,7 +23,7 @@ export const Title = styled.h3`
 export const Description = styled.p`
     margin: 10px 0 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 19px;
     font-weight: 400;
     line-height: 32.186px;
@@ -36,7 +37,7 @@ export const CheckGuide = styled.div`
     align-items: center;
     gap: 24px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 13px;
     font-weight: 500;
 
@@ -100,7 +101,7 @@ export const Table = styled.table`
     border-collapse: collapse;
     table-layout: fixed;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
 
     th,
     td {
@@ -236,7 +237,7 @@ export const RowButton = styled.button`
     color: ${({ $selected }) =>
         $selected ? "#ffffff" : "#4F5459"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 400;
     line-height: 14px;
@@ -251,7 +252,7 @@ export const TableFooter = styled.div`
 
     padding-top: 16px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 11px;
 
     color: #999999;
@@ -261,7 +262,7 @@ export const SelectedText = styled.span`
     justify-self: start;
     color: #949191;
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-style: normal;
     font-weight: 500;
@@ -279,7 +280,7 @@ export const ScrollGuide = styled.span`
     color: #868383;
     margin-top: 5px;
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 19.646px;
     font-style: normal;
     font-weight: 400;
@@ -295,7 +296,7 @@ export const ResetButton = styled.button`
 
     color: #949494;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-style: normal;
     font-weight: 500;

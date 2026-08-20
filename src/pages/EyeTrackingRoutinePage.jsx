@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
-import { useMultiTracking } from "../hooks/useMultiTracking";
-import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { useCameraRoutineSession } from "../hooks/useCameraRoutineSession";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -28,12 +26,10 @@ const generateTargets = (totalStages) => {
 };
 
 export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
-  const navigate = useNavigate();
   const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
   const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const TOTAL_STAGES = LEVEL.totalStages;
   const canvasRef = useRef(null);
-  const previewCanvasRef = useRef(null);
   const stageRef = useRef(1); // 1~TOTAL_STAGES: 현재 맞춰야 하는 타겟 순번
   const targetsRef = useRef(generateTargets(TOTAL_STAGES));
   const displayYawRef = useRef(0);
@@ -43,24 +39,22 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
   const [stage, setStage] = useState(1);
   const [successCount, setSuccessCount] = useState(0);
-  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
-  const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const isMissionComplete = successCount >= TOTAL_STAGES;
 
-  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
-
-  useEffect(() => {
-    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
-    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
-    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
-    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
-    initLandmarker();
-    startCamera();
-    return () => cleanup();
-  }, [initLandmarker, startCamera, cleanup]);
+  const {
+    cameraReady,
+    screenDistance,
+    detectFrame,
+    elapsedTime,
+    isQuitModalOpen,
+    isTerminated,
+    setIsTerminated,
+    handleCloseQuit,
+    handleConfirmQuit,
+    handleStopSession,
+    cameraPreviewProps,
+  } = useCameraRoutineSession({ trackingType: "FACE_EYE", isMissionComplete });
 
   // 무작위 배치된 타겟을 순서대로 고개(Pitch/Yaw)로 맞추는 트래킹
   useEffect(() => {
@@ -140,12 +134,6 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     return () => cancelAnimationFrame(animId);
   }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
-  useEffect(() => {
-    if (isTerminated || isQuitModalOpen || isMissionComplete) return;
-    const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isTerminated, isQuitModalOpen, isMissionComplete]);
-
   const handleReset = useCallback(() => {
     stageRef.current = 1;
     targetsRef.current = generateTargets(TOTAL_STAGES);
@@ -156,16 +144,8 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     alignStartRef.current = null;
     burstRef.current = null;
     setIsTerminated(false);
-  }, []);
+  }, [setIsTerminated]);
 
-  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
-  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
-
-  const cameraPreviewProps = useMemo(
-    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
-    [videoRef, cameraReady, isTerminated]
-  );
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, successCount, difficulty, screenDistance]

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const FooterContainer = styled.footer`
     width: 100%;
@@ -53,7 +54,7 @@ export const Logo = styled.h3`
     color: ${({ $isDark }) =>
         $isDark ? "#ffffff" : "#141416"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 45px;
     font-weight: 600;
     line-height: 1;
@@ -63,7 +64,7 @@ export const Copyright = styled.span`
     color: ${({ $isDark }) =>
         $isDark ? "#ffffff" : "#95a1bb"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
     line-height: 20px;
@@ -82,7 +83,7 @@ export const MenuTitle = styled.h4`
     color: ${({ $isDark }) =>
         $isDark ? "#ffffff" : "#3b5266"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 600;
     line-height: 24px;
@@ -94,7 +95,7 @@ export const MenuItem = styled.span`
     color: ${({ $isDark }) =>
         $isDark ? "#ffffff" : "#353945"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 15px;
     font-weight: 400;
     line-height: 22px;

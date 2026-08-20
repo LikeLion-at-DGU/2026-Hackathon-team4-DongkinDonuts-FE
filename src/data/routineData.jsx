@@ -1,3 +1,5 @@
+import brainResetImage from "../assets/images/brain-reset.png";
+
 export const routineData = [
     {
         id: 1,
@@ -11,7 +13,7 @@ export const routineData = [
             </>
         ),
         status: "미완료",
-        image: "/images/brain-reset.png",
+        image: brainResetImage,
     },
     {
         id: 2,
@@ -26,7 +28,7 @@ export const routineData = [
                 주의를 전환해보세요.
             </>
         ),
-        image: "/images/brain-reset.png",
+        image: brainResetImage,
         featured: true,
     },
     {
@@ -41,6 +43,6 @@ export const routineData = [
             </>
         ),
         status: "미완료",
-        image: "/images/brain-reset.png",
+        image: brainResetImage,
     },
 ];

@@ -1,9 +1,39 @@
 import { useCallback, useRef, useState } from "react";
-import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import { HandLandmarker } from "@mediapipe/tasks-vision";
 import { CONFIG } from "../config/handRoutineConfig";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { getDistance, lerp } from "../utils/handUtils";
 import { getUserMediaWithRetry } from "../utils/cameraUtils";
+import { getVisionFileset, createWithFallback } from "./useMultiTracking";
+
+// HandRoutinePage 전용 HandLandmarker 캐시. useMultiTracking의 landmarkerCache(HAND)와는
+// confidence 임계값이 달라(여기는 손 쥐기 판정에 맞춘 0.55) 같은 캐시 키를 공유하면 방문 순서에
+// 따라 FocusPinchRoutinePage와 서로 다른 설정을 가로채는 문제가 생긴다. 대신 WASM 런타임 로드
+// (getVisionFileset)와 GPU 실패 시 CPU 재시도(createWithFallback)만 공유해 중복 초기화 코드를
+// 줄이고, 모델 자체는 이 페이지 전용으로 앱 수명 동안 한 번만 로드해 재방문 시 재다운로드를 막는다.
+let handRoutineLandmarkerPromise = null;
+const loadHandRoutineLandmarker = () => {
+  if (!handRoutineLandmarkerPromise) {
+    handRoutineLandmarkerPromise = (async () => {
+      const vision = await getVisionFileset();
+      return createWithFallback(HandLandmarker, vision, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.55,
+        minHandPresenceConfidence: 0.55,
+        minTrackingConfidence: 0.55,
+      });
+    })().catch((error) => {
+      handRoutineLandmarkerPromise = null;
+      throw error;
+    });
+  }
+  return handRoutineLandmarkerPromise;
+};
 
 const getPalmCenter = (landmarks) => {
   const points = [landmarks[0], landmarks[5], landmarks[9], landmarks[13], landmarks[17]];
@@ -52,7 +82,8 @@ export const useHandTracking = () => {
     }
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
-    try { handLandmarkerRef.current?.close(); } catch (error) { console.error("MediaPipe close error:", error); }
+    // 랜드마커는 모듈 캐시(handRoutineLandmarkerPromise)가 소유하며 재방문 시 재사용하므로
+    // 여기서 close()하지 않는다(useMultiTracking의 cleanup과 동일한 정책).
     handLandmarkerRef.current = null;
     setCameraReady(false);
   }, []);
@@ -96,11 +127,7 @@ export const useHandTracking = () => {
   const initializeMediaPipe = useCallback(async () => {
     if (handLandmarkerRef.current) return;
     try {
-      const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm");
-      handLandmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: "GPU" },
-        runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55, minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
-      });
+      handLandmarkerRef.current = await loadHandRoutineLandmarker();
     } catch (error) { console.error("MediaPipe 초기화에 실패했습니다.", error); }
   }, []);
 

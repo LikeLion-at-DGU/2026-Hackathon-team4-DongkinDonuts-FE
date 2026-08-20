@@ -21,7 +21,7 @@ const RIGHT_CHEEK = 454;
 
 // Vision WASM 런타임은 모든 트래킹 타입이 공유하므로 앱 수명 동안 한 번만 로드
 let visionFilesetPromise = null;
-const getVisionFileset = () => {
+export const getVisionFileset = () => {
   if (!visionFilesetPromise) {
     visionFilesetPromise = FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
@@ -31,7 +31,7 @@ const getVisionFileset = () => {
 };
 
 // GPU 위임이 실패하는 환경(GPU 드라이버/브라우저 문제)이 있어 실패 시 CPU로 재시도
-const createWithFallback = async (LandmarkerClass, vision, options) => {
+export const createWithFallback = async (LandmarkerClass, vision, options) => {
   try {
     return await LandmarkerClass.createFromOptions(vision, options);
   } catch (error) {

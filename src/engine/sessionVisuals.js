@@ -309,46 +309,6 @@ export const drawTiltIndicator = (ctx, w, h, {
 };
 
 // ======================================================
-// 목/기준점 오버레이 — 실제 카메라 프리뷰 위에, 목 기울기 계산에 쓰이는 두 기준점
-// (정수리 근사 위치 headPoint, 목 중앙 피벗 neckPoint)을 그 프레임에 실제로 감지된 위치
-// 그대로 점으로 찍어 인식이 어디를 보고 있는지 눈으로 확인시켜준다. 이 값은 가공하지 않은
-// "진짜" 기준이며, 캔버스 쪽 게이지(drawTiltIndicator)가 이 실제 인식값을 잘 따라가는지는
-// 게이지 쪽 스무딩/보정 로직을 조정해서 맞춘다. 두 점은 useMultiTracking이 돌려주는 원본
-// (미러링 전) 정규화 좌표라, 실제 화면(미러링된 프리뷰) 기준 위치에 맞추기 위해 x를
-// 반전(1-x)해서 그린다.
-// ======================================================
-export const drawHeadShoulderPoints = (ctx, w, h, { headPoint, neckPoint }) => {
-  if (!headPoint || !neckPoint) return;
-  const toPx = (p) => ({ x: (1 - p.x) * w, y: p.y * h });
-  const head = toPx(headPoint);
-  const neck = toPx(neckPoint);
-
-  ctx.save();
-
-  ctx.beginPath();
-  ctx.moveTo(head.x, head.y);
-  ctx.lineTo(neck.x, neck.y);
-  ctx.strokeStyle = "rgba(255,255,255,0.4)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([4, 5]);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  const drawDot = (point, color) => {
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 10;
-    ctx.fill();
-  };
-  drawDot(head, "rgba(160,255,210,0.95)");
-  drawDot(neck, "rgba(120,200,255,0.95)");
-
-  ctx.restore();
-};
-
-// ======================================================
 // 어깨 으쓱 — 화면 중앙의 원. 어깨를 으쓱 올려 긴장하는 동안(squeezeAmount: 0~1)
 // 원이 점점 작게 스퀴즈되며 차분한 색에서 긴장을 나타내는 색으로 서서히 물들고,
 // 어깨를 툭 떨어뜨리면 같은 값을 거꾸로 따라가며 원래 크기/색으로 그대로
@@ -512,90 +472,6 @@ export const drawGazeNodTargets = (ctx, w, h, {
     ctx.restore();
   }
 
-  ctx.restore();
-};
-
-// ======================================================
-// 목/어깨 공용 — 실제 인식된 포즈 랜드마크 점 + 연결선을 그려서 인식 여부를 눈으로 확인
-// (pose: MediaPipe PoseLandmarker의 raw 33포인트 배열, 좌표는 미러링 전 원본이라 x를 반전해서 그림)
-// ======================================================
-export const drawPoseLandmarks = (ctx, w, h, { pose }) => {
-  if (!pose) return;
-  const toPx = (point) => ({ x: (1 - point.x) * w, y: point.y * h });
-
-  const nose = toPx(pose[0]);
-  const leftEye = toPx(pose[2]);
-  const rightEye = toPx(pose[5]);
-  const leftEar = toPx(pose[7]);
-  const rightEar = toPx(pose[8]);
-  const leftShoulder = toPx(pose[11]);
-  const rightShoulder = toPx(pose[12]);
-
-  ctx.save();
-  const drawLine = (a, b, color) => {
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  };
-
-  drawLine(leftEye, rightEye, "rgba(160,255,230,0.7)");
-  drawLine(leftEar, rightEar, "rgba(120,220,255,0.6)");
-  drawLine(leftShoulder, rightShoulder, "rgba(255,190,140,0.85)");
-  drawLine(nose, { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 }, "rgba(255,190,140,0.4)");
-
-  [nose, leftEye, rightEye, leftEar, rightEar, leftShoulder, rightShoulder].forEach((point) => {
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    ctx.shadowColor = "rgba(120,220,255,0.9)";
-    ctx.shadowBlur = 8;
-    ctx.fill();
-  });
-  ctx.restore();
-};
-
-// 좌상단에 작은 상태 텍스트 표시 (캘리브레이션 진행률/현재 수치 확인용)
-export const drawDebugLabel = (ctx, w, h, text) => {
-  if (!text) return;
-  ctx.save();
-  ctx.font = "16px sans-serif";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.shadowColor = "rgba(0,0,0,0.7)";
-  ctx.shadowBlur = 4;
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
-  ctx.fillText(text, 16, 16);
-  ctx.restore();
-};
-
-// ======================================================
-// 목/어깨 공용 — 미니멀 진행 링 (3D 오브젝트/게이지 대신 사용하는 단순 피드백)
-// progress: 0~1, active: 목표 동작을 유지 중이면 true (링 색이 민트로 바뀜)
-// ======================================================
-export const drawMinimalFeedback = (ctx, w, h, { progress, active }) => {
-  const ratio = Math.min(1, Math.max(0, progress));
-  const cx = w / 2;
-  const cy = h * 0.16;
-  const radius = Math.min(w, h) * 0.05;
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.25)";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  if (ratio > 0) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2);
-    ctx.strokeStyle = active ? "rgba(150,230,190,0.95)" : "rgba(255,255,255,0.85)";
-    ctx.lineWidth = 4;
-    ctx.lineCap = "round";
-    ctx.stroke();
-  }
   ctx.restore();
 };
 

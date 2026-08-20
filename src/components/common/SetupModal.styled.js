@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Overlay = styled.div`
     position: fixed;
@@ -60,7 +61,7 @@ export const CloseButton = styled.button`
 export const SmallLabel = styled.p`
     margin: 0 0 8px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 9px;
     font-weight: 500;
     line-height: 17.73px;
@@ -72,7 +73,7 @@ export const SmallLabel = styled.p`
 export const Title = styled.h2`
     margin: 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 19px;
     font-weight: 500;
     line-height: 20px;
@@ -84,7 +85,7 @@ export const Title = styled.h2`
 export const Description = styled.p`
     margin: 11px 0 11px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 13px;
     font-weight: 400;
     line-height: 15px;
@@ -100,7 +101,7 @@ export const SectionLabel = styled.p`
     justify-content: center;
     align-self: stretch;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 500;
     line-height: 17.73px;
@@ -132,7 +133,7 @@ export const OptionButton = styled.button`
 
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 500;
 
@@ -153,7 +154,7 @@ export const CustomInput = styled.input`
     background: #ffffff;
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 500;
     line-height: 14px;
@@ -223,7 +224,7 @@ export const SkipButton = styled.button`
 
     color: #949191;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-style: normal;
     font-weight: 500;
@@ -246,7 +247,7 @@ export const SecondaryButton = styled.button`
     background: #ffffff;
     color: #2e2e2e;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 500;
     line-height: 14px;
@@ -258,7 +259,7 @@ export const SecondaryButton = styled.button`
 export const InputNotice = styled.p`
     margin: 5px 0 0 5px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 9px;
     font-weight: 400;
     line-height: 12px;
@@ -276,7 +277,7 @@ export const PrimaryButton = styled.button`
     background: #2e2e2e;
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 500;
 

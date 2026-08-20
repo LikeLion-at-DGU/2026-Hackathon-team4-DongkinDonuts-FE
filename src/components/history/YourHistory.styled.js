@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Section = styled.section`
     width: 100%;
@@ -22,7 +23,7 @@ export const Header = styled.div`
 export const Label = styled.p`
     margin: 0;
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 400;
     line-height: 30px;
@@ -32,7 +33,7 @@ export const Label = styled.p`
 
 export const Title = styled.h2`
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 32px;
     font-weight: 700;
     line-height: 36px;
@@ -84,7 +85,7 @@ export const DateButton = styled.button`
     border: none;
     background: transparent;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 30px;
     font-weight: 300;
     line-height: 1;
@@ -113,7 +114,7 @@ export const DateText = styled.button`
 
     text-align: center;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 500;
 
@@ -153,7 +154,7 @@ export const CalendarHeader = styled.div`
 `;
 
 export const CalendarTitle = styled.div`
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 600;
 
@@ -196,7 +197,7 @@ export const WeekRow = styled.div`
     span {
         text-align: center;
 
-        font-family: Poppins;
+        font-family: ${FONT_POPPINS};
         font-size: 12px;
         font-weight: 500;
 
@@ -233,7 +234,7 @@ export const CalendarDay = styled.button`
     color: ${({ $active }) =>
         $active ? "#ffffff" : "#333333"};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 13px;
     font-weight: ${({ $active }) =>
         $active ? 600 : 400};

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 /* Digital */
 
@@ -29,7 +30,7 @@ export const DigitalTitle = styled.h2`
     font-size: 70px;
     font-weight: 600;
     color: #000;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     line-height: normal;
 
     letter-spacing: -2px;
@@ -44,7 +45,7 @@ export const DigitalDescription = styled.p`
 
     font-size: 21px;
     line-height: 1.6;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-style: normal;
     font-weight: 400;
     line-height: normal;
@@ -53,33 +54,6 @@ export const DigitalDescription = styled.p`
     color: #131313;
 `;
 
-
-export const LockedUsageCard = styled.div`
-    width: 100%;
-
-    padding: 35px 32px 34px;
-
-    box-sizing: border-box;
-
-    border: 1px solid rgba(166, 166, 166, 0.7);
-    border-radius: 31px;
-
-    background: rgba(217, 217, 217, 0.15);
-
-    box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.06),
-        0 2px 6px rgba(0, 0, 0, 0.03);
-`;
-
-export const LockedCardRow = styled.div`
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: 32px;
-
-    width: 100%;
-
-    margin-top: 32px;
-`;
 
 export const LockedUsageWrapper = styled.div`
     position: relative;
@@ -170,7 +144,7 @@ export const ResultTitle = styled.h3`
     color: #000;
     text-align: center;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 32px;
     font-weight: 700;
     line-height: 40px;
@@ -206,7 +180,7 @@ export const ResultButton = styled.button`
     text-align: center;
     font-size: 20px;
     font-weight: 700;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     line-height: 16px; 
 
     cursor: pointer;

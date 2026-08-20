@@ -13,22 +13,6 @@ import SuitHeavyWOFF2 from "../assets/fonts/SUIT-Heavy.woff2";
 export const GlobalStyle = createGlobalStyle`
 /* ---------- Font Face Declarations ---------- */
 @font-face {
-  font-family: 'Pretendard';
-  src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Pretendard';
-  src: url('/fonts/Pretendard-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'SUIT';
   src: url(${SuitThinWOFF2}) format('woff2');
   font-weight: 100;

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Header = styled.header`
     width: 100%;
@@ -23,7 +24,7 @@ export const LeftGroup = styled.div`
 export const Logo = styled.div`
     color: #ffffff;
 
-    font-family: Poppins, sans-serif;
+    font-family: ${FONT_POPPINS}, sans-serif;
     font-size: 32px;
     font-weight: 600;
     line-height: 32px;
@@ -46,7 +47,7 @@ export const NavButton = styled.button`
 
     color: #ffffff;
 
-    font-family: Poppins, sans-serif;
+    font-family: ${FONT_POPPINS}, sans-serif;
     font-size: 20px;
     font-weight: 500;
 
@@ -74,7 +75,7 @@ export const SettingsButton = styled.button`
     background: transparent;
     color: #ffffff;
 
-    font-family: Poppins, sans-serif;
+    font-family: ${FONT_POPPINS}, sans-serif;
     font-size: 16px;
     font-weight: 500;
 
