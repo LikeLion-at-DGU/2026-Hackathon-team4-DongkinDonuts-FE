@@ -133,6 +133,33 @@ export function useDigitalUsage({
         }));
     };
 
+    // 드래그로 여러 칸을 한 번에 선택/해제할 때 씀 — toggleCell과 달리 "지금 값의
+    // 반대로 뒤집기"가 아니라 "이 값으로 확정"이라서, 드래그하는 동안 셀마다 계속
+    // 반대로 튕기지 않고 시작 칸에서 정한 방향(선택/해제)으로 쭉 밀린다.
+    const setCellValue = (
+        rowIndex,
+        colIndex,
+        value
+    ) => {
+        if (isResult) {
+            return;
+        }
+
+        const key =
+            `${rowIndex}-${colIndex}`;
+
+        setSelected((prev) => {
+            if (prev[key] === value) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                [key]: value,
+            };
+        });
+    };
+
     // 한 행 전체 선택
     const toggleRow = (
         rowIndex
@@ -461,6 +488,7 @@ export function useDigitalUsage({
         activeRecommendedTimes,
 
         toggleCell,
+        setCellValue,
         toggleRow,
         resetAll,
         toggleAlarm,
