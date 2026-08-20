@@ -12,6 +12,7 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
+    onTemporarySave,
 }) {
     const {
         isResult,

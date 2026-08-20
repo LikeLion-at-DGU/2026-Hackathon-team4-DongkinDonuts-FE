@@ -14,6 +14,7 @@ function DigitalState() {
         openInput,
         showResult,
         editInput,
+        saveTemporarySelected,
     } = useDigitalState();
 
     if (!initialized) {
@@ -48,6 +49,7 @@ function DigitalState() {
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
+                    onTemporarySave={saveTemporarySelected}
                 />
             )}
         </S.DigitalSection>

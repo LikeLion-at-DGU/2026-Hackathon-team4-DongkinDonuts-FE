@@ -84,6 +84,22 @@ export const useDigitalState = () => {
         setDigitalStep("input");
     };
 
+    const saveTemporarySelected = () => {
+        const hasSelection =
+            hasSelectedTime(selected);
+
+        if (hasSelection) {
+            localStorage.setItem(
+                DIGITAL_SELECTED_KEY,
+                JSON.stringify(selected)
+            );
+        } else {
+            localStorage.removeItem(
+                DIGITAL_SELECTED_KEY
+            );
+        }
+    };
+
     /*
      * 저장 버튼을 눌렀을 때만
      * 현재 선택값을 실제 저장
@@ -137,5 +153,6 @@ export const useDigitalState = () => {
         showResult,
         editInput,
         lockDigitalState,
+        saveTemporarySelected,
     };
 };

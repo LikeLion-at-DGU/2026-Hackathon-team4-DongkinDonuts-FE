@@ -71,6 +71,7 @@ export function useDigitalUsage({
     selected,
     setSelected,
     onCreate,
+    onTemporarySave,
 }) {
     const [
         isSaving,
@@ -260,10 +261,16 @@ export function useDigitalUsage({
         }
     };
 
-    const handleTemporarySave =
-        async () => {
+    const handleTemporarySave = async () => {
+        const success =
             await savePatterns();
-        };
+
+        if (!success) {
+            return;
+        }
+
+        onTemporarySave?.();
+    };
 
     // -------------------------
     // 휴식 타이머 생성
