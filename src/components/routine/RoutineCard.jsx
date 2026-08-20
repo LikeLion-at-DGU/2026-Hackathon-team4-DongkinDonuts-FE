@@ -43,21 +43,12 @@ function RoutineCard({
 
                     <S.ArrowButton
                         type="button"
-                        $locked={locked}
-                        $completed={completed}
-                        aria-disabled={locked}
                         onClick={(e) => {
                             e.stopPropagation();
-
-                            if (locked) return;
-
-                            onStart?.();
+                            onStart();
                         }}
                     >
-                        <img
-                            src={ArrowIcon}
-                            alt=""
-                        />
+                        <img src={ArrowIcon} alt="" />
                     </S.ArrowButton>
                 </S.Top>
 
