@@ -11,6 +11,8 @@ import * as S from "./SetupModal.styled";
 
 function SetupModal({
     onClose,
+    onGenerate,
+    hasExistingPlan = false,
     mode = "initial",
     conditionOnly = false,
     onConditionComplete,
