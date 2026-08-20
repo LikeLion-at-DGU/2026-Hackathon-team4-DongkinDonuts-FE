@@ -1,4 +1,5 @@
 import { DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS } from "./difficultyConfig";
+import { getStoredRoutineDifficulty } from "../utils/routineDifficultyFeedback";
 
 const ACTIVITY_ROUTE_MAP = {
   WAKE_HAND_ROUTINE: "/handroutine",
@@ -85,15 +86,24 @@ export function routeForActivityCode(activityCode) {
   return ACTIVITY_ROUTE_MAP[activityCode] ?? "/handroutine";
 }
 
+export function frontendBaseIdForActivityCode(activityCode) {
+  return DIFFICULTY_ROUTE_BASE_ID_MAP[routeForActivityCode(activityCode)] ?? null;
+}
+
 function difficultyRouteForRoutine(route, routine) {
   const baseId =
-    routine?.frontend_session_base_id ?? DIFFICULTY_ROUTE_BASE_ID_MAP[route];
+    routine?.frontend_session_base_id ??
+    frontendBaseIdForActivityCode(routine?.activity?.code) ??
+    DIFFICULTY_ROUTE_BASE_ID_MAP[route];
 
   if (!baseId) return route;
 
-  const difficulty = DIFFICULTY_LEVEL_SET.has(routine?.recommended_difficulty)
-    ? routine.recommended_difficulty
-    : DEFAULT_DIFFICULTY;
+  const storedDifficulty = getStoredRoutineDifficulty(baseId);
+  const difficulty = DIFFICULTY_LEVEL_SET.has(storedDifficulty)
+    ? storedDifficulty
+    : DIFFICULTY_LEVEL_SET.has(routine?.recommended_difficulty)
+      ? routine.recommended_difficulty
+      : DEFAULT_DIFFICULTY;
 
   return `/${baseId}-${difficulty}`;
 }

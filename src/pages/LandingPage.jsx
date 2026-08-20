@@ -27,15 +27,19 @@ import { useRoutineHome } from "../hooks/useRoutineHome";
 import { useRecoveryTimeSettings } from "../hooks/useRecoveryTimeSettings";
 
 import { useNextReset } from "../hooks/useNextReset";
-import { usePushSubscription } from "../hooks/usePushSubscription";
 import {
   notifyUpcomingScheduleChanged,
   useUpcomingSchedule,
 } from "../hooks/useUpcomingSchedule";
 
 import {
+  createReentryRecoverySlot,
   generateAIRecoveryPlan,
 } from "../api/plans";
+
+import {
+  getCurrentNextActivityPlan,
+} from "../api/context";
 
 import {
   arePreviousStagesComplete,
@@ -44,6 +48,10 @@ import {
 } from "../config/recoveryRouting";
 
 import { clearPersistedElapsedSeconds } from "../utils/sessionDurationStorage";
+import {
+  hasInitialSetupBeenHandled,
+  markInitialSetupHandled,
+} from "../utils/initialSetupState";
 
 import * as S from "./LandingPage.styled";
 
@@ -68,6 +76,11 @@ function LandingPage() {
     localAlarmStates,
     setLocalAlarmStates,
   ] = useState({});
+  const shouldSkipInitialSetup =
+    Boolean(
+      location.state
+        ?.skipSetup
+    );
 
   const routineRef =
     useRef(null);
@@ -80,6 +93,9 @@ function LandingPage() {
    * sessionFlow 사이 연결
    */
   const notificationFlowRef =
+    useRef(null);
+
+  const initialSetupFlowRef =
     useRef(null);
 
   const {
@@ -151,17 +167,43 @@ function LandingPage() {
    */
   const sessionFlow =
     useRecoverySessionFlow({
-      hasPlan,
       navigate,
       onGeneratePlan:
         handleGenerateRecoveryPlan,
+      onGetCurrentActivityPlan:
+        getCurrentNextActivityPlan,
+      onCreateReentrySlot:
+        async ({
+          contextSnapshotId,
+          nextActivityPlanId,
+        }) => {
+          const slot =
+            await createReentryRecoverySlot({
+            contextSnapshot:
+              contextSnapshotId,
+            nextActivityPlan:
+              nextActivityPlanId,
+          });
+
+          notifyUpcomingScheduleChanged();
+
+          await Promise.all([
+            refreshNextReset(),
+            routineHome.loadRoutineSlot(),
+          ]);
+
+          return slot;
+        },
     });
 
   useEffect(() => {
     notificationFlowRef.current =
       sessionFlow.openNotificationFlow;
+    initialSetupFlowRef.current =
+      sessionFlow.openInitialSetup;
   }, [
     sessionFlow.openNotificationFlow,
+    sessionFlow.openInitialSetup,
   ]);
 
   /*
@@ -256,38 +298,23 @@ function LandingPage() {
   /*
    * 최초 접속 Setup
    */
-  const skipInitialSetupRef =
-    useRef(
-      Boolean(
-        location.state
-          ?.skipSetup
-      )
-    );
-
   useEffect(() => {
     if (
-      skipInitialSetupRef.current
+      shouldSkipInitialSetup
     ) {
-      skipInitialSetupRef.current =
-        false;
+      markInitialSetupHandled();
 
       return;
     }
 
-    const hasSeen =
-      sessionStorage.getItem(
-        "hasSeenSetupModal"
-      );
+    if (!hasInitialSetupBeenHandled()) {
+      initialSetupFlowRef.current?.();
 
-    if (!hasSeen) {
-      sessionFlow.openInitialSetup();
-
-      sessionStorage.setItem(
-        "hasSeenSetupModal",
-        "true"
-      );
+      markInitialSetupHandled();
     }
-  }, []);
+  }, [
+    shouldSkipInitialSetup,
+  ]);
 
   /*
    * Header scroll

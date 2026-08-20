@@ -1,8 +1,12 @@
 import { useState } from "react";
 
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
-import { generateAIRecoveryPlan } from "../../api/plans";
+import {
+  generateAIRecoveryPlan,
+  getRecoverySlot,
+} from "../../api/plans";
 import { submitSessionFeedback } from "../../api/sessions";
+import { applyDifficultyFeedbackToSlot } from "../../utils/routineDifficultyFeedback";
 import {
   ACTIVITY_OPTIONS,
   TIME_OPTIONS,
@@ -84,10 +88,18 @@ export function BrainResetFeedbackModal({
 
     try {
       if (slotId) {
+        const difficultyFeedback = DIFFICULTY_FEEDBACK_BY_LABEL[difficulty];
         await submitSessionFeedback({
           recoverySlotId: slotId,
           recoveryFeeling: RECOVERY_FEELING_BY_LABEL[conditionChange],
-          difficultyFeedback: DIFFICULTY_FEEDBACK_BY_LABEL[difficulty],
+          difficultyFeedback,
+        });
+
+        const slot = await getRecoverySlot(slotId);
+        applyDifficultyFeedbackToSlot({
+          slotId,
+          difficultyFeedback,
+          fallbackRoutines: slot?.routine_instances ?? [],
         });
       }
       onComplete?.();
@@ -179,10 +191,10 @@ export function NextRestSetupModal({
       return;
     }
 
-    const errorMessage = await setup.completeSetup("reset");
+    const result = await setup.completeSetup("reset");
 
-    if (errorMessage) {
-      window.alert(errorMessage);
+    if (result?.errorMessage) {
+      window.alert(result.errorMessage);
       return;
     }
 

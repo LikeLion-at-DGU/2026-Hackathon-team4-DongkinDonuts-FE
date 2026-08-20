@@ -9,6 +9,7 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawPinchRings } from "../engine/sessionVisuals";
 import handImage from "../assets/images/handImage.png";
+import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "focus-pinch";
 
@@ -123,7 +124,10 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
   }, []);
 
   const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleConfirmQuit = useCallback(
+    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
+    [navigate]
+  );
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const cameraPreviewProps = useMemo(

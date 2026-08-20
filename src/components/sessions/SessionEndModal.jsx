@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../common/SessionConfirmModal.styled";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
+import { SKIP_SETUP_HOME_STATE } from "../../utils/initialSetupState";
 
 const SessionEndModal = ({
   isMissionComplete,
@@ -26,7 +27,7 @@ const SessionEndModal = ({
         navigate(
           nextSessionPath,
           nextSessionPath === "/"
-            ? { state: { skipSetup: true } }
+            ? { state: SKIP_SETUP_HOME_STATE }
             : undefined
         );
         return;
@@ -60,7 +61,7 @@ const SessionEndModal = ({
               : "지금 상태를 초기화하고 다시 시작할 수 있어요."}
         </S.Description>
         <S.ButtonRow>
-          <S.CancelButton onClick={finished ? onClose : () => navigate("/")}>
+          <S.CancelButton onClick={finished ? onClose : () => navigate("/", { state: SKIP_SETUP_HOME_STATE })}>
             {finished ? "취소" : "홈으로"}
           </S.CancelButton>
           <S.StartButton
