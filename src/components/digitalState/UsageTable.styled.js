@@ -102,11 +102,6 @@ export const Table = styled.table`
 
     font-family: Poppins;
 
-    /* 드래그로 여러 칸을 한번에 선택할 때 브라우저 기본 텍스트 드래그 선택
-       하이라이트가 같이 뜨는 걸 막는다. */
-    user-select: none;
-    -webkit-user-select: none;
-
     th,
     td {
         height: 55px;
