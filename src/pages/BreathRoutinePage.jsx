@@ -10,6 +10,10 @@ import { getNextResetTime } from "../api/plans";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
 import { getPersistedElapsedSeconds } from "../utils/sessionDurationStorage";
+import {
+  markInitialSetupHandled,
+  SKIP_SETUP_HOME_STATE,
+} from "../utils/initialSetupState";
 import SessionPage from "./SessionPage";
 
 const BREATH_PHASES = [
@@ -176,10 +180,9 @@ const BreathRoutinePage = () => {
   }, []);
 
   const handleFinishPostSessionFlow = useCallback(() => {
+    markInitialSetupHandled();
     navigate("/", {
-      state: {
-        skipSetup: true,
-      },
+      state: SKIP_SETUP_HOME_STATE,
     });
   }, [navigate]);
 

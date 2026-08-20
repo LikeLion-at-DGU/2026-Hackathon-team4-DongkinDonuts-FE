@@ -11,8 +11,6 @@ import * as S from "./SetupModal.styled";
 
 function SetupModal({
     onClose,
-    onGenerate,
-    hasExistingPlan = false,
     mode = "initial",
     conditionOnly = false,
     onConditionComplete,
@@ -27,7 +25,7 @@ function SetupModal({
             : setup.step;
 
     const handleConditionNext =
-        () => {
+        async () => {
             if (
                 !setup.selectedCondition
             ) {
@@ -41,8 +39,25 @@ function SetupModal({
             // 기존 타이머가 있거나
             // 알림으로 진입한 경우
             if (conditionOnly) {
+                const result =
+                    await setup.completeConditionOnly();
+
+                if (
+                    result?.errorMessage
+                ) {
+                    window.alert(
+                        "현재 상태를 저장하지 못했어요. 잠시 후 다시 시도해주세요."
+                    );
+
+                    return;
+                }
+
                 onConditionComplete?.(
-                    setup.selectedCondition
+                    {
+                        condition:
+                            setup.selectedCondition,
+                        ...result,
+                    }
                 );
 
                 return;
@@ -64,12 +79,14 @@ function SetupModal({
                 return;
             }
 
-            const errorMessage =
+            const result =
                 await setup.completeSetup(
                     mode
                 );
 
-            if (errorMessage) {
+            if (
+                result?.errorMessage
+            ) {
                 window.alert(
                     "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
                 );
@@ -86,6 +103,8 @@ function SetupModal({
 
                 activityTime:
                     setup.selectedTime,
+
+                ...result,
             });
         };
 

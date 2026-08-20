@@ -8,6 +8,7 @@ import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfi
 import { lerp, getDistance, getSafeTargetPosition } from "../utils/handUtils";
 import { prepareCanvas, drawGazeNodTargets } from "../engine/sessionVisuals";
 import eyeTrackingImage from "../assets/images/eyeTrackingImage.png";
+import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "eye-tracking";
 const BURST_MS = 700;
@@ -144,7 +145,14 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     alignStartRef.current = null;
     burstRef.current = null;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
+
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(
+    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
+    [navigate]
+  );
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: eyeTrackingImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

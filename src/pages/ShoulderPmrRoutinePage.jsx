@@ -7,6 +7,7 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawShoulderCircle } from "../engine/sessionVisuals";
 import ShoulderImage from "../assets/images/ShoulderImage.png";
+import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "shoulder-pmr";
 const SQUEEZE_RELEASE_MS = 1000; // 어깨를 내렸을 때 원이 원래 크기/색으로 되돌아가는 시간 (수축과 동일한 속도로 선형 왕복)
@@ -154,7 +155,14 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     cycleCompleteRef.current = false;
     repCountRef.current = 0;
     setIsTerminated(false);
-  }, [setIsTerminated]);
+  }, []);
+
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(
+    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
+    [navigate]
+  );
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: repCount, difficulty, screenDistance, sessionImage: ShoulderImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
