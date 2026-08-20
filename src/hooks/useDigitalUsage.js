@@ -112,6 +112,13 @@ export function useDigitalUsage({
         setAlarmStates,
     ] = useState({});
 
+    const {
+        hasGeneratedResult,
+        setHasGeneratedResult,
+        resultVersion,
+        setResultVersion,
+    } = useDigitalUsageSession();
+
     const isResult =
         mode === "result";
 

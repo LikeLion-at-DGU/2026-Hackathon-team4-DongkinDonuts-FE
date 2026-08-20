@@ -20,6 +20,9 @@ function DigitalUsage({
         isResult,
         isSaving,
 
+        hasGeneratedResult,
+        resultVersion,
+
         schedules,
         alarmStates,
         activeRecommendedTimes,
