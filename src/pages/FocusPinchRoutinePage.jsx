@@ -136,7 +136,6 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
     metrics: {
       elapsedTime,
       pinchCount,
-      handCount,
       targetSize,
     },
   });
