@@ -31,6 +31,8 @@ const SessionPage = ({
   nextSessionPath,
   isNextSessionPending = false,
   instantReset = false,
+  showCompletionModal = true,
+  showNextSessionControl = true,
   showOverlay = true,
   cameraPreviewProps,
   dataPanelProps,
@@ -72,7 +74,15 @@ const SessionPage = ({
   // 사라지기 때문. 다만 이 지연이 오히려 완료 이펙트(파동 등)가 한 번 더 재생되는 것처럼
   // 보이는 세션(instantReset)에서는 지연 없이 즉시 초기화한다.
   useEffect(() => {
-    if (!isMissionComplete || isTerminated || !hasShownCompletionModal) return;
+    if (
+      !showCompletionModal ||
+      !isMissionComplete ||
+      isTerminated ||
+      !hasShownCompletionModal
+    ) {
+      return;
+    }
+
     if (instantReset) {
       resetSession?.();
       return;
@@ -87,7 +97,14 @@ const SessionPage = ({
       cancelAnimationFrame(outerId);
       if (innerId) cancelAnimationFrame(innerId);
     };
-  }, [hasShownCompletionModal, isMissionComplete, isTerminated, resetSession, instantReset]);
+  }, [
+    hasShownCompletionModal,
+    instantReset,
+    isMissionComplete,
+    isTerminated,
+    resetSession,
+    showCompletionModal,
+  ]);
 
   const handleCloseSessionEnd = useCallback(() => {
     if (isMissionComplete && !isTerminated) {
@@ -98,7 +115,8 @@ const SessionPage = ({
     onCloseSessionEnd?.();
   }, [isMissionComplete, isTerminated, onCloseSessionEnd]);
 
-  const shouldShowCompletionModal = isMissionComplete && !hasShownCompletionModal;
+  const shouldShowCompletionModal =
+    showCompletionModal && isMissionComplete && !hasShownCompletionModal;
 
   return (
     <>
@@ -138,6 +156,7 @@ const SessionPage = ({
             <SessionControls
               handleStopGame={onStopSession}
               nextSession={handleNextSession}
+              showNextSession={showNextSessionControl}
             />
           </ControlsWrapper>
         </ContentWrapper>
