@@ -1,42 +1,54 @@
 import { useEffect, useState } from "react";
 
 import LockIcon from "../../assets/icons/LockIcon.svg";
-import { getDigitalPatternAnalysis } from "../../api/digitalState";
+import { getRecentSessionAnalysis } from "../../api/digitalState";
 
 import * as S from "./DigitalUsage.styled";
 
-function DigitalAnalysisCard({
-    showResult,
-    resultVersion,
-}) {
+// PC 사용 패턴 입력 여부와 무관하게 스스로 지난 7일간의 실제 회복 세션 기록을
+// 조회해서 보여준다 — "언제 회복 세션을 진행하는지"는 PC 패턴 체크와 상관없는
+// 실제 행동 데이터라서, 스케줄 카드(DigitalScheduleCard)와 같은 이유로 PC 패턴
+// 잠금 상태에 더 이상 가두지 않는다.
+function DigitalAnalysisCard() {
     const [analysis, setAnalysis] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!showResult) {
-            return;
-        }
+        let cancelled = false;
 
         const fetchAnalysis = async () => {
             try {
                 setIsLoading(true);
 
                 const data =
-                    await getDigitalPatternAnalysis();
+                    await getRecentSessionAnalysis();
+
+                if (cancelled) {
+                    return;
+                }
 
                 setAnalysis(data);
             } catch (error) {
                 console.error(
-                    "PC 사용 패턴 분석 조회 실패:",
+                    "최근 세션 기반 분석 조회 실패:",
                     error
                 );
             } finally {
-                setIsLoading(false);
+                if (!cancelled) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchAnalysis();
-    }, [showResult, resultVersion]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const hasData =
+        (analysis?.weekly_pc_usage_hours ?? 0) > 0;
 
     return (
         <S.InfoCard>
@@ -50,7 +62,13 @@ function DigitalAnalysisCard({
                 분석 결과
             </S.CardTitle>
 
-            {!showResult ? (
+            {isLoading ? (
+                <S.EmptyContent>
+                    <S.EmptyTitle>
+                        최근 세션 기록을 분석하고 있어요
+                    </S.EmptyTitle>
+                </S.EmptyContent>
+            ) : !hasData ? (
                 <S.EmptyContent>
                     <S.EmptyIcon $circle>
                         <img
@@ -62,25 +80,13 @@ function DigitalAnalysisCard({
                     </S.EmptyIcon>
 
                     <S.EmptyTitle>
-                        아직 분석된 PC 패턴이 없어요
+                        아직 분석할 회복 세션 기록이 없어요
                     </S.EmptyTitle>
 
                     <S.EmptyDescription>
-                        상단 표에 사용 시간을 체크하고
+                        지난 7일 동안 완료한 회복 세션이 없어요
                         <br />
-                        이 패턴으로 AI 휴식 타이머 생성 버튼을 눌러
-                        <br />
-                        맞춤 분석을 받아보세요
-                    </S.EmptyDescription>
-                </S.EmptyContent>
-            ) : isLoading ? (
-                <S.EmptyContent>
-                    <S.EmptyTitle>
-                        PC 사용 패턴을 분석하고 있어요
-                    </S.EmptyTitle>
-
-                    <S.EmptyDescription>
-                        잠시만 기다려주세요.
+                        회복 루틴을 진행하면 여기에 분석 결과가 뜹니다
                     </S.EmptyDescription>
                 </S.EmptyContent>
             ) : (
@@ -90,7 +96,7 @@ function DigitalAnalysisCard({
                             <strong>
                                 {analysis?.weekly_pc_usage_hours ?? 0}
                             </strong>
-                            <span>주간 사용(h)</span>
+                            <span>주간 활동(h)</span>
                         </S.StatBox>
 
                         <S.StatBox>
@@ -116,9 +122,9 @@ function DigitalAnalysisCard({
                                     ?.time_pattern?.label ?? "-"}
                                 에
                             </strong>{" "}
-                            PC를
+                            회복 세션을
                             <br />
-                            가장 많이 사용하는 패턴이에요.
+                            가장 많이 진행하는 패턴이에요.
                         </p>
 
                         <p>
@@ -127,12 +133,12 @@ function DigitalAnalysisCard({
                                 {analysis?.most_used_patterns
                                     ?.time_of_day_pattern?.label ?? "-"}
                             </strong>{" "}
-                            시간대에 집중적인 사용이 예상돼요.
+                            시간대에 집중적인 활동이 예상돼요.
                         </p>
                     </S.AnalysisBox>
 
                     <S.Caption>
-                        ※ 입력한 사용 패턴을 바탕으로 분석했어요.
+                        ※ 지난 7일간 실제로 진행한 회복 세션을 바탕으로 분석했어요.
                     </S.Caption>
                 </S.ResultContent>
             )}
