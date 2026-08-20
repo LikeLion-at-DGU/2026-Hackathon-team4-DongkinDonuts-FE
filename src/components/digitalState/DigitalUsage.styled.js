@@ -409,6 +409,26 @@ export const ToggleCircle = styled.span`
     transition: left 0.2s ease;
 `;
 
+export const TopAlarmArea = styled.div`
+    position: absolute;
+
+    top: 43px;
+    right: 45px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 400;
+
+    color: #7b7878;
+
+    z-index: 5;
+`;
+
 /* =========================
    카드 하단 설명
 ========================= */

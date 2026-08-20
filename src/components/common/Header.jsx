@@ -1,12 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import * as S from "./Header.styled";
-console.log(S);
 
 function Header() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const isSettingsPage = location.pathname === "/settings";
+    const isSettingsPage =
+        location.pathname === "/settings";
+
+    const handleLogoClick = () => {
+        window.location.assign("/");
+    };
 
     const handleRoutineClick = () => {
         navigate("/", {
@@ -24,7 +28,11 @@ function Header() {
     if (isSettingsPage) {
         return (
             <S.Header>
-                <S.Logo onClick={() => navigate("/")}>
+                <S.Logo
+                    onClick={
+                        handleLogoClick
+                    }
+                >
                     Brainfit
                 </S.Logo>
             </S.Header>
@@ -35,22 +43,38 @@ function Header() {
     return (
         <S.Header>
             <S.LeftGroup>
-                <S.Logo onClick={() => navigate("/")}>
+                <S.Logo
+                    onClick={
+                        handleLogoClick
+                    }
+                >
                     Brainfit
                 </S.Logo>
 
                 <S.Nav>
-                    <S.NavButton onClick={handleRoutineClick}>
+                    <S.NavButton
+                        onClick={
+                            handleRoutineClick
+                        }
+                    >
                         Routine
                     </S.NavButton>
 
-                    <S.NavButton onClick={handleDigitalClick}>
+                    <S.NavButton
+                        onClick={
+                            handleDigitalClick
+                        }
+                    >
                         My Digital State
                     </S.NavButton>
                 </S.Nav>
             </S.LeftGroup>
 
-            <S.SettingsButton onClick={() => navigate("/settings")}>
+            <S.SettingsButton
+                onClick={() =>
+                    navigate("/settings")
+                }
+            >
                 More Services
             </S.SettingsButton>
         </S.Header>
