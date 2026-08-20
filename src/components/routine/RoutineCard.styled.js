@@ -94,9 +94,9 @@ export const Title = styled.h3`
   color: #fff;
 
   font-family: "SUIT", sans-serif;
-  font-size: 42px;
+  font-size: 45px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 800;
   line-height: normal;
   letter-spacing: -0.69px;
 
