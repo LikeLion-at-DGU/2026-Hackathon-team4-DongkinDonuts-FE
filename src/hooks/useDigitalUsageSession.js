@@ -15,20 +15,27 @@ const GENERATED_RESULT_KEY =
 const RESULT_VERSION_KEY =
     "brainfit-digital-result-version";
 
-const getSessionValue = (
+const getStoredValue = (
     key,
     defaultValue
 ) => {
     const saved =
-        sessionStorage.getItem(key);
+        localStorage.getItem(key);
 
     if (saved === null) {
         return defaultValue;
     }
 
     try {
-        return JSON.parse(saved);
-    } catch {
+        return JSON.parse(
+            saved
+        );
+    } catch (error) {
+        console.error(
+            `${key} 복원 실패:`,
+            error
+        );
+
         return defaultValue;
     }
 };
@@ -38,7 +45,7 @@ export function useDigitalUsageSession() {
         schedules,
         setSchedules,
     ] = useState(() =>
-        getSessionValue(
+        getStoredValue(
             SCHEDULES_KEY,
             []
         )
@@ -48,7 +55,7 @@ export function useDigitalUsageSession() {
         alarmStates,
         setAlarmStates,
     ] = useState(() =>
-        getSessionValue(
+        getStoredValue(
             ALARM_STATES_KEY,
             {}
         )
@@ -58,7 +65,7 @@ export function useDigitalUsageSession() {
         hasGeneratedResult,
         setHasGeneratedResult,
     ] = useState(() =>
-        getSessionValue(
+        getStoredValue(
             GENERATED_RESULT_KEY,
             false
         )
@@ -68,21 +75,23 @@ export function useDigitalUsageSession() {
         resultVersion,
         setResultVersion,
     ] = useState(() =>
-        getSessionValue(
+        getStoredValue(
             RESULT_VERSION_KEY,
             0
         )
     );
 
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             SCHEDULES_KEY,
-            JSON.stringify(schedules)
+            JSON.stringify(
+                schedules
+            )
         );
     }, [schedules]);
 
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             ALARM_STATES_KEY,
             JSON.stringify(
                 alarmStates
@@ -91,16 +100,18 @@ export function useDigitalUsageSession() {
     }, [alarmStates]);
 
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             GENERATED_RESULT_KEY,
             JSON.stringify(
                 hasGeneratedResult
             )
         );
-    }, [hasGeneratedResult]);
+    }, [
+        hasGeneratedResult,
+    ]);
 
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             RESULT_VERSION_KEY,
             JSON.stringify(
                 resultVersion

@@ -14,56 +14,80 @@ function SetupModal({
     onGenerate,
     hasExistingPlan = false,
     mode = "initial",
+    conditionOnly = false,
+    onConditionComplete,
+    onSetupComplete,
 }) {
-    const setup = useSetupModal();
+    const setup =
+        useSetupModal();
 
     const currentStep =
         mode === "reset"
             ? 2
             : setup.step;
 
-    // X(닫기)/건너뛰기는 onClose만 호출한다 — 새로 입력한 게 없으니 회복 계획을
-    // 다시 만들 이유가 없다. 예전엔 X를 눌러도 onClose 하나가 "모달 닫기"와 "AI
-    // 재생성"을 동시에 했었는데, 그래서 새로고침 후 아무것도 안 바꾸고 X만 눌러도
-    // 이전 상태 그대로 AI가 다시 돌아서 기존 스냅샷 기반 알림들이 전부 취소되고
-    // 새 알림이 또 생기는 문제가 있었다. 이제 "완료"로 실제 저장에 성공했을 때만
-    // onGenerate를 별도로 호출한다.
-    const handleComplete = async () => {
-        if (
-            !setup.selectedActivity ||
-            !setup.selectedTime
-        ) {
-            window.alert(
-                "활동과 활동 시간을 하나씩 선택해주세요."
-            );
-            return;
-        }
+    const handleConditionNext =
+        () => {
+            if (
+                !setup.selectedCondition
+            ) {
+                window.alert(
+                    "현재 상태를 하나 선택해주세요."
+                );
 
-        // 이미 생성된 계획/알림이 있는 상태에서 새로 저장하면 기존 알림들이
-        // 취소되고 새 계획이 만들어진다 — 그 사실을 미리 안내하고 확인받는다.
-        if (hasExistingPlan) {
-            const confirmed = window.confirm(
-                "새로 설정하면 이미 만들어진 알림/휴식 계획은 취소되고 새로 생성돼요. 계속할까요?"
-            );
-
-            if (!confirmed) {
                 return;
             }
-        }
 
-        const errorMessage =
-            await setup.completeSetup(mode);
+            // 기존 타이머가 있거나
+            // 알림으로 진입한 경우
+            if (conditionOnly) {
+                onConditionComplete?.(
+                    setup.selectedCondition
+                );
 
-        if (errorMessage) {
-            window.alert(
-                "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
-            );
-            return;
-        }
+                return;
+            }
 
-        onGenerate?.();
-        onClose();
-    };
+            setup.goNext();
+        };
+
+    const handleComplete =
+        async () => {
+            if (
+                !setup.selectedActivity ||
+                !setup.selectedTime
+            ) {
+                window.alert(
+                    "활동과 활동 시간을 하나씩 선택해주세요."
+                );
+
+                return;
+            }
+
+            const errorMessage =
+                await setup.completeSetup(
+                    mode
+                );
+
+            if (errorMessage) {
+                window.alert(
+                    "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
+                );
+
+                return;
+            }
+
+            onSetupComplete?.({
+                condition:
+                    setup.selectedCondition,
+
+                activity:
+                    setup.selectedActivity,
+
+                activityTime:
+                    setup.selectedTime,
+            });
+        };
 
     useEffect(() => {
         const original =
@@ -103,7 +127,14 @@ function SetupModal({
                         setSelectedCondition={
                             setup.setSelectedCondition
                         }
-                        onNext={setup.goNext}
+                        onNext={
+                            handleConditionNext
+                        }
+                        buttonText={
+                            conditionOnly
+                                ? "제출하기"
+                                : "다음"
+                        }
                     />
                 )}
 
@@ -111,7 +142,9 @@ function SetupModal({
                     <ActivityStep
                         {...setup}
                         mode={mode}
-                        onPrev={setup.goPrev}
+                        onPrev={
+                            setup.goPrev
+                        }
                         onSkip={onClose}
                         onComplete={
                             handleComplete
