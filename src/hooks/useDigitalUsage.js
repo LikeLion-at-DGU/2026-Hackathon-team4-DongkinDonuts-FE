@@ -7,6 +7,7 @@ import { DAYS } from "../config/usageTableConfig";
 import {
     getDigitalPatterns,
     saveDigitalPatterns,
+    deleteDigitalPatterns,
 } from "../api/digitalState";
 
 import {
@@ -70,6 +71,7 @@ export function useDigitalUsage({
     selected,
     setSelected,
     onCreate,
+    onTemporarySave,
 }) {
     const [
         isSaving,
@@ -217,43 +219,58 @@ export function useDigitalUsage({
     // 패턴 저장
     // -------------------------
 
-    const savePatterns =
-        async () => {
-            try {
-                setIsSaving(true);
+    const savePatterns = async () => {
+        try {
+            setIsSaving(true);
 
-                const patterns =
-                    convertSelectedToPatterns(
-                        selected
-                    );
+            const patterns =
+                convertSelectedToPatterns(
+                    selected
+                );
 
-                const result =
-                    await saveDigitalPatterns(
-                        patterns
-                    );
+            if (patterns.length === 0) {
+                await deleteDigitalPatterns();
 
                 console.log(
-                    "PC 사용 패턴 저장 성공:",
-                    result
+                    "PC 사용 패턴 전체 삭제 완료"
                 );
 
                 return true;
-            } catch (error) {
-                console.error(
-                    "PC 사용 패턴 저장 실패:",
-                    error
+            }
+
+            const result =
+                await saveDigitalPatterns(
+                    patterns
                 );
 
-                return false;
-            } finally {
-                setIsSaving(false);
-            }
-        };
+            console.log(
+                "PC 사용 패턴 저장 성공:",
+                result
+            );
 
-    const handleTemporarySave =
-        async () => {
+            return true;
+        } catch (error) {
+            console.error(
+                "PC 사용 패턴 저장 실패:",
+                error
+            );
+
+            return false;
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleTemporarySave = async () => {
+        const success =
             await savePatterns();
-        };
+
+        if (!success) {
+            return;
+        }
+
+        onTemporarySave?.();
+    };
 
     // -------------------------
     // 휴식 타이머 생성
@@ -304,13 +321,21 @@ export function useDigitalUsage({
                         nextTodayHours
                     );
 
-                await saveDigitalPatterns(
-                    patterns
-                );
+                if (patterns.length === 0) {
+                    await deleteDigitalPatterns();
 
-                console.log(
-                    "PC 패턴 저장 완료"
-                );
+                    console.log(
+                        "PC 패턴 전체 삭제 완료"
+                    );
+                } else {
+                    await saveDigitalPatterns(
+                        patterns
+                    );
+
+                    console.log(
+                        "PC 패턴 저장 완료"
+                    );
+                }
 
                 const existingSlotsResult =
                     await getTodayRecoverySlots();
