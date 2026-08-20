@@ -6,7 +6,7 @@ import { LiveTime, LiveDot, StageLabel, DataArea, DataCard, DataTitle, DataRow, 
 // 세션 흐름상 현재 위치를 나타내는 단계 라벨. "custom" 단계는 (현재 단계/총 세션 개수)를 덧붙인다.
 const getStageLabel = (sessionStage, stepInfo) => {
   if (sessionStage === "custom") {
-    return stepInfo ? `맞춤세션 (${stepInfo.current}/${stepInfo.total})` : "맞춤세션";
+    return "맞춤세션";
   }
   if (sessionStage === "wakeup") return "가볍게 깨우기";
   if (sessionStage === "finish") return "마무리하기";
