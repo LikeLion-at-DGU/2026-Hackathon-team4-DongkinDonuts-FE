@@ -5,16 +5,15 @@ export const Overlay = styled.div`
     inset: 0;
 
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
 
-    padding-top: 190px;
     box-sizing: border-box;
 
      /* 피그마처럼 밝은 회색 반투명 */
     background: rgba(36, 39, 42, 0.35);
     background: rgba(255, 255, 255, 0.50);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(10px);
 
     z-index: 9999;
 `;
@@ -22,17 +21,17 @@ export const Overlay = styled.div`
 export const Modal = styled.div`
     position: relative;
 
-    width: 786px;
-    height: 518px;
+    width: 524px;
+    height: 345px;
 
-    padding: 32px 50px 24px;
+    padding: 21px 33px 16px;
 
     box-sizing: border-box;
 
     background: #f5f5f5;
-    border-radius: 56px;
+    border-radius: 37px;
 
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 
     display: flex;
     flex-direction: column;
@@ -44,28 +43,28 @@ export const Modal = styled.div`
 export const CloseButton = styled.button`
     position: absolute;
 
-    top: 33px;
-    right: 30px;
+    top: 22px;
+    right: 20px;
 
     aspect-ratio: 1 / 1;
 
     border: none;
     background: transparent;
 
-    font-size: 25px;
+    font-size: 17px;
     color: #484848;
 
     cursor: pointer;
 `;
 
 export const SmallLabel = styled.p`
-    margin: 0 0 12px;
+    margin: 0 0 8px;
 
     font-family: Poppins;
-    font-size: 14px;
+    font-size: 9px;
     font-weight: 500;
-    line-height: 26.6px;
-    letter-spacing: 0.28px;
+    line-height: 17.73px;
+    letter-spacing: 0.19px;
 
     color: rgba(122, 121, 121, 0.6);
 `;
@@ -74,38 +73,38 @@ export const Title = styled.h2`
     margin: 0;
 
     font-family: Poppins;
-    font-size: 28px;
+    font-size: 19px;
     font-weight: 500;
-    line-height: 30px;
-    letter-spacing: 0.56px;
+    line-height: 20px;
+    letter-spacing: 0.37px;
 
     color: #000;
 `;
 
 export const Description = styled.p`
-    margin: 16px 0 17px;
+    margin: 11px 0 11px;
 
     font-family: Poppins;
-    font-size: 19px;
+    font-size: 13px;
     font-weight: 400;
-    line-height: 23px;
-    letter-spacing: 0.32px;
+    line-height: 15px;
+    letter-spacing: 0.21px;
 
     color: #777;
 `;
 
 export const SectionLabel = styled.p`
     margin: ${({ $marginTop }) =>
-        $marginTop ? "25px 0 0" : "0"};
+        $marginTop ? "17px 0 0" : "0"};
 
     justify-content: center;
     align-self: stretch;
 
     font-family: Poppins;
-    font-size: 18px;
+    font-size: 12px;
     font-weight: 500;
-    line-height: 26.6px;
-    letter-spacing: 0.364px;
+    line-height: 17.73px;
+    letter-spacing: 0.24px;
 
     color: #2e2e2e;
 `;
@@ -116,17 +115,17 @@ export const OptionGroup = styled.div`
     align-items: center;
     align-content: center;
 
-    margin-top: 10px;
+    margin-top: 7px;
 
-    gap: 20px;
+    gap: 13px;
 `;
 
 export const OptionButton = styled.button`
-    height: 55px;
-    padding: 0 25px;
+    height: 37px;
+    padding: 0 17px;
 
     border: 1px solid #5b5b5b;
-    border-radius: 56px;
+    border-radius: 37px;
 
     background: ${({ $selected }) =>
         $selected ? "#D5D5D5" : "#ffffff"};
@@ -134,31 +133,31 @@ export const OptionButton = styled.button`
     color: #000;
 
     font-family: Poppins;
-    font-size: 21px;
+    font-size: 14px;
     font-weight: 500;
 
     cursor: pointer;
 `;
 
 export const CustomInput = styled.input`
-    width: 145px;
-    height: 55px;
+    width: 97px;
+    height: 37px;
 
-    padding: 17px 25px;
+    padding: 11px 17px;
     box-sizing: border-box;
 
     border: 1px solid #5b5b5b;
-    border-radius: 56px;
+    border-radius: 37px;
     outline: none;
 
     background: #ffffff;
     color: #000;
 
     font-family: Poppins;
-    font-size: 21px;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 21px;
-    letter-spacing: 0.63px;
+    line-height: 14px;
+    letter-spacing: 0.42px;
 
     &::placeholder {
         color: #949191;
@@ -172,15 +171,15 @@ export const CustomInput = styled.input`
 export const BottomArea = styled.div`
     position: absolute;
 
-    left: 50px;
-    right: 50px;
-    bottom: 24px;
+    left: 33px;
+    right: 33px;
+    bottom: 16px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding-top: 23px;
+    padding-top: 15px;
 
     border-top: 1px solid #dddddd;
 `;
@@ -189,14 +188,14 @@ export const StepDots = styled.div`
     display: flex;
     align-items: center;
 
-    gap: 7px;
+    gap: 5px;
 
-    transform: translateY(-23px);
+    transform: translateY(-15px);
 `;
 
 export const Dot = styled.div`
-    width: 10px;
-    height: 10px;
+    width: 7px;
+    height: 7px;
 
     border-radius: 50%;
 
@@ -208,14 +207,14 @@ export const ButtonGroup = styled.div`
     display: flex;
     align-items: center;
 
-    gap: 19px;
+    gap: 13px;
 
     margin-left: auto;
 `;
 
 export const SkipButton = styled.button`
-    width: 83.3px;
-    height: 21.035px;
+    width: auto;
+    height: 14px;
 
     display: flex;
 
@@ -225,60 +224,60 @@ export const SkipButton = styled.button`
     color: #949191;
 
     font-family: Poppins;
-    font-size: 18px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 500;
-    line-height: 35.569px;
-    letter-spacing: 0.379px;
+    line-height: 23.7px;
+    letter-spacing: 0.25px;
 
     text-decoration: underline;
-    text-underline-offset: 8px;
+    text-underline-offset: 5px;
 
     cursor: pointer;
 `;
 
 export const SecondaryButton = styled.button`
-    width: 145px;
-    height: 55px;
+    width: 97px;
+    height: 37px;
 
-    border: 0.3px solid #2e2e2e;
-    border-radius: 56px;
+    border: 0.2px solid #2e2e2e;
+    border-radius: 37px;
 
     background: #ffffff;
     color: #2e2e2e;
 
     font-family: Poppins;
-    font-size: 21px;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 21px;
-    letter-spacing: 0.42px;
+    line-height: 14px;
+    letter-spacing: 0.28px;
 
     cursor: pointer;
 `;
 
 export const InputNotice = styled.p`
-    margin: 8px 0 0 8px;
+    margin: 5px 0 0 5px;
 
     font-family: Poppins;
-    font-size: 13px;
+    font-size: 9px;
     font-weight: 400;
-    line-height: 18px;
+    line-height: 12px;
 
     color: #8f8f8f;
 `;
 
 export const PrimaryButton = styled.button`
-    width: 145px;
-    height: 55px;
+    width: 97px;
+    height: 37px;
 
     border: none;
-    border-radius: 999px;
+    border-radius: 666px;
 
     background: #2e2e2e;
     color: #ffffff;
 
     font-family: Poppins;
-    font-size: 21px;
+    font-size: 14px;
     font-weight: 500;
 
     cursor: pointer;

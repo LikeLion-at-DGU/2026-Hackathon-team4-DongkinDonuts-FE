@@ -9,51 +9,50 @@ export const Overlay = styled.div`
   align-items: center;
   justify-content: center;
 
-  padding: 32px;
   box-sizing: border-box;
 
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(10px);
 `;
 
 export const WideModal = styled.div`
   position: relative;
 
-  width: min(1190px, calc(100vw - 64px));
-  min-height: 720px;
+  width: min(524px, calc(100vw - 28px));
+  min-height: 345px;
 
-  padding: 56px 72px 38px;
+  padding: 21px 33px 16px;
   box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
 
-  border-radius: 56px;
+  border-radius: 37px;
   background: #f5f5f5;
   color: #000;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 `;
 
 export const NoticeModal = styled.div`
-  width: min(510px, calc(100vw - 48px));
+  width: min(225px, calc(100vw - 21px));
 
-  padding: 56px 46px 48px;
+  padding: 27px 20px 23px;
   box-sizing: border-box;
 
-  border-radius: 24px;
+  border-radius: 16px;
   background: #ffffff;
   color: #000;
   text-align: center;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 `;
 
 export const CloseButton = styled.button`
   position: absolute;
-  top: 48px;
-  right: 48px;
+  top: 22px;
+  right: 20px;
 
-  width: 32px;
-  height: 32px;
+  width: 17px;
+  height: 17px;
 
   padding: 0;
   border: none;
@@ -67,13 +66,14 @@ export const CloseButton = styled.button`
 `;
 
 export const SmallLabel = styled.p`
-  margin: 0 0 24px;
+  margin: 0 0 8px;
 
   color: rgba(122, 121, 121, 0.6);
   font-family: Poppins, sans-serif;
-  font-size: 21px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 17.73px;
+  letter-spacing: 0.19px;
 `;
 
 export const Title = styled.h2`
@@ -81,82 +81,92 @@ export const Title = styled.h2`
 
   color: #000;
   font-family: Poppins, sans-serif;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 0;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.37px;
 `;
 
 export const Description = styled.p`
-  margin: 24px 0 34px;
+  margin: 11px 0 11px;
 
   color: #777;
   font-family: Poppins, sans-serif;
-  font-size: 25px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 15px;
+  letter-spacing: 0.21px;
 `;
 
 export const Section = styled.section`
-  margin-top: ${({ $compact }) => ($compact ? "24px" : "34px")};
+  margin-top: ${({ $compact }) => ($compact ? "11px" : "17px")};
 `;
 
 export const SectionLabel = styled.h3`
-  margin: 0 0 18px;
+  margin: 0;
 
   color: #2e2e2e;
   font-family: Poppins, sans-serif;
-  font-size: 25px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17.73px;
+  letter-spacing: 0.24px;
 `;
 
 export const OptionGroup = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  align-items: center;
+  align-content: center;
+
+  margin-top: 7px;
+
+  gap: 13px;
 `;
 
 export const OptionButton = styled.button`
-  height: 88px;
-  min-width: 180px;
+  height: 37px;
 
-  padding: 0 40px;
+  padding: 0 17px;
 
-  border: 1.5px solid #686868;
-  border-radius: 56px;
+  border: 1px solid #5b5b5b;
+  border-radius: 37px;
   background: ${({ $selected }) => ($selected ? "#d5d5d5" : "#ffffff")};
   color: #000;
 
   font-family: Poppins, sans-serif;
-  font-size: 31px;
-  font-weight: 600;
-  line-height: 1;
+  font-size: 14px;
+  font-weight: 500;
 
   cursor: pointer;
-
-  ${({ $selected }) =>
-    $selected
-      ? "box-shadow: inset 0 0 0 2px #686868;"
-      : ""}
 `;
 
 export const CustomInput = styled.input`
-  width: 210px;
-  height: 88px;
+  width: 97px;
+  height: 37px;
 
-  padding: 0 34px;
+  padding: 11px 17px;
   box-sizing: border-box;
 
-  border: 1.5px solid #686868;
-  border-radius: 56px;
+  border: 1px solid #5b5b5b;
+  border-radius: 37px;
   outline: none;
   background: #ffffff;
   color: #000;
 
   font-family: Poppins, sans-serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.42px;
+
+  &::placeholder {
+    color: #949191;
+  }
+
+  &:focus {
+    border: 1px solid #2e2e2e;
+  }
 `;
 
 export const Divider = styled.div`
@@ -165,85 +175,82 @@ export const Divider = styled.div`
 
   margin-top: auto;
 
-  background: #cfcfcf;
+  background: #dddddd;
 `;
 
 export const Footer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: ${({ $end }) => ($end ? "flex-end" : "space-between")};
 
-  padding-top: 28px;
+  padding-top: 15px;
 `;
 
 export const Dots = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
 `;
 
 export const Dot = styled.span`
-  width: 16px;
-  height: 16px;
+  width: 7px;
+  height: 7px;
 
   border-radius: 50%;
-  background: ${({ $active }) => ($active ? "#7d7d7d" : "#d0d0d0")};
+  background: ${({ $active }) => ($active ? "#727070" : "#cccccc")};
 `;
 
 export const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 30px;
-`;
+  gap: 13px;
 
-export const TextButton = styled.button`
-  border: none;
-  background: transparent;
-  color: #b9b9b9;
-
-  font-family: Poppins, sans-serif;
-  font-size: 32px;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 8px;
-
-  cursor: pointer;
+  margin-left: auto;
 `;
 
 export const SecondaryButton = styled.button`
-  min-width: 232px;
-  height: 90px;
+  min-width: 97px;
+  height: 37px;
 
-  padding: 0 44px;
+  padding: 0 20px;
+  box-sizing: border-box;
 
-  border: 1.5px solid #2e2e2e;
-  border-radius: 56px;
+  border: 0.2px solid #2e2e2e;
+  border-radius: 37px;
   background: #ffffff;
   color: #2e2e2e;
 
   font-family: Poppins, sans-serif;
-  font-size: 31px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.28px;
 
   cursor: pointer;
+  white-space: nowrap;
 `;
 
 export const PrimaryButton = styled.button`
-  min-width: 232px;
-  height: 90px;
+  min-width: 97px;
+  height: 37px;
 
-  padding: 0 44px;
+  padding: 0 20px;
+  box-sizing: border-box;
 
   border: none;
-  border-radius: 56px;
+  border-radius: 666px;
   background: #2e2e2e;
   color: #ffffff;
 
   font-family: Poppins, sans-serif;
-  font-size: 31px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
 
   cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: #111111;
+  }
 
   &:disabled {
     opacity: 0.5;
@@ -252,9 +259,9 @@ export const PrimaryButton = styled.button`
 `;
 
 export const NoticeIcon = styled.img`
-  width: 100px;
-  height: 100px;
-  margin-bottom: 28px;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 13px;
 `;
 
 export const NoticeTitle = styled.h2`
@@ -262,33 +269,33 @@ export const NoticeTitle = styled.h2`
 
   color: #000;
   font-family: Poppins, sans-serif;
-  font-size: 27px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
   letter-spacing: 0;
 `;
 
 export const NoticeDescription = styled.p`
-  margin: 28px 0 38px;
+  margin: 13px 0 18px;
 
   color: #949494;
   font-family: Poppins, sans-serif;
-  font-size: 18px;
+  font-size: 8px;
   font-weight: 600;
   line-height: 1.5;
 `;
 
 export const NoticeButton = styled.button`
   width: 100%;
-  height: 62px;
+  height: 30px;
 
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background: #191919;
   color: #ffffff;
 
   font-family: Poppins, sans-serif;
-  font-size: 18px;
+  font-size: 8px;
   font-weight: 600;
 
   cursor: pointer;

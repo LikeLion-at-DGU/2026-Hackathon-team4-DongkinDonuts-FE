@@ -186,13 +186,13 @@ export function BrainResetFeedbackModal({
           </S.Dots>
 
           <S.ButtonGroup>
-            <S.TextButton
+            <S.SecondaryButton
               type="button"
               onClick={handleSkip}
               disabled={isSubmitting}
             >
               건너뛰기
-            </S.TextButton>
+            </S.SecondaryButton>
             <S.PrimaryButton
               type="button"
               onClick={handleComplete}

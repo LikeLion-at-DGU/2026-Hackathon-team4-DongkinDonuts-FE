@@ -10,7 +10,6 @@ import {
 } from "../api/sessions";
 import {
   buildRecoveryRoutinePath,
-  countRemainingRoutines,
   findNextRoutine,
 } from "../config/recoveryRouting";
 
@@ -49,7 +48,6 @@ export function useRecoveryRoutineSession({
       : "/";
 
     setNextSessionPath(path);
-    setRemainingCount(countRemainingRoutines(slot, routineInstanceId));
     return path;
   }, [routineInstanceId, slotId]);
 
@@ -73,6 +71,9 @@ export function useRecoveryRoutineSession({
         if (activeSession?.routine_instance_id === routineInstanceId) {
           if (isMounted) {
             setBackendSession(activeSession);
+            if (typeof activeSession?.remaining_session_count === "number") {
+              setRemainingCount(activeSession.remaining_session_count);
+            }
           }
           return;
         }
@@ -84,6 +85,9 @@ export function useRecoveryRoutineSession({
 
         if (isMounted) {
           setBackendSession(session);
+          if (typeof session?.remaining_session_count === "number") {
+            setRemainingCount(session.remaining_session_count);
+          }
         }
       } catch (error) {
         console.error("백엔드 세션 시작 실패:", error);
@@ -120,7 +124,10 @@ export function useRecoveryRoutineSession({
       accuracy,
       metrics,
     })
-      .then(async () => {
+      .then(async (completedSession) => {
+        if (typeof completedSession?.remaining_session_count === "number") {
+          setRemainingCount(completedSession.remaining_session_count);
+        }
         await refreshNextPath();
       })
       .catch((error) => {
