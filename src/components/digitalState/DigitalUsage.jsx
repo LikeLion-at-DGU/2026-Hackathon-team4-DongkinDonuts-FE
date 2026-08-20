@@ -19,8 +19,6 @@ function DigitalUsage({
     const {
         isResult,
         isSaving,
-        hasGeneratedResult,
-        resultVersion,
 
         schedules,
         alarmStates,
@@ -28,6 +26,7 @@ function DigitalUsage({
 
         toggleAlarm,
         toggleCell,
+        setCellValue,
         toggleRow,
         resetAll,
         handleTemporarySave,
@@ -54,12 +53,15 @@ function DigitalUsage({
                 <UsageTable
                     selected={selected}
                     toggleCell={toggleCell}
+                    setCellValue={setCellValue}
                     toggleRow={toggleRow}
                     resetAll={resetAll}
                     readOnly={isResult}
                 />
             </S.UsageCard>
 
+            {/* 둘 다 PC 사용 패턴 입력 여부와 무관하게 스스로 데이터를 조회해서
+                보여준다 — props 필요 없음 */}
             <S.CardRow>
                 <DigitalAnalysisCard
                     showResult={hasGeneratedResult}

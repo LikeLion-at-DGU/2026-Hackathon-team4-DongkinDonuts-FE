@@ -180,4 +180,4 @@ function RecoverySessionStartPage() {
     );
 }
 
-export default RecoverySessionStartPage; 
+export default RecoverySessionStartPage;

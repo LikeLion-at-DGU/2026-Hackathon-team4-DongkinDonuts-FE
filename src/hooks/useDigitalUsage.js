@@ -112,14 +112,6 @@ export function useDigitalUsage({
         setAlarmStates,
     ] = useState({});
 
-    const {
-        hasGeneratedResult,
-        setHasGeneratedResult,
-
-        resultVersion,
-        setResultVersion,
-    } = useDigitalUsageSession();
-
     const isResult =
         mode === "result";
 
@@ -238,6 +230,35 @@ export function useDigitalUsage({
         }));
     };
 
+    // 특정 칸을 정해진 값으로 고정 설정(토글이 아님) — 드래그로 여러 칸을
+    // 한번에 선택/해제할 때 씀. toggleCell처럼 "지금 값의 반대로 뒤집기"였다면
+    // 드래그 중 지나가는 칸마다 계속 반대로 튕겨서 드래그가 안 먹힌다. 시작
+    // 칸을 누른 순간 정해진 값을 드래그 내내 그대로 적용한다.
+    const setCellValue = (
+        rowIndex,
+        colIndex,
+        value
+    ) => {
+        if (isResult) {
+            return;
+        }
+
+        const key =
+            `${rowIndex}-${colIndex}`;
+
+        setSelected((prev) => {
+            if (prev[key] === value) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                [key]: value,
+            };
+        });
+    };
+
+    // 한 행 전체 선택
     const toggleRow = (
         rowIndex
     ) => {
@@ -663,6 +684,7 @@ export function useDigitalUsage({
         toggleAlarm,
 
         toggleCell,
+        setCellValue,
         toggleRow,
         resetAll,
 

@@ -167,6 +167,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       elapsedTime,
       sunriseCount,
       stage,
+      difficulty,
     },
   });
   const nextSessionPath = recoverySession.isBackendRoutine
@@ -185,7 +186,8 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={SESSION.nextSessionPath}
+      nextSessionPath={nextSessionPath}
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

@@ -138,6 +138,7 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
       elapsedTime,
       pinchCount,
       targetSize,
+      difficulty,
     },
   });
   const nextSessionPath = recoverySession.isBackendRoutine

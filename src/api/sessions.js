@@ -30,3 +30,17 @@ export function completeSession(
 export function abortSession(sessionId) {
   return apiClient.patch(`/sessions/${sessionId}/abort/`);
 }
+
+export function submitSessionFeedback({
+  recoverySlotId,
+  recoveryFeeling = null,
+  difficultyFeedback = null,
+  skipped = false,
+}) {
+  return apiClient.post("/sessions/feedback/", {
+    recovery_slot_id: recoverySlotId,
+    recovery_feeling: recoveryFeeling,
+    difficulty_feedback: difficultyFeedback,
+    skipped,
+  });
+}
