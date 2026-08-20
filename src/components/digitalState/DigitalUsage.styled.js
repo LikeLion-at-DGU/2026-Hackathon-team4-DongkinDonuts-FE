@@ -263,7 +263,7 @@ export const ScheduleDescription = styled.p`
     margin: 0 50px 50px;
 
     font-family: ${FONT_POPPINS};
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
     line-height: 21px;
     letter-spacing: 0.14px;
