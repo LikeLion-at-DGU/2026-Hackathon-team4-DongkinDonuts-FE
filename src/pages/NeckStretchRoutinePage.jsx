@@ -5,7 +5,7 @@ import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
-import { lerp, normalizeAngleDeg } from "../utils/handUtils";
+import { lerp } from "../utils/handUtils";
 
 const SESSION = ROUTINE_SESSIONS["neck-stretch"];
 const BURST_MS = 700;
@@ -16,9 +16,6 @@ export default function NeckStretchRoutinePage() {
   const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const stageRef = useRef(1); // 1: 첫 번째 방향, 2: 반대쪽 방향
-  const baselineTiltRef = useRef(null);
-  const calibSumRef = useRef(0);
-  const calibCountRef = useRef(0);
   const displayDegRef = useRef(0);
   const alignStartRef = useRef(null);
   const burstRef = useRef(null);
@@ -36,31 +33,44 @@ export default function NeckStretchRoutinePage() {
     useMultiTracking("POSE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
-    initLandmarker().then(startCamera);
+    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
+    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
+    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
+    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
+    // detectFrame은 두 자원이 각각 준비될 때까지 자연스럽게 기다리므로 순서를 강제할 필요가 없다.
+    initLandmarker();
+    startCamera();
     return () => cleanup();
   }, [initLandmarker, startCamera, cleanup]);
 
   useEffect(() => {
     let animId;
+    // 마지막 burst가 끝나 미션이 완료되는 바로 그 프레임에도 아래 requestAnimationFrame(loop)이
+    // 무조건 다음 프레임을 예약해버린다. isMissionComplete가 true로 바뀌어도 그 사실은 React가
+    // 커밋 후(페인트 이후) effect를 다시 실행해야 이 loop 클로저에 반영되는데, 그 사이에 rAF가
+    // 먼저 한 번 더 실행돼(stale closure) 이미 null로 비운 정렬 타이머를 다시 채워 넣는 등
+    // 완료 순간에 애니메이션이 한 번 더 깜빡이는 원인이 된다. stopped 플래그로 완료된 그 프레임
+    // 안에서 즉시 스스로 예약을 멈춰 이 여분의 프레임을 없앤다.
+    let stopped = false;
     const loop = (t) => {
       const data = detectFrame(t);
 
-      let deltaDeg = 0;
-      if (data?.neckTiltDeg != null) {
-        if (baselineTiltRef.current == null) {
-          // 초반 프레임 평균으로 "정면 기준 각도"를 보정 (사람/카메라 각도 개인차 흡수)
-          calibSumRef.current += data.neckTiltDeg;
-          calibCountRef.current += 1;
-          if (calibCountRef.current >= TRACKING_CONFIG.calibrationFrames) {
-            baselineTiltRef.current = calibSumRef.current / calibCountRef.current;
-          }
-        } else {
-          // normalizeAngleDeg: 기준각과 현재각이 ±180° 경계 양쪽에 걸쳐 있을 때(예: 179° - (-179°))
-          // 발생하는 350°대의 오버플로우 값을 -180~180 범위로 감싸 순간이동을 방지한다.
-          deltaDeg = normalizeAngleDeg(data.neckTiltDeg - baselineTiltRef.current);
-        }
+      // 캔버스 게이지는 useMultiTracking이 어깨 벡터로 따로 계산한 neckTiltDeg가 아니라, 카메라
+      // 프리뷰에 실제로 찍히는 두 점(정수리 headPoint, 목중앙 neckPoint) 사이의 기하학적 각도를
+      // 그대로 써서 동기화한다. neckPoint→headPoint 벡터의 화면(미러링된 프리뷰 기준) 각도이며,
+      // x를 두 점 모두 (1-x)로 반전해도 차(dx)는 부호가 상쇄되어 그대로 raw x를 빼면 된다.
+      let lineTiltDeg = null;
+      if (data?.headPoint && data?.neckPoint) {
+        const dx = data.neckPoint.x - data.headPoint.x;
+        const dy = data.neckPoint.y - data.headPoint.y;
+        lineTiltDeg = Math.atan2(dx, dy) * (180 / Math.PI);
       }
-      const isCalibrating = baselineTiltRef.current == null;
+
+      // 0°는 "목 중앙→정수리 벡터가 화면 수직과 일치하는 상태"라는 고정된 절대 기준이다.
+      // 세션 시작 시 초반 프레임을 평균/중앙값 내어 그때그때 기준각을 다시 잡는 캘리브레이션
+      // 단계는 없앴다 — 매번 기준이 조금씩 다르게 잡혀서 고개를 정면으로 해도 그때마다 다른
+      // 각도로 표시되는 문제가 있었기 때문에, 계산식 자체가 이미 갖고 있는 절대 0°를 그대로 쓴다.
+      const deltaDeg = lineTiltDeg ?? 0;
 
       // 인디케이터가 표시할 수 있는 최대 범위를 절대 벗어나지 않도록 먼저 선형 제한(clamp)한 뒤,
       // 그 목표값으로 LERP 보간해 갑작스러운 감지 튐이 있어도 막대가 매끄럽게 뒤따라가도록 한다.
@@ -85,7 +95,6 @@ export default function NeckStretchRoutinePage() {
         stageSign * TRACKING_CONFIG.neckTargetMaxDeg
       );
       const aligned =
-        !isCalibrating &&
         !isMissionComplete &&
         deltaDeg >= targetMinDeg &&
         deltaDeg <= targetMaxDeg;
@@ -94,12 +103,19 @@ export default function NeckStretchRoutinePage() {
       // 유지 도중 범위를 벗어나면 alignStartRef가 즉시 null로 초기화되어 타이머가 리셋된다.
       let holdProgress = 0;
       let holdRemainingSec = TRACKING_CONFIG.neckAlignHoldMs / 1000;
-      if (aligned) {
+      if (finalPendingRef.current) {
+        // 마지막 단계는 유지 완료로 burst가 트리거된 뒤에도 사용자가 자세를 그대로 유지하고
+        // 있어 aligned가 계속 true로 남는다. 이때 alignStartRef가 null인 채로 방치하면 유지
+        // 타이머가 처음부터 다시 채워져, 초록 게이지가 완료 burst와 겹쳐 한 번 더 차오르는
+        // 것처럼 보인다. 트리거 이후에는 게이지를 가득 찬 상태로 고정해 재생을 막는다.
+        holdProgress = 1;
+        holdRemainingSec = 0;
+      } else if (aligned) {
         if (alignStartRef.current == null) alignStartRef.current = t;
         const heldMs = t - alignStartRef.current;
         holdProgress = Math.min(1, heldMs / TRACKING_CONFIG.neckAlignHoldMs);
         holdRemainingSec = Math.max(0, (TRACKING_CONFIG.neckAlignHoldMs - heldMs) / 1000);
-        if (heldMs >= TRACKING_CONFIG.neckAlignHoldMs && !finalPendingRef.current) {
+        if (heldMs >= TRACKING_CONFIG.neckAlignHoldMs) {
           alignStartRef.current = null;
           const isFinal = stageRef.current !== 1;
           burstRef.current = { startedAt: t, isFinal };
@@ -126,6 +142,7 @@ export default function NeckStretchRoutinePage() {
           burstProgress = 1;
           if (burstRef.current.isFinal) {
             setSuccessCount(TOTAL_STAGES);
+            stopped = true;
           }
           burstRef.current = null;
         }
@@ -141,12 +158,11 @@ export default function NeckStretchRoutinePage() {
           aligned,
           holdProgress,
           holdRemainingSec,
-          isCalibrating,
           burstProgress,
         });
       }
 
-      animId = requestAnimationFrame(loop);
+      if (!stopped) animId = requestAnimationFrame(loop);
     };
     if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
@@ -162,9 +178,6 @@ export default function NeckStretchRoutinePage() {
     stageRef.current = 1;
     setStage(1);
     setSuccessCount(0);
-    baselineTiltRef.current = null;
-    calibSumRef.current = 0;
-    calibCountRef.current = 0;
     displayDegRef.current = 0;
     alignStartRef.current = null;
     burstRef.current = null;
@@ -205,6 +218,7 @@ export default function NeckStretchRoutinePage() {
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
+      instantReset
       onStopSession={handleStopSession}
       nextSessionPath={SESSION.nextSessionPath}
       cameraPreviewProps={cameraPreviewProps}

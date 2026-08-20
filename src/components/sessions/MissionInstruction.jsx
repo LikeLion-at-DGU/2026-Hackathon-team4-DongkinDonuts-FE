@@ -26,19 +26,6 @@ const MissionInstruction = ({
     }
 
     switch (mission.type) {
-      // 헬스/루틴 세션 타입
-      case "EYE_BLINK":
-        return "지그시 눈 깜빡이기";
-      case "EYE_TRACKING":
-        return "∞ 궤도 시선 추적";
-      case "NECK_STRETCH":
-        return "목 측면 신전";
-      case "SHOULDER_PMR":
-        return "어깨 점진적 이완 (PMR)";
-      case "FOCUS_PINCH":
-        return "양손 핀치 링 맞추기";
-      case "DROWSY_ICE":
-        return "얼음 조각 깨기";
 
       // 기존 게임 인터랙션 세션 타입
       case "COLOR_SORT":
@@ -63,25 +50,11 @@ const MissionInstruction = ({
     if (!mission || !mission.type) return "";
 
     switch (mission.type) {
-      // 헬스/루틴 세션 서브 문구
-      case "EYE_BLINK":
-        return "3초간 눈을 지그시 감았다 떠주세요";
-      case "EYE_TRACKING":
-        return "화면의 무한대 궤적을 시선으로 따라가세요";
-      case "NECK_STRETCH":
-        return "고개를 옆으로 기울여 목 근육을 stretch 해주세요";
-      case "SHOULDER_PMR":
-        return "어깨를 귀까지 으쓱 올렸다 툭 떨어뜨리세요";
-      case "FOCUS_PINCH":
-        return "엄지와 검지를 꼬집듯 핀치하여 링을 맞추세요";
-      case "DROWSY_ICE":
-        return "주먹을 움직여 화면 속 얼음을 깨뜨리세요!";
-
       // 기존 게임 인터랙션 세션 서브 문구
       case "COLOR_SORT":
         return "공 3개를 각각 같은 색 영역에 넣어보세요";
       case "SEQUENCE":
-        return "제시된 순서대로 공을 잡아보세요";
+        return "제시된 순서대로 공을 잡았다 놓으세요";
       case "MOVING_TARGET":
         return "움직이는 목표에 공 3개를 넣어보세요";
       case "SAME_COLOR":

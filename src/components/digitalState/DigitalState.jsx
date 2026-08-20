@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import DigitalUsage from "./DigitalUsage";
 import LockIcon from "../../assets/icons/LockIcon.svg";
 import { useDigitalState } from "../../hooks/useDigitalState";
+import { getDigitalPatternStatus } from "../../api/digitalState";
 
 import * as S from "./DigitalState.styled";
 

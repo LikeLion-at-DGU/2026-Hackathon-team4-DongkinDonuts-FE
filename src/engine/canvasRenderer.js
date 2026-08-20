@@ -1,6 +1,20 @@
 import { BALL_TYPES } from "../config/ballTypes";
 import { getDistance } from "../utils/handUtils";
 
+// 헥스 색상을 지정한 비율만큼 어둡게 만든다.
+// 모든 공 테두리에 고정된 파란빛 회색을 쓰면 초록/파랑처럼 채도가 낮은 색끼리
+// 서로 비슷하게 보여 헷갈리므로, 공 타입 고유 색상을 어둡게 만들어 사용한다.
+const darkenColor = (hex, amount = 0.45) => {
+  const value = hex.replace("#", "");
+  const r = parseInt(value.substring(0, 2), 16);
+  const g = parseInt(value.substring(2, 4), 16);
+  const b = parseInt(value.substring(4, 6), 16);
+
+  const scale = (channel) => Math.round(channel * (1 - amount));
+
+  return `rgb(${scale(r)}, ${scale(g)}, ${scale(b)})`;
+};
+
 // 공 그리기
 export const drawBall = (ctx, ball, width, height) => {
   if (ball.x < 0 || ball.y < 0) return;
@@ -31,7 +45,7 @@ export const drawBall = (ctx, ball, width, height) => {
   gradient.addColorStop(0, "#FFFFFF");
   gradient.addColorStop(0.18, type.color);
   gradient.addColorStop(0.75, type.color);
-  gradient.addColorStop(1, "#4D5660");
+  gradient.addColorStop(1, darkenColor(type.color));
 
   ctx.fillStyle = gradient;
   ctx.fill();

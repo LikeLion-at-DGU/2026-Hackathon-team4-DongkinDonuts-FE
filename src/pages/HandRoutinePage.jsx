@@ -9,7 +9,6 @@ import { useHandTracking } from "../hooks/useHandTracking";
 import { useSessionLoop } from "../hooks/useSessionLoop";
 import { useSessionState } from "../hooks/useSessionState";
 
-import HandPlayArea from "../components/sessions/HandPlayArea";
 import SessionPage from "./SessionPage";
 
 const HandRoutinePage = () => {
@@ -44,23 +43,22 @@ const HandRoutinePage = () => {
     missionRemaining,
     isMissionComplete,
     isTerminated,
+    sameColorTargetType,
+    sequenceOrder,
   } = state;
 
   // 1. 초기화
   useEffect(() => {
-    let isMounted = true;
-
-    const init = async () => {
-      await initializeMediaPipe();
-      if (isMounted) {
-        await startCamera();
-      }
-    };
-
-    init();
+    // 모델 로딩(initializeMediaPipe)과 카메라 시작(startCamera)은 서로 의존 관계가 없는
+    // 독립적인 준비 작업이라 병렬로 시작한다. 예전엔 모델 로딩이 끝난 뒤에야 카메라를 시작했는데,
+    // 모델 로딩이 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을
+    // 때 카메라 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이
+    // 됐다. detectHands는 두 자원이 각각 준비될 때까지 자연스럽게 기다리므로 순서를 강제할
+    // 필요가 없다.
+    initializeMediaPipe();
+    startCamera();
 
     return () => {
-      isMounted = false;
       cleanup();
     };
   }, [cleanup, initializeMediaPipe, startCamera]);
@@ -218,11 +216,11 @@ const HandRoutinePage = () => {
   const instructionProps = useMemo(
     () => ({
       mission,
-      sequenceOrder: refs.sequenceOrderRef.current,
-      sameColorTargetType: refs.sameColorTargetTypeRef.current,
+      sequenceOrder,
+      sameColorTargetType,
       missionRemaining,
     }),
-    [mission, refs, missionRemaining]
+    [mission, sequenceOrder, sameColorTargetType, missionRemaining]
   );
   const progressProps = useMemo(
     () => ({ missionType: mission.type, sequenceIndex, missionProgress }),
@@ -245,7 +243,7 @@ const HandRoutinePage = () => {
       instructionProps={instructionProps}
       progressProps={progressProps}
     >
-      <HandPlayArea canvasRef={canvasRef} />
+      <canvas ref={canvasRef} />
     </SessionPage>
   );
 };

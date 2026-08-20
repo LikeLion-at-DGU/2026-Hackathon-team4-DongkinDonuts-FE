@@ -36,7 +36,12 @@ export default function ShoulderPmrRoutinePage() {
     useMultiTracking("POSE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
-    initLandmarker().then(startCamera);
+    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
+    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
+    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
+    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
+    initLandmarker();
+    startCamera();
     return () => cleanup();
   }, [initLandmarker, startCamera, cleanup]);
 
@@ -174,7 +179,7 @@ export default function ShoulderPmrRoutinePage() {
             : "어깨를 으쓱 올려주세요"
           : pmrStep === 1
             ? "힘을 빼고 툭 떨어뜨리세요"
-            : "돌이 가루가 되어 부서지고 있어요",
+            : "돌이 부서졌어요",
     }),
     [pmrStep, repCount]
   );

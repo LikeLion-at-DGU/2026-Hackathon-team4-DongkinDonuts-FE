@@ -17,6 +17,8 @@ export const setupMission = ({
   setIsRunning,
   setIsMissionComplete,
   setIsTerminated,
+  setSameColorTargetType,
+  setSequenceOrder,
 }) => {
   const {
     missionRef,
@@ -46,6 +48,7 @@ export const setupMission = ({
   if (nextMission.type === "SAME_COLOR") {
     const sameColor = createSameColorBalls();
     sameColorTargetTypeRef.current = sameColor.targetType;
+    setSameColorTargetType(sameColor.targetType);
     ballsRef.current = sameColor.balls;
 
     staticTargetsRef.current = [
@@ -77,9 +80,9 @@ export const setupMission = ({
 
   if (nextMission.type === "SEQUENCE") {
     ballsRef.current = createNormalBalls();
-    sequenceOrderRef.current = ["green", "blue", "pink"].sort(
-      () => Math.random() - 0.5
-    );
+    const order = ["green", "blue", "pink"].sort(() => Math.random() - 0.5);
+    sequenceOrderRef.current = order;
+    setSequenceOrder(order);
     staticTargetsRef.current = [];
     return;
   }
