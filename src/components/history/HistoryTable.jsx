@@ -23,19 +23,23 @@ function HistoryTable({
                     <S.StatusHeader>
                         상태
                     </S.StatusHeader>
+
+                    <S.NoteHeader>
+                        비고
+                    </S.NoteHeader>
                 </tr>
             </S.TableHead>
 
             <tbody>
                 {loading ? (
                     <tr>
-                        <S.ActivityCell colSpan={4}>
+                        <S.ActivityCell colSpan={5}>
                             불러오는 중...
                         </S.ActivityCell>
                     </tr>
                 ) : historyData.length === 0 ? (
                     <tr>
-                        <S.ActivityCell colSpan={4}>
+                        <S.ActivityCell colSpan={5}>
                             이 날짜엔 기록이 없어요
                         </S.ActivityCell>
                     </tr>
@@ -62,13 +66,15 @@ function HistoryTable({
 
                             <S.StatusCell>
                                 <S.StatusBadge
-                                    $status={
-                                        history.status
-                                    }
+                                    $status={history.status}
                                 >
                                     {history.status}
                                 </S.StatusBadge>
                             </S.StatusCell>
+
+                            <S.NoteCell>
+                                {history.note || "-"}
+                            </S.NoteCell>
                         </S.TableRow>
                     ))
                 )}
