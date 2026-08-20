@@ -121,8 +121,8 @@ export const StartButton = styled.button`
 `;
 
 export const ReportBox = styled.div`
-    width: 450px;
-    height: 420px;
+    width: 480px;
+    height: 430px;
     gap: 3px;
     margin-top: 50px;
 
@@ -166,7 +166,7 @@ export const AiBadge = styled.span`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 108px;
+    width: 115px;
     height: 30px;
     padding: 7.371px 13.514px 7.371px 14.743px;
     justify-content: center;
@@ -258,7 +258,7 @@ export const Countdown = styled.span`
 
 export const ChangeTimeButton = styled.button`
     width: 100%;
-    height: 60px;
+    height: 70px;
 
     margin-top: 24px;
 
