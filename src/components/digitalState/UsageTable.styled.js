@@ -66,7 +66,7 @@ export const GuideBox = styled.div`
     border-radius: 4px;
 
     background: ${({ $checked }) =>
-        $checked ? "#9A9A9A" : "#FFFFFF"};
+        $checked ? "#9A9A9A" : "#ffffff"};
 
     color: #ffffff;
 
@@ -182,7 +182,7 @@ export const Cell = styled.div`
     border-radius: 10px;
 
     background: ${({ $selected }) =>
-        $selected ? "#9A9A9A" : "#FFFFFF"};
+        $selected ? "#9A9A9A" : "#ffffff"};
 
     color: #ffffff;
 
@@ -231,10 +231,10 @@ export const RowButton = styled.button`
     border-radius: 6px;
 
     background: ${({ $selected }) =>
-        $selected ? "#9A9A9A" : "#FFFFFF"};
+        $selected ? "#9A9A9A" : "#ffffff"};
 
     color: ${({ $selected }) =>
-        $selected ? "#FFFFFF" : "#4F5459"};
+        $selected ? "#ffffff" : "#4F5459"};
 
     font-family: Poppins;
     font-size: 14px;

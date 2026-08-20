@@ -36,7 +36,7 @@ export const Modal = styled.div`
     display: flex;
     flex-direction: column;
 
-    transform: scale(0.9);
+    transform: scale(1.35);
     transform-origin: top center;
 `;
 

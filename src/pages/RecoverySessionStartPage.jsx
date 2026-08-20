@@ -22,7 +22,7 @@ const pageStyle = {
     alignItems: "center",
     justifyContent: "center",
     padding: "80px 24px",
-    color: "#fff",
+    color: "#ffffff",
     textAlign: "center",
 };
 
@@ -33,7 +33,7 @@ const buttonStyle = {
     border: "none",
     borderRadius: 6,
     background: "#E04141",
-    color: "#fff",
+    color: "#ffffff",
     cursor: "pointer",
 };
 
