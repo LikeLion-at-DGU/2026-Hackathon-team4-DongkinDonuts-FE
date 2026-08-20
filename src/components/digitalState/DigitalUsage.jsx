@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import UsageTable from "./UsageTable";
 import DigitalAnalysisCard from "./DigitalAnalysisCard";
 import DigitalScheduleCard from "./DigitalScheduleCard";
@@ -12,6 +14,7 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
+    onRecommendedTimesChange,
 }) {
     const {
         isResult,
@@ -19,6 +22,11 @@ function DigitalUsage({
         hasGeneratedResult,
         resultVersion,
 
+        schedules,
+        alarmStates,
+        activeRecommendedTimes,
+
+        toggleAlarm,
         toggleCell,
         toggleRow,
         resetAll,
@@ -30,6 +38,15 @@ function DigitalUsage({
         setSelected,
         onCreate,
     });
+
+    useEffect(() => {
+        onRecommendedTimesChange?.(
+            activeRecommendedTimes
+        );
+    }, [
+        activeRecommendedTimes,
+        onRecommendedTimesChange,
+    ]);
 
     return (
         <S.Container>
@@ -49,21 +66,20 @@ function DigitalUsage({
                     resultVersion={resultVersion}
                 />
 
-                {/* PC 사용 패턴 입력 여부와 무관하게 스스로 오늘 예정된 일정을
-                    조회해서 보여준다 — props 필요 없음 */}
-                <DigitalScheduleCard />
+                <DigitalScheduleCard
+                    showResult={hasGeneratedResult}
+                    schedules={schedules}
+                    alarmStates={alarmStates}
+                    onToggleAlarm={toggleAlarm}
+                />
             </S.CardRow>
 
-            <S.ActionRow
-                $isResult={isResult}
-            >
+            <S.ActionRow $isResult={isResult}>
                 {!isResult ? (
                     <>
                         <S.SaveButton
                             type="button"
-                            onClick={
-                                handleTemporarySave
-                            }
+                            onClick={handleTemporarySave}
                             disabled={isSaving}
                         >
                             {isSaving
@@ -73,9 +89,7 @@ function DigitalUsage({
 
                         <S.CreateButton
                             type="button"
-                            onClick={
-                                handleCreate
-                            }
+                            onClick={handleCreate}
                             disabled={isSaving}
                         >
                             {isSaving

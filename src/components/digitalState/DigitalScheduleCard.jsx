@@ -1,12 +1,12 @@
 import ClockIcon from "../../assets/icons/ClockIcon.svg";
 
-import { useUpcomingSchedule } from "../../hooks/useUpcomingSchedule";
+import {
+    useUpcomingSchedule,
+    notifyUpcomingScheduleChanged,
+} from "../../hooks/useUpcomingSchedule";
 
 import * as S from "./DigitalUsage.styled";
 
-// PC 사용 패턴 입력 여부와 무관하게 항상 "오늘 진행 예정"인 회복 일정을
-// 스스로 조회해서 보여준다 — "내 계획 다시 설정"으로만 계획을 만든 경우도
-// 포함해서, 언제 봐도 서버의 실제 최신 상태를 그대로 반영한다.
 function DigitalScheduleCard() {
     const {
         schedules,
@@ -20,7 +20,8 @@ function DigitalScheduleCard() {
             return "--:--";
         }
 
-        const date = new Date(dateTime);
+        const date =
+            new Date(dateTime);
 
         return date.toLocaleTimeString(
             "ko-KR",
@@ -32,13 +33,71 @@ function DigitalScheduleCard() {
         );
     };
 
-    const firstSchedule = schedules[0];
+    const hasSchedules =
+        schedules.length > 0;
 
-    const alarmActive = firstSchedule
-        ? alarmStates?.[firstSchedule.id] ?? false
-        : false;
+    /*
+     * 모든 추천 일정이 ON일 때
+     * 상단 토글도 ON
+     */
+    const alarmActive =
+        hasSchedules &&
+        schedules.every(
+            (schedule) =>
+                alarmStates?.[
+                    schedule.id
+                ] === true
+        );
 
-    const hasSchedules = schedules.length > 0;
+    /*
+     * 상단 토글 하나로
+     * 오늘 추천 일정 전체 ON/OFF
+     */
+    const handleToggleAllAlarms =
+        async () => {
+            const next =
+                !alarmActive;
+
+            try {
+                /*
+                 * OFF로 바꿀 때:
+                 * 현재 ON인 일정만 toggle
+                 *
+                 * ON으로 바꿀 때:
+                 * 현재 OFF인 일정만 toggle
+                 */
+                const targets =
+                    schedules.filter(
+                        (schedule) =>
+                            Boolean(
+                                alarmStates?.[
+                                    schedule.id
+                                ]
+                            ) !== next
+                    );
+
+                await Promise.all(
+                    targets.map(
+                        (schedule) =>
+                            toggleAlarm(
+                                schedule.id
+                            )
+                    )
+                );
+
+                /*
+                 * LandingPage에서 쓰고 있는
+                 * useUpcomingSchedule도
+                 * 최신 상태 다시 조회하도록 알림
+                 */
+                notifyUpcomingScheduleChanged();
+            } catch (error) {
+                console.error(
+                    "전체 자동 알림 변경 실패:",
+                    error
+                );
+            }
+        };
 
     return (
         <S.InfoCard $schedule>
@@ -49,20 +108,23 @@ function DigitalScheduleCard() {
                     width="38"
                     height="38"
                 />
+
                 오늘의 추천 휴식 일정
             </S.CardTitle>
 
-            {hasSchedules && firstSchedule && (
+            {hasSchedules && (
                 <S.TopAlarmArea>
-                    <span>자동 알림</span>
+                    <span>
+                        자동 알림
+                    </span>
 
                     <S.Toggle
                         type="button"
-                        $active={alarmActive}
-                        onClick={() =>
-                            toggleAlarm(
-                                firstSchedule.id
-                            )
+                        $active={
+                            alarmActive
+                        }
+                        onClick={
+                            handleToggleAllAlarms
                         }
                     >
                         <S.ToggleCircle
@@ -76,9 +138,13 @@ function DigitalScheduleCard() {
 
             {loading ? (
                 <S.EmptyContent>
-                    <S.EmptyIcon $schedule>
+                    <S.EmptyIcon
+                        $schedule
+                    >
                         <img
-                            src={ClockIcon}
+                            src={
+                                ClockIcon
+                            }
                             alt=""
                             width="53"
                             height="53"
@@ -91,9 +157,13 @@ function DigitalScheduleCard() {
                 </S.EmptyContent>
             ) : !hasSchedules ? (
                 <S.EmptyContent>
-                    <S.EmptyIcon $schedule>
+                    <S.EmptyIcon
+                        $schedule
+                    >
                         <img
-                            src={ClockIcon}
+                            src={
+                                ClockIcon
+                            }
                             alt=""
                             width="53"
                             height="53"
@@ -120,7 +190,9 @@ function DigitalScheduleCard() {
 
                     <S.ScheduleList>
                         {schedules.map(
-                            (schedule) => (
+                            (
+                                schedule
+                            ) => (
                                 <S.ScheduleItem
                                     key={
                                         schedule.id
