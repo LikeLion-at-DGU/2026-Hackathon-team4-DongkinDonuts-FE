@@ -292,10 +292,14 @@ export function useDigitalUsage({
                     // 5. AI 생성에 필요한 오늘 상태/활동 데이터 보장
                     await ensureTodayGenerationInputs();
 
-                    // 6. AI 회복 계획 생성
+                    // 6. AI 회복 계획 생성 — PC 사용 패턴을 직접 입력하고 만든
+                    // 흐름이라 useAiDecision: true로, 실제 LLM이 개수/시각을
+                    // 자율적으로 판단하게 한다.
                     const recoveryPlan =
                         await generateAIRecoveryPlan({
                             notificationEnabled:
+                                true,
+                            useAiDecision:
                                 true,
                         });
 
