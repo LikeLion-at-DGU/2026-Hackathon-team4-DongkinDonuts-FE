@@ -8,9 +8,9 @@ import {
 } from "../config/recoveryRouting";
 
 import {
-  HandRoutineGlobalStyle,
+  SessionGlobalStyle,
   RoutineContainer,
-} from "./HandRoutinePage.styled";
+} from "./SessionPage.styled";
 
 const pageStyle = {
   minHeight: "calc(100vh - 160px)",
@@ -72,7 +72,7 @@ function RecoverySessionStartPage() {
 
   return (
     <>
-      <HandRoutineGlobalStyle />
+      <SessionGlobalStyle />
       <RoutineContainer>
         <div style={pageStyle}>
           <div>

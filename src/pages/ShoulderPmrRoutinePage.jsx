@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawShoulderCircle } from "../engine/sessionVisuals";
@@ -157,7 +157,6 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     pmrStepRef.current = 0;
     setPmrStep(0);
     setRepCount(0);
-    setElapsedTime(0);
     holdStartRef.current = null;
     releaseStartRef.current = null;
     baselineShoulderYRef.current = null;
@@ -177,7 +176,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: repCount, difficulty, screenDistance, sessionImage: ShoulderImage }),
+    () => ({ elapsedTime, successCount: repCount, difficulty, screenDistance, sessionImage: ShoulderImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, repCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
@@ -195,8 +194,8 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [pmrStep, repCount, SESSION.guideText]
   );
   const progressProps = useMemo(
-    () => ({ progressPercent: pmrStep === 0 ? 0 : pmrStep === 1 ? 50 : 100 }),
-    [pmrStep]
+    () => ({ progressPercent: pmrStep === 0 ? 0 : pmrStep === 1 ? 50 : 100, current: repCount, total: TOTAL_REPS }),
+    [pmrStep, repCount]
   );
   const recoverySession = useRecoveryRoutineSession({
     isMissionComplete,
@@ -205,6 +204,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       repCount,
       pmrStep,
     },
+    localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
@@ -224,6 +224,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       onStopSession={handleStopSession}
       nextSessionPath={nextSessionPath}
       isNextSessionPending={recoverySession.isPreparingNextSession}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

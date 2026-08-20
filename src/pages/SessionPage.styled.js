@@ -1,7 +1,7 @@
 import styled, { createGlobalStyle } from "styled-components";
 
 // 1. 글로벌 스타일
-export const HandRoutineGlobalStyle = createGlobalStyle`
+export const SessionGlobalStyle = createGlobalStyle`
   * {
     box-sizing: border-box;
   }

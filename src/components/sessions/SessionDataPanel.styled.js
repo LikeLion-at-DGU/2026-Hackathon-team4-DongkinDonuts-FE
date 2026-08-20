@@ -34,6 +34,21 @@ export const LiveDot = styled.span`
   background: #EE3D3D;
 `;
 
+// 현재 세션 단계 (가볍게 깨우기 / 맞춤세션 (n/총개수) / 마무리하기)
+export const StageLabel = styled.div`
+  position: absolute;
+  top: 115px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  color: #EBEBEB;
+  font-family: SUIT;
+  font-size: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 20;
+`;
+
 // 실시간 데이터 영역
 export const DataArea = styled.div`
   position: absolute;
@@ -49,7 +64,7 @@ export const DataArea = styled.div`
 
 export const DataCard = styled.div`
   padding: 20px 33px 15px 33px;
-  border-radius: 40px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.1);;
 `;
 
@@ -64,8 +79,7 @@ export const DataTitle = styled.div`
 
 export const DataRow = styled.div`
   display: flex;
-  justify-content: flex-start;
-  gap: 85px;
+  justify-content: space-between;
 
   div {
     display: flex;
@@ -93,7 +107,9 @@ export const DataRow = styled.div`
 `;
 
 // 화면 거리 상태 카드
-export const DistanceCard = styled(DataCard)``;
+export const DistanceCard = styled(DataCard)`
+  border-radius: 20px;
+`;
 
 export const DistanceHeader = styled.div`
   display: flex;
@@ -140,18 +156,31 @@ export const DistanceMarker = styled.div`
 // 데이터 패널 밑에 표시되는 세션 이미지
 export const SessionImageWrap = styled.div`
   position: absolute;
-  top: 372px;
+  top: 312px;
   right: 55px;
   width: 308.235px;
-  border-radius: 40px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   z-index: 20;
 
   img {
     display: block;
-    width: 100%;
+    width: 250px;
     height: auto;
-    object-fit: cover;
+    object-fit: contain;
+    background: transparent;
+    opacity: 0.5;
   }
+`;
+
+export const SessionImageCaption = styled.div`
+  color: #EBEBEB;
+  font-family: SUIT;
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0.5;
 `;

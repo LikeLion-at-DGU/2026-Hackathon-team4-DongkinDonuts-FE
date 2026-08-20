@@ -1,6 +1,5 @@
 export const TRACKING_CONFIG = {
   // 눈 깜빡임 (EAR: Eye Aspect Ratio, 양쪽 눈 평균)
-  // blinkHoldMs(강도)는 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
   earClosedThreshold: 0.21,
 
   // 눈 트래킹: 코끝/턱/광대 좌표로 산출한 머리 회전(Pitch/Yaw) 원시 비율을
@@ -8,10 +7,13 @@ export const TRACKING_CONFIG = {
   // 이동하는 데 필요한 실제 고개 회전량이 커진다 — clamp 상한(1.4)과 pointerRange는 그대로 두고
   // 이 값만 낮추면, 포인터가 도달할 수 있는 최대 거리(= 1.4 × pointerRange)는 그대로 유지한 채
   // 그 거리에 닿기까지 필요한 고개 회전량만 늘어난다.
-  headYawSensitivity: 1.5,
-  headPitchSensitivity: 1.8,
+  headYawSensitivity: 0.46,
+  // Pitch는 위/아래 방향의 원시 회전량 자체가 비대칭이라(고개를 젖히는 것보다 숙이는 쪽이
+  // 좁게 감지됨) 방향별로 다른 배율을 둔다. headPitch가 양수(위)면 Up, 음수(아래)면 Down 적용.
+  headPitchUpSensitivity: 0.85,
+  headPitchDownSensitivity: 1.8,
   // 포인터가 프레임 간 튐 없이 부드럽게 유영하도록 하는 LERP 보간 계수 (낮을수록 느리고 차분하게 반응)
-  headPoseSmoothing: 0.09,
+  headPoseSmoothing: 0.085,
   // 증폭+clamp된 머리 회전 값을 화면 좌표(0~1) 오프셋으로 변환하는 배율 (getSafeTargetPosition과
   // 같은 좌표계). 포인터가 도달 가능한 최대 거리(= 1.4 × 이 값)를 결정하므로, 타겟 스캔 반경
   // (0.20~0.32)을 여유 있게 덮도록 유지한다.
@@ -47,24 +49,24 @@ export const TRACKING_CONFIG = {
   // difficultyConfig.js로 옮겼다. releaseThreshold는 그 임계값의 절반 아래로 떨어져야
   // "내렸다(release)"로 인정한다 (중간 구간은 히스테리시스로 흔들림 방지).
 
-  // 엄지-검지 핀치 거리(정규화 좌표) -> 핀치 링 크기(%)
-  pinchDistMin: 0.03,
-  pinchDistMax: 0.22,
+  // 다섯 손가락 끝(엄지·검지·중지·약지·새끼) 중 가장 멀리 떨어진 두 점 사이 거리(정규화 좌표)
+  // -> 핀치 링 크기(%). 손을 오므릴수록 작고, 다섯 손가락을 활짝 펼수록 크다.
+  pinchDistMin: 0.05,
+  pinchDistMax: 0.40,
   // 목표 크기와의 허용 오차(정확도)와 유지 시간(강도)은 세션 난이도에 따라 달라지므로 difficultyConfig.js로 옮겼다.
 
-  // 화면 거리 측정(useMultiTracking): 트래킹 타입별 크기 지표(손 = 손목-중지 MCP 거리,
-  // 얼굴 = 양쪽 광대 사이 거리, 포즈 = 어깨너비)가 far~near 구간이면 "적정", 그 밖이면
-  // 너무 멀거나 가깝다고 판정한다. HandRoutinePage(useHandTracking)의 손 거리 판정(0.15/0.32)을
-  // 그대로 가져오고, 얼굴/포즈는 실측 데이터가 아닌 초기 추정치이므로 실사용 중 조정이 필요할 수 있다.
+  // 화면 거리 측정(useMultiTracking, useHandTracking 공통): 트래킹 타입별 크기 지표(손 = 손목-중지
+  // MCP 거리, 얼굴 = 양쪽 광대 사이 거리, 포즈 = 어깨너비)가 far~near 구간이면 "적정", 그 밖이면
+  // 너무 멀거나 가깝다고 판정한다.
   distanceUpdateInterval: 100,
   distanceLostMaxFrames: 15,
   handDistanceFar: 0.15,
   handDistanceNear: 0.32,
   handDistanceClose: 0.42,
-  faceDistanceFar: 0.15,
-  faceDistanceNear: 0.33,
-  faceDistanceClose: 0.44,
-  poseDistanceFar: 0.3,
-  poseDistanceNear: 0.55,
+  faceDistanceFar: 0.13,
+  faceDistanceNear: 0.26,
+  faceDistanceClose: 0.39,
+  poseDistanceFar: 0.35,
+  poseDistanceNear: 0.50,
   poseDistanceClose: 0.7,
 };

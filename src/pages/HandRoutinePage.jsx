@@ -224,7 +224,7 @@ const HandRoutinePage = () => {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, handCount, screenDistance, sessionImage: handImage }),
+    () => ({ elapsedTime, successCount, handCount, screenDistance, sessionImage: handImage, sessionStage: "wakeup" }),
     [elapsedTime, successCount, handCount, screenDistance]
   );
   const instructionProps = useMemo(
@@ -254,6 +254,7 @@ const HandRoutinePage = () => {
       resetSession={resetGame}
       onStopSession={handleStopGame}
       nextSessionPath="/eye-blink-medium"
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       showOverlay={isUIOverlayVisible}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}

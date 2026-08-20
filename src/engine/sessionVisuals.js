@@ -1,4 +1,5 @@
 // 세션별 캔버스 이펙트 (2D Canvas 기반 스타일라이즈 연출)
+import { EYE_TARGET_ZONE_MAX_RADIUS } from "../utils/handUtils";
 
 // Canvas 해상도를 컨테이너 크기 + devicePixelRatio에 맞춰 조율하고 컨텍스트를 비워서 반환
 export const prepareCanvas = (canvas) => {
@@ -417,7 +418,7 @@ export const drawShoulderCircle = (ctx, w, h, { squeezeAmount = 0 }) => {
 };
 
 // ======================================================
-// 아이-지선 노디 스캔 — 무작위로 배치된 3개 타겟을 순서대로 응시 + 고개로 맞추는 트래킹.
+// 눈 트래킹 스캔 — 무작위로 배치된 3개 타겟을 순서대로 응시 + 고개로 맞추는 트래킹.
 // targets/pointer는 handUtils의 getSafeTargetPosition과 동일한 정규화 화면 좌표(0~1,
 // x/y)이며, pointer는 머리 회전을 LERP로 부드럽게 스무딩한 값을 화면 좌표로 매핑한 것이다.
 // activeIndex 이전 타겟은 완료 표시, activeIndex 타겟은 홀드 진행 링(0.8초)이 함께
@@ -433,9 +434,18 @@ export const drawGazeNodTargets = (ctx, w, h, {
   burstIndex = 0,
 }) => {
   const toPx = (pos) => ({ x: pos.x * w, y: pos.y * h });
-  const targetRadius = Math.min(w, h) * 0.055;
+  const targetRadius = Math.min(w, h) * 0.035;
 
   ctx.save();
+
+  // TEMP: 타겟이 배치되는 원형 범위 확인용 임시 가이드 원 — 확인 끝나면 제거
+  ctx.beginPath();
+  ctx.arc(w / 2, h / 2, w * EYE_TARGET_ZONE_MAX_RADIUS, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
   targets.forEach((target, i) => {
     const pos = toPx(target);

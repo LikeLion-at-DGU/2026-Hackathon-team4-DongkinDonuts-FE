@@ -17,14 +17,14 @@ export const DIFFICULTY_CONFIG = {
     // targetCount: 목표 깜빡임 반복 횟수, blinkHoldMs: 눈을 감고 있어야 하는 최소 시간(강도)
     low: { targetCount: 2, blinkHoldMs: 700 },
     medium: { targetCount: 3, blinkHoldMs: 1000 },
-    high: { targetCount: 5, blinkHoldMs: 1300 },
+    high: { targetCount: 4, blinkHoldMs: 1300 },
   },
   "eye-tracking": {
     // totalStages: 맞춰야 하는 타겟 개수(반복횟수), nodTargetRadius: 온타겟 판정 반경(작을수록 정확도 요구 높음)
     // nodHoldMs: 타겟에 맞춘 채 유지해야 하는 시간(강도)
-    low: { totalStages: 2, nodTargetRadius: 0.18, nodHoldMs: 600 },
-    medium: { totalStages: 3, nodTargetRadius: 0.14, nodHoldMs: 800 },
-    high: { totalStages: 4, nodTargetRadius: 0.1, nodHoldMs: 1000 },
+    low: { totalStages: 3, nodTargetRadius: 0.12, nodHoldMs: 600 },
+    medium: { totalStages: 4, nodTargetRadius: 0.1, nodHoldMs: 800 },
+    high: { totalStages: 5, nodTargetRadius: 0.08, nodHoldMs: 1000 },
   },
   "focus-pinch": {
     // targetCount: 반복횟수, pinchMatchTolerancePercent: 목표 크기와의 허용 오차(정확도)
@@ -51,8 +51,8 @@ export const DIFFICULTY_CONFIG = {
   "wakeup-sunrise": {
     // targetCount: 반복횟수, mouthRatioMin/Max: 입 벌림 정도를 상승도로 매핑하는 구간(강도)
     // peakRequiredProgress: 입을 다물었을 때 성공으로 인정하기 위해 미리 도달해야 하는 상승도(정확도)
-    low: { targetCount: 3, mouthRatioMin: 0.15, mouthRatioMax: 0.75, peakRequiredProgress: 0.6 },
-    medium: { targetCount: 5, mouthRatioMin: 0.2, mouthRatioMax: 0.85, peakRequiredProgress: 0.7 },
-    high: { targetCount: 7, mouthRatioMin: 0.25, mouthRatioMax: 0.95, peakRequiredProgress: 0.8 },
+    low: { targetCount: 2, mouthRatioMin: 0.15, mouthRatioMax: 0.75, peakRequiredProgress: 0.6 },
+    medium: { targetCount: 3, mouthRatioMin: 0.2, mouthRatioMax: 0.85, peakRequiredProgress: 0.7 },
+    high: { targetCount: 5, mouthRatioMin: 0.25, mouthRatioMax: 0.95, peakRequiredProgress: 0.8 },
   },
 };

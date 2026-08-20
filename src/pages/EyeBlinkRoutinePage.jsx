@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useMultiTracking } from "../hooks/useMultiTracking";
-import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
+import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
 import eyeBlinkImage from "../assets/images/eyeBlinkImage.png";
@@ -140,7 +140,6 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
 
   const handleReset = useCallback(() => {
     setBlinkCount(0);
-    setElapsedTime(0);
     closedSinceRef.current = null;
     holdCompleteRef.current = false;
     closeAmountRef.current = 0;
@@ -159,7 +158,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage }),
+    () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, blinkCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
@@ -167,7 +166,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     []
   );
   const progressProps = useMemo(
-    () => ({ progressPercent: (blinkCount / targetCount) * 100 }),
+    () => ({ progressPercent: (blinkCount / targetCount) * 100, current: blinkCount, total: targetCount }),
     [blinkCount]
   );
   const recoverySession = useRecoveryRoutineSession({
@@ -176,6 +175,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
       elapsedTime,
       blinkCount,
     },
+    localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
   const nextSessionPath = recoverySession.isBackendRoutine
     ? recoverySession.nextSessionPath
@@ -195,6 +195,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
       onStopSession={handleStopSession}
       nextSessionPath={nextSessionPath}
       isNextSessionPending={recoverySession.isPreparingNextSession}
+      remainingSessionsCount={recoverySession.remainingSessionsCount}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

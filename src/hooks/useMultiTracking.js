@@ -96,6 +96,21 @@ export const preloadTracking = (trackingType) => {
   return landmarkerCache.get(trackingType);
 };
 
+// MediaPipe Hands 손가락 끝 랜드마크 인덱스: 엄지·검지·중지·약지·새끼
+const FINGERTIPS = [4, 8, 12, 16, 20];
+
+// 다섯 손가락 끝 중 가장 멀리 떨어진 두 점 사이 거리(= 다섯 점을 모두 담는 원의 지름 근사치)
+const getFingertipSpanDist = (hand) => {
+  let maxDist = 0;
+  for (let i = 0; i < FINGERTIPS.length; i += 1) {
+    for (let j = i + 1; j < FINGERTIPS.length; j += 1) {
+      const dist = getDistance(hand[FINGERTIPS[i]], hand[FINGERTIPS[j]]);
+      if (dist > maxDist) maxDist = dist;
+    }
+  }
+  return maxDist;
+};
+
 const getEAR = (face, eye) => {
   const vertical =
     getDistance(face[eye.top1], face[eye.bottom1]) +
@@ -299,10 +314,12 @@ export const useMultiTracking = (trackingType = "HAND", { paused = false } = {})
       parsedMetrics = { neckTiltDeg, headPoint, neckPoint, shoulderY: shoulderMid.y, shoulderWidth, raw: pose };
     }
     else if (trackingType === "HAND" && res.landmarks?.length) {
-      // 손마다 엄지(4)-검지(8) 핀치 거리를 계산 (양손 핀치 링 미션용)
+      // 손마다 5개 손가락 끝(엄지 4·검지 8·중지 12·약지 16·새끼 20)이 만드는 원의 크기를 계산
+      // (양손 핀치 링 미션용). 다섯 손가락 끝 중 가장 멀리 떨어진 두 점 사이 거리를 그 원의
+      // 지름으로 삼아, 손을 오므리면 작아지고 다섯 손가락을 활짝 펴면 커지도록 한다.
       const hands = res.landmarks.map((hand) => ({
         palmCenter: { x: 1 - hand[9].x, y: hand[9].y },
-        pinchDist: getDistance(hand[4], hand[8]),
+        pinchDist: getFingertipSpanDist(hand),
       }));
       // 화면 거리는 첫 번째 손의 손목(0)-중지 MCP(9) 거리로 판정 (useHandTracking과 동일한 지표)
       distanceSize = getDistance(res.landmarks[0][0], res.landmarks[0][9]);
