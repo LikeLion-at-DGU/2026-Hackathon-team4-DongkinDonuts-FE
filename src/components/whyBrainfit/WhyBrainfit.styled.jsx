@@ -51,7 +51,7 @@ export const SlideArea = styled.div`
 
     width: 1352px;
     height: 240px;
-    margin: 0 auto;
+    margin: 40px 0 0;
 
     display: flex;
     justify-content: center;

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import UsageTable from "./UsageTable";
 import DigitalAnalysisCard from "./DigitalAnalysisCard";
 import DigitalScheduleCard from "./DigitalScheduleCard";
@@ -12,14 +14,20 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
+    onRecommendedTimesChange,
 }) {
     const {
         isResult,
         isSaving,
         hasGeneratedResult,
         resultVersion,
+
         schedules,
         alarmStates,
+
+        // 추가
+        activeRecommendedTimes,
+
         toggleAlarm,
         toggleCell,
         toggleRow,
@@ -32,6 +40,17 @@ function DigitalUsage({
         setSelected,
         onCreate,
     });
+
+    // 추천시간/알림 상태가 바뀌면
+    // LandingPage까지 올려줌
+    useEffect(() => {
+        onRecommendedTimesChange?.(
+            activeRecommendedTimes
+        );
+    }, [
+        activeRecommendedTimes,
+        onRecommendedTimesChange,
+    ]);
 
     return (
         <S.Container>

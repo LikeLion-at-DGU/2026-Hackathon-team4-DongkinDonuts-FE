@@ -14,7 +14,7 @@ export const routineData = [
     },
     {
         id: 2,
-        title: "맞춤 리프레시",
+        title: "맞춤 세션",
         description: (
             <>
                 간단한 움직임을 따라가며 하나의 활동에 집중해요.

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
@@ -9,7 +9,6 @@ import {
     updateRecoverySlotNotification,
 } from "../api/plans";
 
-// 프론트 표 순서: 일 월 화 수 목 금 토
 const DAY_CODE_MAP = [
     "SUN",
     "MON",
@@ -35,23 +34,53 @@ export function useDigitalUsage({
     const [alarmStates, setAlarmStates] =
         useState({});
 
-    // 이전에 한 번이라도 결과를 생성했는지
     const [
         hasGeneratedResult,
         setHasGeneratedResult,
     ] = useState(false);
 
-    // 분석 API를 다시 조회시키기 위한 버전
     const [
         resultVersion,
         setResultVersion,
     ] = useState(0);
 
-    // 현재 표가 결과 모드인지
     const isResult =
         mode === "result";
 
-    // 개별 칸 선택
+    // 시간 포맷
+    const formatScheduleTime = (dateTime) => {
+        if (!dateTime) return null;
+
+        const date = new Date(dateTime);
+
+        return date.toLocaleTimeString(
+            "ko-KR",
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }
+        );
+    };
+
+    // 자동 알림이 켜져 있는 추천 시간만 추출
+    const activeRecommendedTimes =
+        useMemo(() => {
+            return schedules
+                .filter(
+                    (schedule) =>
+                        alarmStates?.[
+                        schedule.id
+                        ] === true
+                )
+                .map((schedule) =>
+                    formatScheduleTime(
+                        schedule.effective_time
+                    )
+                )
+                .filter(Boolean);
+        }, [schedules, alarmStates]);
+
     const toggleCell = (
         rowIndex,
         colIndex
@@ -67,7 +96,6 @@ export function useDigitalUsage({
         }));
     };
 
-    // 해당 시간대 일~토 전체 선택
     const toggleRow = (
         rowIndex
     ) => {
@@ -101,14 +129,12 @@ export function useDigitalUsage({
         });
     };
 
-    // 전체 초기화
     const resetAll = () => {
         if (isResult) return;
 
         setSelected({});
     };
 
-    // selected 객체 → 백엔드 요청 배열
     const convertSelectedToPatterns = (
         selectedData
     ) => {
@@ -130,7 +156,7 @@ export function useDigitalUsage({
                 return {
                     day_of_week:
                         DAY_CODE_MAP[
-                            colIndex
+                        colIndex
                         ],
                     hour: rowIndex,
                     is_used: true,
@@ -138,7 +164,6 @@ export function useDigitalUsage({
             });
     };
 
-    // PC 패턴 저장
     const savePatterns =
         async () => {
             try {
@@ -148,11 +173,6 @@ export function useDigitalUsage({
                     convertSelectedToPatterns(
                         selected
                     );
-
-                console.log(
-                    "변환 후 서버로 보내는 데이터:",
-                    patterns
-                );
 
                 const result =
                     await saveDigitalPatterns(
@@ -177,50 +197,33 @@ export function useDigitalUsage({
             }
         };
 
-    // 임시 저장
     const handleTemporarySave =
         async () => {
             await savePatterns();
         };
 
-    // PC 패턴 저장 → AI 회복 계획 생성
     const handleCreate =
         async () => {
             try {
                 setIsSaving(true);
 
-                // 1. 선택한 PC 패턴 변환
                 const patterns =
                     convertSelectedToPatterns(
                         selected
                     );
 
-                // 2. PC 패턴 서버 저장
                 await saveDigitalPatterns(
                     patterns
                 );
 
-                console.log(
-                    "PC 패턴 저장 완료"
-                );
-
-                // 3. AI 생성에 필요한
-                // 오늘 상태/활동 데이터 보장
                 await ensureTodayGenerationInputs();
 
-                // 4. AI 회복 계획 생성
                 const recoveryPlan =
                     await generateAIRecoveryPlan({
                         notificationEnabled:
                             true,
                     });
 
-                console.log(
-                    "AI 오늘 회복 계획:",
-                    recoveryPlan
-                );
-
-                // 5. 새 추천 슬롯 저장
                 const slots =
                     recoveryPlan?.slots ??
                     [];
@@ -229,14 +232,13 @@ export function useDigitalUsage({
                     slots
                 );
 
-                // 6. 새 슬롯의 알림 상태 반영
                 const initialAlarmStates =
                     Object.fromEntries(
                         slots.map(
                             (slot) => [
                                 slot.id,
                                 slot.notification_enabled ??
-                                    false,
+                                false,
                             ]
                         )
                     );
@@ -245,19 +247,15 @@ export function useDigitalUsage({
                     initialAlarmStates
                 );
 
-                // 7. 결과가 존재한다고 표시
                 setHasGeneratedResult(
                     true
                 );
 
-                // 8. 분석 카드가
-                // 새로운 패턴 분석을 다시 조회하도록 버전 증가
                 setResultVersion(
                     (prev) =>
                         prev + 1
                 );
 
-                // 9. 결과 화면으로 전환
                 onCreate();
             } catch (error) {
                 console.error(
@@ -274,13 +272,13 @@ export function useDigitalUsage({
         async (slotId) => {
             const current =
                 alarmStates[
-                    slotId
+                slotId
                 ] ?? false;
 
             const next =
                 !current;
 
-            // UI 먼저 반영
+            // 먼저 UI 변경
             setAlarmStates(
                 (prev) => ({
                     ...prev,
@@ -320,7 +318,7 @@ export function useDigitalUsage({
                     error
                 );
 
-                // 실패 시 롤백
+                // 실패 시 원래 상태로 복구
                 setAlarmStates(
                     (prev) => ({
                         ...prev,
@@ -335,12 +333,14 @@ export function useDigitalUsage({
         isResult,
         isSaving,
 
-        // 추가
         hasGeneratedResult,
         resultVersion,
 
         schedules,
         alarmStates,
+
+        // ⭐ 추가
+        activeRecommendedTimes,
 
         toggleCell,
         toggleRow,

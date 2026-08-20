@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 
 import DigitalUsage from "./DigitalUsage";
+import HistoryTable from "../History/HistoryTable";
+import { historyPreviewData } from "../../data/historyPreviewData";
+
 import LockIcon from "../../assets/icons/LockIcon.svg";
 import { useDigitalState } from "../../hooks/useDigitalState";
 
 import * as S from "./DigitalState.styled";
 
-function DigitalState() {
+function DigitalState({
+    onRecommendedTimesChange,
+}) {
     const {
         digitalStep,
         selected,
@@ -44,7 +49,7 @@ function DigitalState() {
     }
 
     const isLocked =
-    digitalStep === "locked";
+        digitalStep === "locked";
 
     return (
         <S.DigitalSection>
@@ -62,31 +67,38 @@ function DigitalState() {
 
             {isLocked ? (
                 <S.DigitalResult>
-                    <S.BlurredDigitalText>
-                        디지털 사용 데이터를 입력하면
-                        <br />
-                        주간 PC 사용 시간과 활동 패턴을 분석하고
-                        <br />
-                        나에게 맞는 휴식 시간을 추천해드려요.
-                    </S.BlurredDigitalText>
+                    <S.BlurredUsageTable>
+                        <HistoryTable
+                            historyData={
+                                historyPreviewData
+                            }
+                        />
+                    </S.BlurredUsageTable>
 
-                    <S.LockIcon>
-                        <img src={LockIcon} alt="" />
-                    </S.LockIcon>
+                    <S.LockContent>
+                        <S.LockIcon>
+                            <img
+                                src={LockIcon}
+                                alt=""
+                            />
+                        </S.LockIcon>
 
-                    <S.ResultTitle>
-                        디지털 사용 데이터를 입력해주세요
-                    </S.ResultTitle>
+                        <S.ResultTitle>
+                            디지털 사용 데이터를 입력해주세요
+                        </S.ResultTitle>
 
-                    <S.ResultDescription>
-                        데이터를 입력하면
-                        <br />
-                        맞춤 타이머를 세팅할 수 있어요
-                    </S.ResultDescription>
+                        <S.ResultDescription>
+                            데이터를 입력하면
+                            <br />
+                            맞춤 타이머를 세팅할 수 있어요
+                        </S.ResultDescription>
 
-                    <S.ResultButton onClick={openInput}>
-                        입력하기
-                    </S.ResultButton>
+                        <S.ResultButton
+                            onClick={openInput}
+                        >
+                            입력하기
+                        </S.ResultButton>
+                    </S.LockContent>
                 </S.DigitalResult>
             ) : (
                 <DigitalUsage
@@ -95,6 +107,9 @@ function DigitalState() {
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
+                    onRecommendedTimesChange={
+                        onRecommendedTimesChange
+                    }
                 />
             )}
         </S.DigitalSection>
