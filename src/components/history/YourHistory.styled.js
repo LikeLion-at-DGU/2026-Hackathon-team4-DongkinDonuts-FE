@@ -51,7 +51,7 @@ export const TableTop = styled.div`
     margin-bottom: 18px;
 
     position: relative;
-    z-index: 10;
+    z-index: 1000;
 
     flex-shrink: 0;
 `;
@@ -100,6 +100,7 @@ export const DateButton = styled.button`
 
 export const DateSelectorWrapper = styled.div`
     position: relative;
+    z-index: 1001;
 `;
 
 export const DateText = styled.button`
@@ -127,7 +128,7 @@ export const Calendar = styled.div`
     top: 54px;
     right: 0;
 
-    z-index: 50;
+    z-index: 9999;
 
     width: 290px;
 
