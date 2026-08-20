@@ -396,9 +396,16 @@ function LandingPage() {
 
             <S.ButtonGroup>
               <S.StartButton
-                onClick={
-                  sessionFlow.openMainRoutineFlow
-                }
+                onClick={() => {
+                  // 1. 알림을 통해 슬롯이 이미 준비되어 있거나 (recoverySlotId 존재)
+                  // 2. 푸시 알림 Payload의 기본 URL(/handroutine)로 랜딩한 경우
+                  if (recoverySlotId || location.pathname === "/handroutine") {
+                    navigate("/recovery-session");
+                  } else {
+                    // 일반 접속 시 기존대로 상태 체크 모달 오픈
+                    sessionFlow.openMainRoutineFlow();
+                  }
+                }}
               >
                 회복 루틴 시작하기
               </S.StartButton>
