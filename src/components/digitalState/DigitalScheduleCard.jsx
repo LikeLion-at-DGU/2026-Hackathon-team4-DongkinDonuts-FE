@@ -1,19 +1,27 @@
 import ClockIcon from "../../assets/icons/ClockIcon.svg";
 
+import {
+    useUpcomingSchedule,
+    notifyUpcomingScheduleChanged,
+} from "../../hooks/useUpcomingSchedule";
+
 import * as S from "./DigitalUsage.styled";
 
-function DigitalScheduleCard({
-    showResult,
-    schedules = [],
-    alarmStates,
-    onToggleAlarm,
-}) {
+function DigitalScheduleCard() {
+    const {
+        schedules,
+        alarmStates,
+        loading,
+        toggleAlarm,
+    } = useUpcomingSchedule();
+
     const formatTime = (dateTime) => {
         if (!dateTime) {
             return "--:--";
         }
 
-        const date = new Date(dateTime);
+        const date =
+            new Date(dateTime);
 
         return date.toLocaleTimeString(
             "ko-KR",
@@ -25,11 +33,71 @@ function DigitalScheduleCard({
         );
     };
 
-    const firstSchedule = schedules[0];
+    const hasSchedules =
+        schedules.length > 0;
 
-    const alarmActive = firstSchedule
-        ? alarmStates?.[firstSchedule.id] ?? false
-        : false;
+    /*
+     * 모든 추천 일정이 ON일 때
+     * 상단 토글도 ON
+     */
+    const alarmActive =
+        hasSchedules &&
+        schedules.every(
+            (schedule) =>
+                alarmStates?.[
+                    schedule.id
+                ] === true
+        );
+
+    /*
+     * 상단 토글 하나로
+     * 오늘 추천 일정 전체 ON/OFF
+     */
+    const handleToggleAllAlarms =
+        async () => {
+            const next =
+                !alarmActive;
+
+            try {
+                /*
+                 * OFF로 바꿀 때:
+                 * 현재 ON인 일정만 toggle
+                 *
+                 * ON으로 바꿀 때:
+                 * 현재 OFF인 일정만 toggle
+                 */
+                const targets =
+                    schedules.filter(
+                        (schedule) =>
+                            Boolean(
+                                alarmStates?.[
+                                    schedule.id
+                                ]
+                            ) !== next
+                    );
+
+                await Promise.all(
+                    targets.map(
+                        (schedule) =>
+                            toggleAlarm(
+                                schedule.id
+                            )
+                    )
+                );
+
+                /*
+                 * LandingPage에서 쓰고 있는
+                 * useUpcomingSchedule도
+                 * 최신 상태 다시 조회하도록 알림
+                 */
+                notifyUpcomingScheduleChanged();
+            } catch (error) {
+                console.error(
+                    "전체 자동 알림 변경 실패:",
+                    error
+                );
+            }
+        };
 
     return (
         <S.InfoCard $schedule>
@@ -40,20 +108,23 @@ function DigitalScheduleCard({
                     width="38"
                     height="38"
                 />
-                오늘의 추천 휴식 일정
+
+                오늘의 권장 휴식 일정
             </S.CardTitle>
 
-            {showResult && firstSchedule && (
+            {hasSchedules && (
                 <S.TopAlarmArea>
-                    <span>자동 알림</span>
+                    <span>
+                        자동 알림
+                    </span>
 
                     <S.Toggle
                         type="button"
-                        $active={alarmActive}
-                        onClick={() =>
-                            onToggleAlarm(
-                                firstSchedule.id
-                            )
+                        $active={
+                            alarmActive
+                        }
+                        onClick={
+                            handleToggleAllAlarms
                         }
                     >
                         <S.ToggleCircle
@@ -65,11 +136,15 @@ function DigitalScheduleCard({
                 </S.TopAlarmArea>
             )}
 
-            {!showResult ? (
+            {loading ? (
                 <S.EmptyContent>
-                    <S.EmptyIcon $schedule>
+                    <S.EmptyIcon
+                        $schedule
+                    >
                         <img
-                            src={ClockIcon}
+                            src={
+                                ClockIcon
+                            }
                             alt=""
                             width="53"
                             height="53"
@@ -77,13 +152,32 @@ function DigitalScheduleCard({
                     </S.EmptyIcon>
 
                     <S.EmptyTitle>
-                        패턴을 저장하면 오늘의 휴식 일정이 자동 생성돼요
+                        오늘의 휴식 일정을 불러오고 있어요
+                    </S.EmptyTitle>
+                </S.EmptyContent>
+            ) : !hasSchedules ? (
+                <S.EmptyContent>
+                    <S.EmptyIcon
+                        $schedule
+                    >
+                        <img
+                            src={
+                                ClockIcon
+                            }
+                            alt=""
+                            width="53"
+                            height="53"
+                        />
+                    </S.EmptyIcon>
+
+                    <S.EmptyTitle>
+                        아직 오늘 예정된 휴식 일정이 없어요
                     </S.EmptyTitle>
 
                     <S.EmptyDescription>
-                        입력한 패턴에 따라
+                        "내 계획 다시 설정" 또는 PC 사용 패턴을 저장하면
                         <br />
-                        사용 패턴에 맞춰 자동으로 배치됩니다.
+                        오늘의 휴식 일정이 자동 생성돼요.
                     </S.EmptyDescription>
                 </S.EmptyContent>
             ) : (
@@ -95,35 +189,31 @@ function DigitalScheduleCard({
                     </S.ScheduleDescription>
 
                     <S.ScheduleList>
-                        {schedules.length > 0 ? (
-                            schedules.map(
-                                (schedule) => (
-                                    <S.ScheduleItem
-                                        key={
-                                            schedule.id
-                                        }
-                                    >
-                                        <S.TimeArea>
-                                            <S.Circle />
+                        {schedules.map(
+                            (
+                                schedule
+                            ) => (
+                                <S.ScheduleItem
+                                    key={
+                                        schedule.id
+                                    }
+                                >
+                                    <S.TimeArea>
+                                        <S.Circle />
 
-                                            <span>
-                                                {formatTime(
-                                                    schedule.effective_time
-                                                )}
-                                            </span>
-                                        </S.TimeArea>
-                                    </S.ScheduleItem>
-                                )
+                                        <span>
+                                            {formatTime(
+                                                schedule.effective_time
+                                            )}
+                                        </span>
+                                    </S.TimeArea>
+                                </S.ScheduleItem>
                             )
-                        ) : (
-                            <S.EmptyDescription>
-                                오늘 생성된 추천 휴식 일정이 없어요.
-                            </S.EmptyDescription>
                         )}
                     </S.ScheduleList>
 
                     <S.Caption>
-                        ※ 추천 시간은 예상입니다. 내 상황에 맞게 조정해 사용하세요.
+                        ※ 사용 데이터를 바탕으로 설정된 권장 휴식 시간이에요. 잠시 쉬어가세요.
                     </S.Caption>
                 </S.ResultContent>
             )}

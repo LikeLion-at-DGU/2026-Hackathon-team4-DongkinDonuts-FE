@@ -1,3 +1,5 @@
+import { DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS } from "./difficultyConfig";
+
 const ACTIVITY_ROUTE_MAP = {
   WAKE_HAND_ROUTINE: "/handroutine",
   HAND_ROUTINE: "/handroutine",
@@ -40,6 +42,17 @@ const ACTIVITY_ROUTE_MAP = {
   SHIFT_LIGHT_REFRESH: "/handroutine",
 };
 
+const DIFFICULTY_ROUTE_BASE_ID_MAP = {
+  "/eye-blink": "eye-blink",
+  "/eye-tracking": "eye-tracking",
+  "/neck-stretch": "neck-stretch",
+  "/shoulder-pmr": "shoulder-pmr",
+  "/focus-pinch": "focus-pinch",
+  "/wakeup-sunrise": "wakeup-sunrise",
+};
+
+const DIFFICULTY_LEVEL_SET = new Set(DIFFICULTY_LEVELS);
+
 const DONE_STATUSES = new Set([
   "COMPLETED",
   "CANCELED",
@@ -70,6 +83,19 @@ export const STAGE_ORDER = [
 
 export function routeForActivityCode(activityCode) {
   return ACTIVITY_ROUTE_MAP[activityCode] ?? "/handroutine";
+}
+
+function difficultyRouteForRoutine(route, routine) {
+  const baseId =
+    routine?.frontend_session_base_id ?? DIFFICULTY_ROUTE_BASE_ID_MAP[route];
+
+  if (!baseId) return route;
+
+  const difficulty = DIFFICULTY_LEVEL_SET.has(routine?.recommended_difficulty)
+    ? routine.recommended_difficulty
+    : DEFAULT_DIFFICULTY;
+
+  return `/${baseId}-${difficulty}`;
 }
 
 export function sortedRoutineInstances(slot) {
@@ -185,6 +211,8 @@ export function buildRecoveryRoutinePath(slot, routine) {
     slot: slot.id,
     routine: routine.id,
   });
+  const route = routeForActivityCode(routine.activity?.code);
+  const path = difficultyRouteForRoutine(route, routine);
 
-  return `${routeForActivityCode(routine.activity?.code)}?${params.toString()}`;
+  return `${path}?${params.toString()}`;
 }

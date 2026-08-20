@@ -203,6 +203,7 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       elapsedTime,
       repCount,
       pmrStep,
+      difficulty,
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });

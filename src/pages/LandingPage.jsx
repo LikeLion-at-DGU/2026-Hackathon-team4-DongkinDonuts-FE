@@ -28,6 +28,10 @@ import { useRecoveryTimeSettings } from "../hooks/useRecoveryTimeSettings";
 
 import { useNextReset } from "../hooks/useNextReset";
 import { usePushSubscription } from "../hooks/usePushSubscription";
+import {
+  notifyUpcomingScheduleChanged,
+  useUpcomingSchedule,
+} from "../hooks/useUpcomingSchedule";
 
 import {
   generateAIRecoveryPlan,
@@ -57,6 +61,11 @@ function LandingPage() {
     generatingPlan,
     setGeneratingPlan,
   ] = useState(false);
+
+  const [
+    localAlarmStates,
+    setLocalAlarmStates,
+  ] = useState({});
 
   const routineRef =
     useRef(null);
@@ -105,6 +114,11 @@ function LandingPage() {
             true,
         });
 
+        // "오늘의 추천 휴식 일정" 카드는 PC 사용 패턴 흐름과 별개로 독립돼있어서
+        // ("내 계획 다시 설정"만으로 만든 계획도 보여야 하니), 여기서도 새로
+        // 조회하라고 알려줘야 한다.
+        notifyUpcomingScheduleChanged();
+
         await Promise.all([
           refreshNextReset(),
           routineHome.loadRoutineSlot(),
@@ -148,6 +162,74 @@ function LandingPage() {
       resetTimeLabel,
       refreshNextReset,
     });
+
+  const upcomingSchedule =
+    useUpcomingSchedule();
+
+  useEffect(() => {
+    setLocalAlarmStates(
+      upcomingSchedule.alarmStates ?? {}
+    );
+  }, [
+    upcomingSchedule.alarmStates,
+  ]);
+
+  useEffect(() => {
+    const handleAlarmToggle = (
+      event
+    ) => {
+      const {
+        slotId,
+        enabled,
+      } = event.detail;
+
+      setLocalAlarmStates(
+        (prev) => ({
+          ...prev,
+          [slotId]:
+            enabled,
+        })
+      );
+    };
+
+    window.addEventListener(
+      "brainfit-alarm-toggle",
+      handleAlarmToggle
+    );
+
+    return () => {
+      window.removeEventListener(
+        "brainfit-alarm-toggle",
+        handleAlarmToggle
+      );
+    };
+  }, []);
+
+  const recommendedTimes =
+    upcomingSchedule.schedules
+      .filter(
+        (schedule) =>
+          localAlarmStates?.[
+          schedule.id
+          ] === true
+      )
+      .map((schedule) => {
+        if (!schedule.effective_time) {
+          return null;
+        }
+
+        return new Date(
+          schedule.effective_time
+        ).toLocaleTimeString(
+          "ko-KR",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }
+        );
+      })
+      .filter(Boolean);
 
   /*
    * 최초 접속 Setup
@@ -410,14 +492,15 @@ function LandingPage() {
                       );
 
                     const isLocked =
-                      Boolean(
-                        routineHome.routineSlot &&
-                        !isCompleted &&
-                        !arePreviousStagesComplete(
-                          routineHome.routineSlot,
-                          routine.stageType
+                      routineHome.routineSlot
+                        ? (
+                          !isCompleted &&
+                          !arePreviousStagesComplete(
+                            routineHome.routineSlot,
+                            routine.stageType
+                          )
                         )
-                      );
+                        : routine.id !== 1;
 
                     const status =
                       routineHome.loadingRoutineSlot
@@ -468,11 +551,7 @@ function LandingPage() {
           )}
 
         <div ref={digitalRef}>
-          <DigitalState
-            onRecommendedTimesChange={
-              timeSettings.setActiveRecommendedTimes
-            }
-          />
+          <DigitalState />
         </div>
       </S.MainContent>
 
@@ -499,6 +578,9 @@ function LandingPage() {
       {/* 시간 변경 */}
       {timeSettings.showTimeModal && (
         <TimeChangeModal
+          recommendedTimes={
+            recommendedTimes
+          }
           currentTime={
             hasPlan
               ? resetTimeLabel
@@ -506,9 +588,6 @@ function LandingPage() {
           }
           currentRepeat={
             timeSettings.repeatAlarm
-          }
-          activeRecommendedTimes={
-            timeSettings.activeRecommendedTimes
           }
           onClose={
             timeSettings.closeTimeModal

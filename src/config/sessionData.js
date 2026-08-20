@@ -72,8 +72,18 @@ DIFFICULTY_LEVELS.forEach((difficulty) => {
 // 타입을 조회. 세션 전환 시 다음 모델을 미리 로드(preload)할 때 사용
 // (일치하는 세션이 없으면 null - 예: 심호흡 세션은 카메라 미사용)
 export const getTrackingTypeForPath = (path) => {
-  const session = Object.values(ROUTINE_SESSIONS).find((item) => `/${item.id}` === path);
-  return session?.trackingType ?? null;
+  const pathname = path?.split("?")[0] ?? "";
+  const session = Object.values(ROUTINE_SESSIONS).find((item) => `/${item.id}` === pathname);
+  if (session) return session.trackingType;
+
+  const baseId = pathname.replace(/^\//, "");
+  const baseSession = SESSION_ORDER.find((item) => item.id === baseId);
+  return baseSession?.trackingType ?? null;
+};
+
+export const getNextRoutineBaseId = (baseId) => {
+  const currentIndex = SESSION_ORDER.findIndex((session) => session.id === baseId);
+  return SESSION_ORDER[currentIndex + 1]?.id ?? null;
 };
 
 // SESSION_ORDER의 6개 세션 뒤에는 항상 심호흡 세션이 이어지므로 전체 흐름은 7단계다.

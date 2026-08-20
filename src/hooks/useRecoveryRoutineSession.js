@@ -158,6 +158,8 @@ export function useRecoveryRoutineSession({
     remainingSessionsCount: isBackendRoutine ? remainingCount : localRemainingCount,
     isPreparingNextSession: isCompletingSession,
     sessionError,
+    slotId,
+    routineInstanceId,
     abortSession,
   };
 }

@@ -54,13 +54,12 @@ export function useRecoverySessionFlow({
         setShowSetupModal(true);
     };
 
-    // "이미 예정된 시간이 있어요" → 시작
+    // 이미 예정된 시간이 있어요 → 시작
+    // 상태 입력 모달 다시 열지 않고 바로 세션으로 이동
     const startScheduledFlow = () => {
         setShowScheduledModal(false);
 
-        setSetupModalMode("initial");
-        setConditionOnly(true);
-        setShowSetupModal(true);
+        navigate("/recovery-session");
     };
 
     // 상태만 입력 완료
@@ -81,6 +80,7 @@ export function useRecoverySessionFlow({
     // 최종 세션 시작
     const startSession = () => {
         setShowReadyModal(false);
+
         navigate("/recovery-session");
     };
 

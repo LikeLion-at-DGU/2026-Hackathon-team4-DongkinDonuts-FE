@@ -19,16 +19,16 @@ function DigitalUsage({
     const {
         isResult,
         isSaving,
+
         hasGeneratedResult,
         resultVersion,
 
         schedules,
         alarmStates,
-
-        // 추가
         activeRecommendedTimes,
 
         toggleAlarm,
+        toggleCell,
         setCellValue,
         toggleRow,
         resetAll,
@@ -41,8 +41,6 @@ function DigitalUsage({
         onCreate,
     });
 
-    // 추천시간/알림 상태가 바뀌면
-    // LandingPage까지 올려줌
     useEffect(() => {
         onRecommendedTimesChange?.(
             activeRecommendedTimes
@@ -57,6 +55,7 @@ function DigitalUsage({
             <S.UsageCard>
                 <UsageTable
                     selected={selected}
+                    toggleCell={toggleCell}
                     setCellValue={setCellValue}
                     toggleRow={toggleRow}
                     resetAll={resetAll}
@@ -64,6 +63,8 @@ function DigitalUsage({
                 />
             </S.UsageCard>
 
+            {/* 둘 다 PC 사용 패턴 입력 여부와 무관하게 스스로 데이터를 조회해서
+                보여준다 — props 필요 없음 */}
             <S.CardRow>
                 <DigitalAnalysisCard
                     showResult={hasGeneratedResult}
@@ -78,16 +79,12 @@ function DigitalUsage({
                 />
             </S.CardRow>
 
-            <S.ActionRow
-                $isResult={isResult}
-            >
+            <S.ActionRow $isResult={isResult}>
                 {!isResult ? (
                     <>
                         <S.SaveButton
                             type="button"
-                            onClick={
-                                handleTemporarySave
-                            }
+                            onClick={handleTemporarySave}
                             disabled={isSaving}
                         >
                             {isSaving
@@ -97,9 +94,7 @@ function DigitalUsage({
 
                         <S.CreateButton
                             type="button"
-                            onClick={
-                                handleCreate
-                            }
+                            onClick={handleCreate}
                             disabled={isSaving}
                         >
                             {isSaving

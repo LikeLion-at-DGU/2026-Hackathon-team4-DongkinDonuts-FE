@@ -186,6 +186,7 @@ export default function EyeTrackingRoutinePage({ difficulty = DEFAULT_DIFFICULTY
       elapsedTime,
       successCount,
       stage,
+      difficulty,
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });

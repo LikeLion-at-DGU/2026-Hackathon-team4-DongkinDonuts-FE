@@ -166,6 +166,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
       elapsedTime,
       sunriseCount,
       stage,
+      difficulty,
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });

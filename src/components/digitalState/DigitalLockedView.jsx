@@ -18,6 +18,7 @@ function DigitalLockedView({
                     <UsageTable
                         selected={{}}
                         toggleCell={() => {}}
+                        setCellValue={() => {}}
                         toggleRow={() => {}}
                         resetAll={() => {}}
                         readOnly
@@ -55,18 +56,12 @@ function DigitalLockedView({
                 </S.LockContent>
             </S.LockedUsageWrapper>
 
-            {/* 실제 결과 화면과 완전히 동일한 CardRow */}
+            {/* PC 패턴을 아직 안 넣었어도, 둘 다 스스로 실제 데이터를 조회해서
+                보여준다(분석은 최근 세션 기록, 일정은 "내 계획 다시 설정"으로만
+                만든 계획도 포함) — 실제 결과 화면과 완전히 동일한 CardRow */}
             <U.CardRow>
-                <DigitalAnalysisCard
-                    showResult={false}
-                />
-
-                <DigitalScheduleCard
-                    showResult={false}
-                    schedules={[]}
-                    alarmStates={{}}
-                    onToggleAlarm={() => {}}
-                />
+                <DigitalAnalysisCard />
+                <DigitalScheduleCard />
             </U.CardRow>
         </U.Container>
     );

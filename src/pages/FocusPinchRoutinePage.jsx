@@ -150,6 +150,7 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
       elapsedTime,
       pinchCount,
       targetSize,
+      difficulty,
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });

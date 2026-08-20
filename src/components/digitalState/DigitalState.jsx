@@ -5,9 +5,7 @@ import { useDigitalState } from "../../hooks/useDigitalState";
 
 import * as S from "./DigitalState.styled";
 
-function DigitalState({
-    onRecommendedTimesChange,
-}) {
+function DigitalState() {
     const {
         digitalStep,
         selected,
@@ -50,9 +48,6 @@ function DigitalState({
                     setSelected={setSelected}
                     onCreate={showResult}
                     onEdit={editInput}
-                    onRecommendedTimesChange={
-                        onRecommendedTimesChange
-                    }
                 />
             )}
         </S.DigitalSection>

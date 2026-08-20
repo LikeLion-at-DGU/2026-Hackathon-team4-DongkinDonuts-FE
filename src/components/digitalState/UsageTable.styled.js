@@ -102,11 +102,6 @@ export const Table = styled.table`
 
     font-family: Poppins;
 
-    /* 드래그로 여러 칸을 한번에 선택할 때 브라우저 기본 텍스트 드래그 선택
-       하이라이트가 같이 뜨는 걸 막는다. */
-    user-select: none;
-    -webkit-user-select: none;
-
     th,
     td {
         height: 55px;
@@ -152,18 +147,70 @@ export const Table = styled.table`
     }
 `;
 
-export const Checkbox = styled.input`
-    width: 17px;
-    height: 17px;
+// 드래그로 여러 칸을 한번에 선택/해제할 때 실제로 마우스 이벤트를 받는 건
+// td 전체 — 작은 체크박스만 클릭/드래그 대상이면 칸 사이를 지나갈 때 마우스가
+// 자꾸 빗나가서 드래그가 뚝뚝 끊긴다. td를 통째로 히트 영역으로 쓰고, 안의
+// Cell은 그 히트 영역 안에서 크게 그려주는 시각적 표시일 뿐이다.
+export const CellTd = styled.td`
+    cursor: ${({ $readOnly }) =>
+        $readOnly ? "default" : "pointer"};
 
-    accent-color: #8f8f8f;
+    user-select: none;
+    -webkit-user-select: none;
 
-    cursor: pointer;
-
-    &:disabled {
-        cursor: default;
-        opacity: 1;
+    &:focus-visible {
+        outline: 2px solid #4f5459;
+        outline-offset: -2px;
     }
+`;
+
+export const Cell = styled.div`
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border: 1.5px solid
+        ${({ $selected }) =>
+            $selected ? "#9A9A9A" : "#D9D9D9"};
+
+    border-radius: 10px;
+
+    background: ${({ $selected }) =>
+        $selected ? "#9A9A9A" : "#FFFFFF"};
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+        background 0.08s ease,
+        border-color 0.08s ease,
+        transform 0.05s ease;
+
+    ${({ $readOnly, $selected }) =>
+        !$readOnly &&
+        `
+        ${CellTd}:hover & {
+            border-color: ${
+                $selected ? "#9A9A9A" : "#B7B7B7"
+            };
+            background: ${
+                $selected ? "#8A8A8A" : "#F3F3F3"
+            };
+        }
+
+        ${CellTd}:active & {
+            transform: scale(0.92);
+        }
+    `}
 `;
 
 export const RowButton = styled.button`

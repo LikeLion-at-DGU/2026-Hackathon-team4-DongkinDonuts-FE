@@ -16,10 +16,20 @@ export const getDigitalPatternStatus = async () => {
     );
 };
 
-// 3. PC 사용 패턴 분석 결과 조회
+// 3. PC 사용 패턴 분석 결과 조회(자기보고 체크값 기반) — 지금은 "분석 결과" 카드에서
+// 안 쓰고, 실제 세션 기록 기반인 getRecentSessionAnalysis를 대신 쓴다.
 export const getDigitalPatternAnalysis = async () => {
     return await apiClient.get(
         "/digital-state/patterns/analysis/"
+    );
+};
+
+// 3-2. 지난 7일간 실제로 완료한 회복 세션 기록 기반 분석 결과 조회. 사용자가
+// 미리 체크해둔 "PC 사용 예정" 대신, 실제로 회복 세션을 진행한 시점을 근거로
+// 삼는다 — 응답 형태는 getDigitalPatternAnalysis와 동일하다.
+export const getRecentSessionAnalysis = async () => {
+    return await apiClient.get(
+        "/digital-state/patterns/analysis/recent-sessions/"
     );
 };
 

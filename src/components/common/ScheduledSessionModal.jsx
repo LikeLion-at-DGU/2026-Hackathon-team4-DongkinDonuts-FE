@@ -20,7 +20,7 @@ function ScheduledSessionModal({
                 </S.Description>
 
                 <S.SubDescription>
-                    예정된 휴식 시간을 기준으로 일정이 취소돼요
+                    예정된 휴식 중 가장 가까운 일정이 취소돼요
                 </S.SubDescription>
 
                 <S.ButtonRow>
