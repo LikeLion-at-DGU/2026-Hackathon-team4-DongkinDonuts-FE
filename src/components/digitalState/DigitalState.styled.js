@@ -96,6 +96,8 @@ export const LockedBlur = styled.div`
     background: rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(6px);
 
+    pointer-events: none;
+    user-select: none;
     border-radius: 31px;
 
     pointer-events: none;
