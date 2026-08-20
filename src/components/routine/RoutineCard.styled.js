@@ -5,7 +5,8 @@ export const Card = styled.article`
   position: relative;
 
   flex-grow: ${({ $featured }) =>
-    $featured ? 1.6 : 1};
+    $featured ? 1.9 : 1};
+
   flex-basis: 0;
   min-width: 0;
 
