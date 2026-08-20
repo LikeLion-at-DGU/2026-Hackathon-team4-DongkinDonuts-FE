@@ -95,25 +95,20 @@ export function useDigitalUsage({
 
     // 자동 알림이 켜진 추천 시간
     const activeRecommendedTimes =
-        useMemo(() => {
-            return schedules
-                .filter(
-                    (schedule) =>
-                        alarmStates?.[
-                            schedule.id
-                        ] === true
-                )
-                .map(
-                    (schedule) =>
-                        formatScheduleTime(
-                            schedule.effective_time
-                        )
-                )
-                .filter(Boolean);
-        }, [
-            schedules,
-            alarmStates,
-        ]);
+        schedules.map((schedule) => {
+            const date = new Date(
+                schedule.effective_time
+            );
+
+            return date.toLocaleTimeString(
+                "ko-KR",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                }
+            );
+        });
 
     // 개별 칸 선택
     const toggleCell = (
@@ -208,7 +203,7 @@ export function useDigitalUsage({
                 return {
                     day_of_week:
                         DAY_CODE_MAP[
-                            colIndex
+                        colIndex
                         ],
                     hour: rowIndex,
                     is_used: true,
@@ -264,7 +259,7 @@ export function useDigitalUsage({
 
                 const todayDayCode =
                     DAY_CODE_MAP[
-                        new Date().getDay()
+                    new Date().getDay()
                     ];
 
                 // 1. 선택한 PC 패턴 변환
@@ -353,7 +348,7 @@ export function useDigitalUsage({
                             (slot) => [
                                 slot.id,
                                 slot.notification_enabled ??
-                                    false,
+                                false,
                             ]
                         )
                     );
@@ -391,7 +386,7 @@ export function useDigitalUsage({
         async (slotId) => {
             const current =
                 alarmStates[
-                    slotId
+                slotId
                 ] ?? false;
 
             const next =

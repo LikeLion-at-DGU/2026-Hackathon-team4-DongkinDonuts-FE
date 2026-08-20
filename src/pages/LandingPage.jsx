@@ -54,6 +54,11 @@ function LandingPage() {
   ] = useState("routine");
 
   const [
+    activeRecommendedTimes,
+    setActiveRecommendedTimes,
+  ] = useState([]);
+
+  const [
     generatingPlan,
     setGeneratingPlan,
   ] = useState(false);
@@ -410,14 +415,15 @@ function LandingPage() {
                       );
 
                     const isLocked =
-                      Boolean(
-                        routineHome.routineSlot &&
-                        !isCompleted &&
-                        !arePreviousStagesComplete(
-                          routineHome.routineSlot,
-                          routine.stageType
+                      routineHome.routineSlot
+                        ? (
+                          !isCompleted &&
+                          !arePreviousStagesComplete(
+                            routineHome.routineSlot,
+                            routine.stageType
+                          )
                         )
-                      );
+                        : routine.id !== 1;
 
                     const status =
                       routineHome.loadingRoutineSlot
@@ -470,7 +476,7 @@ function LandingPage() {
         <div ref={digitalRef}>
           <DigitalState
             onRecommendedTimesChange={
-              timeSettings.setActiveRecommendedTimes
+              setActiveRecommendedTimes
             }
           />
         </div>
@@ -499,6 +505,9 @@ function LandingPage() {
       {/* 시간 변경 */}
       {timeSettings.showTimeModal && (
         <TimeChangeModal
+          recommendedTimes={
+            activeRecommendedTimes
+          }
           currentTime={
             hasPlan
               ? resetTimeLabel

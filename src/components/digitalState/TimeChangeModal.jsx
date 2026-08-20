@@ -11,9 +11,9 @@ import {
 import * as S from "./TimeChangeModal.styled";
 
 function TimeChangeModal({
-    currentTime = "15:00",
-    currentRepeat = true,
-    activeRecommendedTimes = [],
+    currentTime,
+    recommendedTimes = [],
+    currentRepeat = false,
     onClose,
     onSave,
 }) {
@@ -41,6 +41,23 @@ function TimeChangeModal({
         onClose
     );
 
+    /*
+     * 실제 추천 휴식 시간 + 기본 후보 시간 합치기
+     *
+     * 예:
+     * recommendedTimes = ["23:02"]
+     * RECOMMENDED_TIMES = ["15:00", "16:00", "17:00", "18:00"]
+     *
+     * 결과:
+     * ["23:02", "15:00", "16:00", "17:00", "18:00"]
+     */
+    const displayTimes = [
+        ...new Set([
+            ...recommendedTimes,
+            ...RECOMMENDED_TIMES,
+        ]),
+    ];
+
     useEffect(() => {
         const calculateMaxScroll = () => {
             const modal = modalFrameRef.current;
@@ -50,19 +67,9 @@ function TimeChangeModal({
             const rect =
                 modal.getBoundingClientRect();
 
-            /*
-             * 현재 모달의 실제 문서상 bottom 위치
-             */
             const modalBottom =
                 rect.bottom + window.scrollY;
 
-            /*
-             * 모달 하단과 화면 하단 사이에
-             * 어느 정도 간격을 둘지
-             *
-             * 20 = 거의 화면 끝까지
-             * 50 = 조금 더 위에서 멈춤
-             */
             const bottomGap = 20;
 
             const maxScroll =
@@ -83,10 +90,6 @@ function TimeChangeModal({
 
             if (maxScroll === null) return;
 
-            /*
-             * 아래로 너무 많이 내려갔으면
-             * 정해둔 위치까지만 되돌림
-             */
             if (window.scrollY > maxScroll) {
                 window.scrollTo({
                     top: maxScroll,
@@ -95,9 +98,6 @@ function TimeChangeModal({
             }
         };
 
-        /*
-         * 모달 렌더링 완료 후 계산
-         */
         requestAnimationFrame(
             calculateMaxScroll
         );
@@ -166,30 +166,42 @@ function TimeChangeModal({
                             </S.SectionDescription>
 
                             <S.RecommendedTimes>
-                                {RECOMMENDED_TIMES.map((time) => {
-                                    const isRecommended =
-                                        activeRecommendedTimes.includes(time);
+                                {displayTimes.map(
+                                    (time) => {
+                                        const isSelected =
+                                            selectedTime ===
+                                            time;
 
-                                    return (
-                                        <S.TimeButton
-                                            key={time}
-                                            type="button"
-                                            $active={
-                                                selectedTime === time &&
-                                                !isRecommended
-                                            }
-                                            $recommended={isRecommended}
-                                            disabled={isRecommended}
-                                            onClick={() => {
-                                                if (isRecommended) return;
+                                        const isRecommended =
+                                            recommendedTimes.includes(
+                                                time
+                                            );
 
-                                                handleRecommendedTime(time);
-                                            }}
-                                        >
-                                            {time}
-                                        </S.TimeButton>
-                                    );
-                                })}
+                                        return (
+                                            <S.TimeButton
+                                                key={
+                                                    time
+                                                }
+                                                type="button"
+                                                $selected={
+                                                    isSelected
+                                                }
+                                                $recommended={
+                                                    isRecommended
+                                                }
+                                                onClick={() =>
+                                                    handleRecommendedTime(
+                                                        time
+                                                    )
+                                                }
+                                            >
+                                                {
+                                                    time
+                                                }
+                                            </S.TimeButton>
+                                        );
+                                    }
+                                )}
                             </S.RecommendedTimes>
                         </S.Section>
 
