@@ -211,6 +211,7 @@ const BreathRoutinePage = () => {
 
       {postSessionStep === "feedback" && (
         <BrainResetFeedbackModal
+          slotId={recoverySession.slotId}
           onComplete={handleFeedbackComplete}
         />
       )}

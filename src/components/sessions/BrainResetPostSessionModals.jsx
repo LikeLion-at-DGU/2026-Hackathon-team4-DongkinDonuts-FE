@@ -3,6 +3,7 @@ import { useState } from "react";
 import CloseButtonIcon from "../../assets/icons/CloseButton.svg";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
 import { generateAIRecoveryPlan } from "../../api/plans";
+import { submitSessionFeedback } from "../../api/sessions";
 import {
   ACTIVITY_OPTIONS,
   TIME_OPTIONS,
@@ -24,6 +25,18 @@ const DIFFICULTY_OPTIONS = [
   "너무 쉬웠어요",
   "조금 힘들었어요",
 ];
+
+const RECOVERY_FEELING_BY_LABEL = {
+  "훨씬 나아졌어요": "MUCH_BETTER",
+  "조금 나아졌어요": "SLIGHTLY_BETTER",
+  "비슷해요": "SAME",
+};
+
+const DIFFICULTY_FEEDBACK_BY_LABEL = {
+  "딱 좋았어요": "JUST_RIGHT",
+  "너무 쉬웠어요": "TOO_EASY",
+  "조금 힘들었어요": "A_BIT_HARD",
+};
 
 function saveFeedback(feedback) {
   try {
@@ -57,15 +70,54 @@ function ModalCloseButton({ onClick }) {
 
 export function BrainResetFeedbackModal({
   onComplete,
+  slotId = null,
 }) {
   const [conditionChange, setConditionChange] = useState("비슷해요");
-  const [difficulty, setDifficulty] = useState("너무 쉬웠어요");
+  const [difficulty, setDifficulty] = useState("딱 좋았어요");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     saveFeedback({
       conditionChange,
       difficulty,
     });
+
+    try {
+      if (slotId) {
+        await submitSessionFeedback({
+          recoverySlotId: slotId,
+          recoveryFeeling: RECOVERY_FEELING_BY_LABEL[conditionChange],
+          difficultyFeedback: DIFFICULTY_FEEDBACK_BY_LABEL[difficulty],
+        });
+      }
+      onComplete?.();
+    } catch (error) {
+      console.error("Brain Reset 피드백 저장 실패:", error);
+      window.alert("피드백 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      if (slotId) {
+        await submitSessionFeedback({
+          recoverySlotId: slotId,
+          skipped: true,
+        });
+      }
+    } catch (error) {
+      console.error("Brain Reset 피드백 건너뛰기 저장 실패:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
     onComplete?.();
   };
 
@@ -134,11 +186,19 @@ export function BrainResetFeedbackModal({
           </S.Dots>
 
           <S.ButtonGroup>
-            <S.TextButton type="button" onClick={onComplete}>
+            <S.TextButton
+              type="button"
+              onClick={handleSkip}
+              disabled={isSubmitting}
+            >
               건너뛰기
             </S.TextButton>
-            <S.PrimaryButton type="button" onClick={handleComplete}>
-              다음
+            <S.PrimaryButton
+              type="button"
+              onClick={handleComplete}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "저장 중..." : "다음"}
             </S.PrimaryButton>
           </S.ButtonGroup>
         </S.Footer>

@@ -153,6 +153,8 @@ export function useRecoveryRoutineSession({
     nextSessionPath,
     isPreparingNextSession: isCompletingSession,
     sessionError,
+    slotId,
+    routineInstanceId,
     abortSession,
   };
 }
