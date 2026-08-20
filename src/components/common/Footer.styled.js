@@ -51,7 +51,7 @@ export const Logo = styled.h3`
     margin: 0;
 
     color: ${({ $isDark }) =>
-        $isDark ? "#fff" : "#141416"};
+        $isDark ? "#ffffff" : "#141416"};
 
     font-family: Poppins;
     font-size: 45px;
@@ -61,7 +61,7 @@ export const Logo = styled.h3`
 
 export const Copyright = styled.span`
     color: ${({ $isDark }) =>
-        $isDark ? "#fff" : "#95a1bb"};
+        $isDark ? "#ffffff" : "#95a1bb"};
 
     font-family: Poppins;
     font-size: 12px;
@@ -80,7 +80,7 @@ export const MenuTitle = styled.h4`
     margin: 0 0 20px;
 
     color: ${({ $isDark }) =>
-        $isDark ? "#fff" : "#3b5266"};
+        $isDark ? "#ffffff" : "#3b5266"};
 
     font-family: Poppins;
     font-size: 14px;

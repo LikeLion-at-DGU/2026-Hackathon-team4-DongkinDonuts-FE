@@ -21,7 +21,7 @@ export const LeftGroup = styled.div`
 `;
 
 export const Logo = styled.div`
-    color: #fff;
+    color: #ffffff;
 
     font-family: Poppins, sans-serif;
     font-size: 32px;
@@ -44,7 +44,7 @@ export const NavButton = styled.button`
     border: none;
     background: transparent;
 
-    color: #fff;
+    color: #ffffff;
 
     font-family: Poppins, sans-serif;
     font-size: 20px;
@@ -68,11 +68,11 @@ export const SettingsButton = styled.button`
 
     padding: 0;
 
-    border: 1px solid #fff;
+    border: 1px solid #ffffff;
     border-radius: 55px;
 
     background: transparent;
-    color: #fff;
+    color: #ffffff;
 
     font-family: Poppins, sans-serif;
     font-size: 16px;

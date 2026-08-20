@@ -45,14 +45,21 @@ export function getRecoverySlot(slotId) {
  *
  * contextSnapshot, nextActivityPlan을 생략하면
  * 백엔드가 오늘 생성된 최신 값을 사용한다.
+ *
+ * useAiDecision: My Digital State에서 PC 사용 패턴을 입력하고 "생성"을 눌렀을
+ * 때만 true로 보낸다 — 그때만 백엔드가 실제 LLM(개수/시각 자율 판단)을 시도하고,
+ * 그 외(상태 선택 모달로 진행하는 "회복 루틴 시작하기" 등)는 기본값 false로
+ * 원래의 서버 정책 엔진 로직만 탄다.
  */
 export function generateAIRecoveryPlan({
   contextSnapshot,
   nextActivityPlan,
   notificationEnabled = true,
+  useAiDecision = false,
 } = {}) {
   const body = {
     notification_enabled: notificationEnabled,
+    use_ai_decision: useAiDecision,
   };
 
   if (contextSnapshot) {

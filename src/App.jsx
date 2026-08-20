@@ -22,7 +22,7 @@ const Wrapper = styled.div`
 
   background: #ffffff;
 
-  zoom: min(calc(100vw / 1440px), 1.3);
+  zoom: min(calc(100vw / 1440px), calc(100vh / 880px), 1.5);
 `;
 
 const Layout = () => {

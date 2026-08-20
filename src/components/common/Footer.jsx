@@ -1,47 +1,18 @@
-import React from "react";
 import { useLocation } from "react-router-dom";
 
-import * as S from "./Footer.styled";
+import {
+    FOOTER_MENUS,
+    LIGHT_FOOTER_PAGES,
+} from "../../data/footerData";
 
-const footerMenus = [
-    {
-        title: "Contact us",
-        items: [
-            "brainfit@gmail.com",
-            "Instagram",
-        ],
-    },
-    {
-        title: "Products",
-        items: [
-            "Brainfit",
-            "Routine",
-            "AI Insight",
-        ],
-    },
-    {
-        title: "About US",
-        items: [
-            "정서현 PM",
-            "고성채 FE",
-            "노윤서 FE",
-            "이희수 BE",
-            "이창환 BE",
-            "황준호 BE",
-        ],
-    },
-];
+import * as S from "./Footer.styled";
 
 const Footer = () => {
     const location = useLocation();
 
-    const lightPages = [
-        "/",
-        "/settings",
-    ];
-
-    const isLight = lightPages.includes(location.pathname);
-    const isDark = !isLight;
+    const isDark = !LIGHT_FOOTER_PAGES.includes(
+        location.pathname
+    );
 
     return (
         <S.FooterContainer $isDark={isDark}>
@@ -57,14 +28,17 @@ const Footer = () => {
                         </S.Copyright>
                     </S.BrandArea>
 
-                    {footerMenus.map((menu) => (
+                    {FOOTER_MENUS.map((menu) => (
                         <S.MenuGroup key={menu.title}>
                             <S.MenuTitle $isDark={isDark}>
                                 {menu.title}
                             </S.MenuTitle>
 
                             {menu.items.map((item) => (
-                                <S.MenuItem $isDark={isDark} key={item}>
+                                <S.MenuItem
+                                    key={item}
+                                    $isDark={isDark}
+                                >
                                     {item}
                                 </S.MenuItem>
                             ))}

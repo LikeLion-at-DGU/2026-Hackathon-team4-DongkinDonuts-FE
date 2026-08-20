@@ -73,7 +73,7 @@ function HistoryTable({
                             </S.StatusCell>
 
                             <S.NoteCell>
-                                {history.note || "-"}
+                                {history.remark || "-"}
                             </S.NoteCell>
                         </S.TableRow>
                     ))

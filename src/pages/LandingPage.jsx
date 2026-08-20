@@ -109,6 +109,12 @@ function LandingPage() {
     notificationFlowRef.current?.();
   });
 
+  // 탭이 닫혀있어도 오는 진짜 Web Push 구독 등록. 피그마 리팩터(3086165) 때
+  // import는 남고 호출부만 사라져서, 서비스워커 등록/구독 자체가 전혀 안 되고
+  // 있었다 — 서버 쪽 알림 발송이 "활성 Web Push 구독이 없습니다"로 계속
+  // FAILED 나던 원인.
+  usePushSubscription();
+
   /*
 * 루틴 카드 관련
 */
@@ -118,7 +124,10 @@ function LandingPage() {
     });
 
   /*
-   * AI 계획 생성
+   * AI 계획 생성 — 상태 선택 모달("회복 루틴 시작하기"/알림 클릭) 흐름은
+   * useAiDecision을 안 보내서(기본 false) 원래대로 서버 정책 엔진만 탄다.
+   * 실제 LLM은 My Digital State의 PC 사용 패턴 흐름에서만 쓴다
+   * (useDigitalUsage.js의 handleCreate 참고).
    */
   const handleGenerateRecoveryPlan =
     async () => {

@@ -19,7 +19,7 @@ export const LiveTime = styled.div`
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0px 7.75px 15.5px 0px rgba(0, 0, 0, 0.15);
   
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: SUIT;
   font-size: 23px;
   font-weight: 500;
@@ -41,7 +41,7 @@ export const StageLabel = styled.div`
   left: 50%;
   transform: translateX(-50%);
 
-  color: #EBEBEB;
+  color: #ffffff;
   font-family: SUIT;
   font-size: 20px;
   font-weight: 500;
@@ -70,16 +70,17 @@ export const DataCard = styled.div`
 
 export const DataTitle = styled.div`
   margin-bottom: 18.7px;
-  color: #fff;
+  color: #ffffff;
   font-size: 23px;
-  font-weight: 600;
+  font-weight: 800;
   font-family: SUIT;
   font-style: normal;
 `;
 
 export const DataRow = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 100px;
 
   div {
     display: flex;
@@ -88,21 +89,21 @@ export const DataRow = styled.div`
   } 
 
   span {
-    color: #EBEBEB;
+    color: #ffffff;
     font-family: SUIT;
     font-size: 16px;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   strong {
     display: flex;
-    justify-content: flex-end;
-    color: #FFF;
+    justify-content: flex-start;
+    color: #ffffff;
     font-family: SUIT;
-    font-size: 25px;
+    font-size: 23px;
     font-style: normal;
-    font-weight: 600;
+    font-weight: 700;
   }
 `;
 
@@ -149,7 +150,7 @@ export const DistanceMarker = styled.div`
   width: 3px;
   height: 20px;
   border-radius: 40px;
-  background: #FFF;
+  background: #ffffff;
   transition: left 0.18s ease-out;
 `;
 
@@ -176,7 +177,7 @@ export const SessionImageWrap = styled.div`
 `;
 
 export const SessionImageCaption = styled.div`
-  color: #EBEBEB;
+  color: #ffffff;
   font-family: SUIT;
   font-size: 20px;
   font-weight: 500;

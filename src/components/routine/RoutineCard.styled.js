@@ -91,7 +91,7 @@ export const TitleArea = styled.div`
 export const Title = styled.h3`
   margin: 0;
 
-  color: #fff;
+  color: #ffffff;
 
   font-family: "SUIT", sans-serif;
   font-size: 42px;
@@ -107,7 +107,7 @@ export const Title = styled.h3`
 export const Description = styled.p`
   margin: 18px 0 0;
 
-  color: #fff;
+  color: #ffffff;
 
   font-family: Poppins;
   font-size: 16px;
@@ -133,7 +133,7 @@ export const ArrowButton = styled.button`
 
   box-sizing: border-box;
 
-  border: 2px solid #fff;
+  border: 2px solid #ffffff;
   border-radius: 50%;
 
   background: #ffffff;
@@ -193,7 +193,7 @@ export const Status = styled.span`
   box-shadow: 0 4px 8px 0 rgba(27, 27, 27, 0.16);
   backdrop-filter: blur(10px);
 
-  color: #fff;
+  color: #ffffff;
 
   text-align: center;
 

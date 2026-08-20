@@ -402,7 +402,7 @@ export const ToggleCircle = styled.span`
 
     border-radius: 50%;
 
-    background: #fff;
+    background: #ffffff;
 
     transition: left 0.2s;
 `;
@@ -448,7 +448,7 @@ export const SaveButton = styled.button`
     border-radius: 6px;
 
     background: #e04141;
-    color: #fff;
+    color: #ffffff;
 
     font-family: Poppins;
     font-size: 12px;
