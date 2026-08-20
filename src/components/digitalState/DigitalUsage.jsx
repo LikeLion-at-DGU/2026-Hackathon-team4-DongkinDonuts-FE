@@ -29,7 +29,7 @@ function DigitalUsage({
         activeRecommendedTimes,
 
         toggleAlarm,
-        toggleCell,
+        setCellValue,
         toggleRow,
         resetAll,
         handleTemporarySave,
@@ -57,7 +57,7 @@ function DigitalUsage({
             <S.UsageCard>
                 <UsageTable
                     selected={selected}
-                    toggleCell={toggleCell}
+                    setCellValue={setCellValue}
                     toggleRow={toggleRow}
                     resetAll={resetAll}
                     readOnly={isResult}

@@ -53,73 +53,63 @@ export const DigitalDescription = styled.p`
     color: #131313;
 `;
 
-export const DigitalResult = styled.div`
+
+export const LockedUsageCard = styled.div`
+    width: 100%;
+
+    padding: 35px 32px 34px;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(166, 166, 166, 0.7);
+    border-radius: 31px;
+
+    background: rgba(217, 217, 217, 0.15);
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.03);
+`;
+
+export const LockedCardRow = styled.div`
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 32px;
+
+    width: 100%;
+
+    margin-top: 32px;
+`;
+
+export const LockedUsageWrapper = styled.div`
     position: relative;
 
     width: 100%;
-    height: 500px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-
-    padding-top: 118px;
-
-    text-align: center;
-    overflow: hidden;
-
-    background: #ffffff;
-
-    /* 피그마처럼 가운데 넓게 퍼지는 흐림 영역 */
-    &::before {
-        content: "";
-
-        position: absolute;
-        top: 95px;
-        left: 50%;
-
-        width: 650px;
-        height: 150px;
-
-        transform: translateX(-50%);
-
-        background: radial-gradient(
-            ellipse at center,
-            rgba(110, 110, 110, 0.20) 0%,
-            rgba(160, 160, 160, 0.12) 35%,
-            rgba(255, 255, 255, 0) 75%
-        );
-
-        filter: blur(16px);
-
-        pointer-events: none;
-    }
 `;
 
-export const BlurredUsageTable = styled.div`
+export const LockedBlur = styled.div`
     position: absolute;
+    inset: 0;
 
-    top: 70px;
-    left: 50%;
+    z-index: 20;
 
-    width: 1280px;
-    min-width: 1280px;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(6px);
 
-    transform: translateX(-50%);
-
-    filter: blur(5px);
-    opacity: 0.42;
-
-    z-index: 0;
+    border-radius: 31px;
 
     pointer-events: none;
-    user-select: none;
 `;
 
 export const LockContent = styled.div`
-    position: relative;
-    z-index: 2;
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 30;
 
     display: flex;
     flex-direction: column;
