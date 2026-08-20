@@ -120,7 +120,7 @@ export const Description = styled.p`
   color: #ffffff;
 
   font-family: ${FONT_POPPINS};
-  font-size: 16px;
+  font-size: 18px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.7;
