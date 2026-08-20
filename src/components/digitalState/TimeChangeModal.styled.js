@@ -217,6 +217,85 @@ export const TimeButton = styled.button`
     }
 `;
 
+/* 예정 알림 */
+
+export const ScheduledTimeList = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    width: 100%;
+
+    margin-top: 12px;
+`;
+
+const basisColor = ({ $basis }) =>
+    $basis === "FREQUENCY" ? "#5180FF" : "#E04141";
+
+export const ScheduledTimeChip = styled.div`
+    min-width: 66px;
+    height: 32px;
+
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    border: 1px solid ${basisColor};
+    border-radius: 6px;
+
+    background: ${({ $current }) =>
+        $current ? "rgba(255, 255, 255, 0.08)" : "#303030"};
+
+    color: ${({ $basis }) =>
+        $basis === "FREQUENCY" ? "#8eacff" : "#ff7676"};
+
+    font-family: Poppins;
+    font-size: 12px;
+    line-height: 1;
+
+    span {
+        white-space: nowrap;
+    }
+
+    small {
+        color: ${basisColor};
+
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 1;
+    }
+`;
+
+export const ScheduledTimeEmpty = styled.div`
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+
+    background: #303030;
+    color: #888;
+
+    font-family: Poppins;
+    font-size: 12px;
+    line-height: 1.4;
+`;
+
+export const ScheduleNotice = styled.p`
+    margin: 10px 0 0;
+
+    color: #e7a1a1;
+
+    font-family: Poppins;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+`;
+
 /* 직접 설정 */
 
 export const TimePicker = styled.div`
@@ -415,5 +494,10 @@ export const SaveButton = styled.button`
 
     &:hover {
         background: #d63b3b;
+    }
+
+    &:disabled {
+        background: #743030;
+        cursor: not-allowed;
     }
 `;

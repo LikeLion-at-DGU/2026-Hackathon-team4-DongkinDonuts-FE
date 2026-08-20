@@ -7,7 +7,8 @@ import {
 
 export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) => {
     const [selectedTime, setSelectedTime] = useState(currentTime);
-    const [repeat, setRepeat] = useState(false);
+    const [repeat, setRepeat] = useState(currentRepeat);
+    const [isSaving, setIsSaving] = useState(false);
 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);
@@ -148,9 +149,17 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
     // alert만 확인하고 바로 다시 시도할 수 있게. onSave가 반환값 없이 끝나면(기존
     // 동작 유지) 성공으로 간주하고 닫는다.
     const handleSave = async () => {
-        const result = await onSave(selectedTime, repeat);
-        if (result !== false) {
-            onClose();
+        if (isSaving) return;
+
+        setIsSaving(true);
+
+        try {
+            const result = await onSave(selectedTime, repeat);
+            if (result !== false) {
+                onClose();
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -159,6 +168,7 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
         selectedHour,
         selectedMinute,
         repeat,
+        isSaving,
 
         hourRef,
         minuteRef,

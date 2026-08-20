@@ -10,9 +10,60 @@ import {
 
 import * as S from "./TimeChangeModal.styled";
 
+const OPEN_RECOVERY_SLOT_STATUSES = new Set([
+    "RECOMMENDED",
+    "SCHEDULED",
+    "CHANGED",
+]);
+
+const NOTIFICATION_BASIS = {
+    FREQUENCY: "FREQUENCY",
+    SNAPSHOT: "SNAPSHOT",
+};
+
+function formatTime(dateTime) {
+    if (!dateTime) return "--:--";
+
+    return new Date(dateTime).toLocaleTimeString(
+        "ko-KR",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        }
+    );
+}
+
+function notificationTimeForSlot(slot) {
+    const pendingNotification = slot.notifications?.find(
+        (notification) => notification.status === "PENDING"
+    );
+
+    return (
+        pendingNotification?.scheduled_at ??
+        slot.effective_time ??
+        slot.user_changed_at ??
+        slot.scheduled_at ??
+        slot.recommended_at
+    );
+}
+
+function notificationBasisForSlot(slot) {
+    if (slot.notification_basis) {
+        return slot.notification_basis;
+    }
+
+    return slot.data_source_summary?.used_digital_patterns
+        ? NOTIFICATION_BASIS.FREQUENCY
+        : NOTIFICATION_BASIS.SNAPSHOT;
+}
+
 function TimeChangeModal({
     currentTime = "15:00",
     currentRepeat = true,
+    currentSlotId = null,
+    scheduledSlots = [],
+    isLoadingScheduledSlots = false,
     onClose,
     onSave,
 }) {
@@ -24,6 +75,7 @@ function TimeChangeModal({
         selectedHour,
         selectedMinute,
         repeat,
+        isSaving,
         hourRef,
         minuteRef,
         handleRecommendedTime,
@@ -39,6 +91,45 @@ function TimeChangeModal({
         onSave,
         onClose
     );
+
+    const scheduledNotifications = scheduledSlots
+        .filter((slot) => (
+            slot.notification_enabled &&
+            OPEN_RECOVERY_SLOT_STATUSES.has(slot.status)
+        ))
+        .map((slot) => {
+            const dateTime = notificationTimeForSlot(slot);
+            const date = dateTime ? new Date(dateTime) : null;
+
+            return {
+                id: slot.id,
+                date,
+                time: formatTime(dateTime),
+                basis: notificationBasisForSlot(slot),
+                isCurrent: slot.id === currentSlotId,
+            };
+        })
+        .filter((item) => item.date && !Number.isNaN(item.date.getTime()))
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const selectedDate = new Date();
+    const [selectedHourValue, selectedMinuteValue] = selectedTime
+        .split(":")
+        .map(Number);
+
+    if (
+        Number.isFinite(selectedHourValue) &&
+        Number.isFinite(selectedMinuteValue)
+    ) {
+        selectedDate.setHours(selectedHourValue, selectedMinuteValue, 0, 0);
+    }
+
+    const previousNotificationCount = scheduledNotifications.filter(
+        (item) =>
+            !item.isCurrent &&
+            item.basis === NOTIFICATION_BASIS.SNAPSHOT &&
+            item.date.getTime() < selectedDate.getTime()
+    ).length;
 
     useEffect(() => {
         const calculateMaxScroll = () => {
@@ -152,6 +243,49 @@ function TimeChangeModal({
                         <S.Description>
                             원하는 리셋 시간을 선택하거나 직접 설정할 수 있어요.
                         </S.Description>
+
+                        <S.Divider />
+
+                        <S.Section>
+                            <S.SectionTitle>
+                                예정된 알림 시간
+                            </S.SectionTitle>
+
+                            <S.SectionDescription>
+                                오늘 남아 있는 회복 알림이에요.
+                            </S.SectionDescription>
+
+                            <S.ScheduledTimeList>
+                                {isLoadingScheduledSlots ? (
+                                    <S.ScheduledTimeEmpty>
+                                        불러오는 중...
+                                    </S.ScheduledTimeEmpty>
+                                ) : scheduledNotifications.length > 0 ? (
+                                    scheduledNotifications.map((item) => (
+                                        <S.ScheduledTimeChip
+                                            key={item.id}
+                                            $current={item.isCurrent}
+                                            $basis={item.basis}
+                                        >
+                                            <span>{item.time}</span>
+                                            {item.isCurrent && (
+                                                <small>다음</small>
+                                            )}
+                                        </S.ScheduledTimeChip>
+                                    ))
+                                ) : (
+                                    <S.ScheduledTimeEmpty>
+                                        예정된 알림이 없어요
+                                    </S.ScheduledTimeEmpty>
+                                )}
+                            </S.ScheduledTimeList>
+
+                            {previousNotificationCount > 0 && (
+                                <S.ScheduleNotice>
+                                    저장하면 선택 시간 이전 알림 {previousNotificationCount}개가 정리돼요.
+                                </S.ScheduleNotice>
+                            )}
+                        </S.Section>
 
                         <S.Divider />
 
@@ -322,8 +456,9 @@ function TimeChangeModal({
                                 onClick={
                                     handleSave
                                 }
+                                disabled={isSaving}
                             >
-                                저장하기
+                                {isSaving ? "저장 중..." : "저장하기"}
                             </S.SaveButton>
                         </S.ButtonRow>
                     </S.ModalScroll>

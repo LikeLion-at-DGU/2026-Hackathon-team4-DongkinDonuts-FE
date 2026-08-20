@@ -120,6 +120,15 @@ export const StartButton = styled.button`
     }
 `;
 
+export const ResetButton = styled(StartButton)`
+    background: transparent;
+    color: #ffffff;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+`;
+
 export const ReportBox = styled.div`
     width: 450px;
     height: 420px;

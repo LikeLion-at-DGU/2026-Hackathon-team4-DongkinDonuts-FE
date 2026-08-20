@@ -116,6 +116,21 @@ export async function getTodayNextActivityPlan() {
 }
 
 /**
+ * 현재 유효한 이후 활동 계획 조회.
+ * 오늘 만든 활동 계획 중 expected_activity_minutes가 아직 끝나지 않은 최신 계획을 반환한다.
+ */
+export async function getCurrentNextActivityPlan() {
+  try {
+    return await apiClient.get("/context/next-activity-plans/current/");
+  } catch (error) {
+    if (error?.code === "NotFound") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
  * AI 회복 계획 생성(POST /plans/recovery-plans/today/ai-generate/)은 오늘 날짜의
  * 상태 스냅샷 + 이후 활동 계획이 "둘 다" 이미 있어야만 성공한다(하나라도 없으면
  * 백엔드가 ValidationError로 거부). "내 계획 다시 설정"이나 "PC 사용 패턴으로

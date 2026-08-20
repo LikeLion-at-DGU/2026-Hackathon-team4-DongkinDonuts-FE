@@ -10,38 +10,55 @@ import ActivityStep from "./ActivityStep";
 import * as S from "./SetupModal.styled";
 
 function SetupModal({
+    forceNextActivityInput = false,
     onClose,
+    onComplete,
     mode = "initial",
 }) {
-    const setup = useSetupModal();
+    const setup = useSetupModal({
+        forceNextActivityInput,
+    });
 
     const currentStep =
         mode === "reset"
             ? 2
             : setup.step;
 
+    const handleCurrentStateSubmit = async () => {
+        const result = await setup.submitCurrentState();
+
+        if (result?.errorMessage) {
+            window.alert(result.errorMessage);
+            return;
+        }
+
+        if (result?.needsNextActivity) {
+            return;
+        }
+
+        if (onComplete) {
+            onComplete(result);
+            return;
+        }
+
+        onClose?.();
+    };
+
     const handleComplete = async () => {
-        if (
-            !setup.selectedActivity ||
-            !setup.selectedTime
-        ) {
-            window.alert(
-                "활동과 활동 시간을 하나씩 선택해주세요."
-            );
+        const result =
+            await setup.completeSetup();
+
+        if (result?.errorMessage) {
+            window.alert(result.errorMessage);
             return;
         }
 
-        const errorMessage =
-            await setup.completeSetup(mode);
-
-        if (errorMessage) {
-            window.alert(
-                "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
-            );
+        if (onComplete) {
+            onComplete(result);
             return;
         }
 
-        onClose();
+        onClose?.();
     };
 
     useEffect(() => {
@@ -82,7 +99,12 @@ function SetupModal({
                         setSelectedCondition={
                             setup.setSelectedCondition
                         }
-                        onNext={setup.goNext}
+                        isSubmitting={
+                            setup.isSubmitting
+                        }
+                        onNext={
+                            handleCurrentStateSubmit
+                        }
                     />
                 )}
 

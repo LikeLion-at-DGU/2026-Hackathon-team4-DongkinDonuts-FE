@@ -12,7 +12,9 @@ import TimeChangeModal from "../components/digitalState/TimeChangeModal.jsx";
 import { useNextReset } from "../hooks/useNextReset";
 import { usePushSubscription } from "../hooks/usePushSubscription";
 import {
+  cancelSnapshotRecoverySlotsBefore,
   generateAIRecoveryPlan,
+  getTodayRecoverySlots,
   updateRecoverySlotNotification,
   updateRecoverySlotSchedule,
 } from "../api/plans";
@@ -25,11 +27,13 @@ function LandingPage() {
 
 
   const [showSetupModal, setShowSetupModal] = useState(false);
-  const [setupModalMode, setSetupModalMode] = useState("initial");
+  const [forceNextActivityInput, setForceNextActivityInput] = useState(false);
 
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [repeatAlarm, setRepeatAlarm] = useState(true);
   const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [todayRecoverySlots, setTodayRecoverySlots] = useState([]);
+  const [loadingRecoverySlots, setLoadingRecoverySlots] = useState(false);
 
   const {
     hasPlan,
@@ -43,17 +47,42 @@ function LandingPage() {
   // Push를 구독한다(권한 이미 거부/미지원이면 조용히 스킵).
   usePushSubscription();
 
-  // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
-  // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
-  // 닫아주고, 카드 쪽에 로딩 상태만 보여준다(사용자를 모달에 가둬두지 않음).
-  const handleGenerateRecoveryPlan = () => {
+  // 상태 점검 흐름이 끝나면 방금 만든 현재 스냅샷과, 재사용하거나 새로 만든 이후
+  // 활동 계획을 명시적으로 넘겨 AI 회복 계획을 만든다. LLM 호출이라 30~50초 정도
+  // 걸릴 수 있어서 모달은 먼저 닫고 카드 쪽에 로딩 상태만 보여준다.
+  const handleGenerateRecoveryPlan = (setupResult = {}) => {
     setGeneratingPlan(true);
-    generateAIRecoveryPlan({ notificationEnabled: true })
+    generateAIRecoveryPlan({
+      contextSnapshot: setupResult.contextSnapshotId,
+      nextActivityPlan: setupResult.nextActivityPlanId,
+      notificationEnabled: true,
+    })
       .then(() => refreshNextReset())
       .catch((error) => {
         console.error("AI 회복 계획 생성 실패:", error);
       })
       .finally(() => setGeneratingPlan(false));
+  };
+
+  const loadTodayRecoverySlots = async () => {
+    setLoadingRecoverySlots(true);
+
+    try {
+      const slots = await getTodayRecoverySlots();
+      setTodayRecoverySlots(Array.isArray(slots) ? slots : []);
+      return Array.isArray(slots) ? slots : [];
+    } catch (error) {
+      console.error("오늘 예정 알림 조회 실패:", error);
+      setTodayRecoverySlots([]);
+      return [];
+    } finally {
+      setLoadingRecoverySlots(false);
+    }
+  };
+
+  const handleOpenTimeModal = () => {
+    setShowTimeModal(true);
+    loadTodayRecoverySlots();
   };
 
   const [activeTab, setActiveTab] = useState("routine");
@@ -62,22 +91,11 @@ function LandingPage() {
   const routineRef = useRef(null);
   const digitalRef = useRef(null);
 
-  // 브라우저 탭에서 처음 접속했을 때만 SetupModal 띄우기
-  // 브라우저 탭에서 처음 접속했을 때만 SetupModal 띄우기
+  // 서비스 진입은 곧 현재 상태 점검으로 간주한다. 같은 페이지에 머무르는 동안은
+  // 사용자가 닫을 수 있지만, 홈 화면에 새로 진입하면 다시 상태를 확인한다.
   useEffect(() => {
-    const hasSeenSetupModal = sessionStorage.getItem(
-      "hasSeenSetupModal"
-    );
-
-    if (!hasSeenSetupModal) {
-      setSetupModalMode("initial");
-      setShowSetupModal(true);
-
-      sessionStorage.setItem(
-        "hasSeenSetupModal",
-        "true"
-      );
-    }
+    setForceNextActivityInput(false);
+    setShowSetupModal(true);
   }, []);
 
 
@@ -120,7 +138,7 @@ function LandingPage() {
   const handleRoutineStart = (index) => {
     // 첫 번째 루틴은 바로 시작 가능
     if (index === 0) {
-      navigate("/handroutine");
+      navigate("/recovery-session");
       return;
     }
 
@@ -155,10 +173,19 @@ function LandingPage() {
 
             <S.ButtonGroup>
               <S.StartButton
-                onClick={() => navigate("/handroutine")}
+                onClick={() => navigate("/recovery-session")}
               >
                 회복 루틴 시작하기
               </S.StartButton>
+
+              <S.ResetButton
+                onClick={() => {
+                  setForceNextActivityInput(true);
+                  setShowSetupModal(true);
+                }}
+              >
+                내 계획 다시 설정
+              </S.ResetButton>
             </S.ButtonGroup>
           </S.HeroText>
 
@@ -204,9 +231,9 @@ function LandingPage() {
             </S.ReportBottom>
 
             <S.ChangeTimeButton
-              onClick={() => setShowTimeModal(true)}
+              onClick={handleOpenTimeModal}
             >
-              시간 변경하기
+              시간 선택하기
             </S.ChangeTimeButton>
           </S.ReportBox>
         </S.HeroContent>
@@ -292,10 +319,15 @@ function LandingPage() {
       {/* SETUP MODAL */}
       {showSetupModal && (
         <SetupModal
-          mode={setupModalMode}
+          forceNextActivityInput={forceNextActivityInput}
           onClose={() => {
             setShowSetupModal(false);
-            handleGenerateRecoveryPlan();
+            setForceNextActivityInput(false);
+          }}
+          onComplete={(result) => {
+            setShowSetupModal(false);
+            setForceNextActivityInput(false);
+            handleGenerateRecoveryPlan(result);
           }}
         />
       )}
@@ -304,6 +336,9 @@ function LandingPage() {
         <TimeChangeModal
           currentTime={hasPlan ? resetTimeLabel : "15:00"}
           currentRepeat={repeatAlarm}
+          currentSlotId={recoverySlotId}
+          scheduledSlots={todayRecoverySlots}
+          isLoadingScheduledSlots={loadingRecoverySlots}
           onClose={() => setShowTimeModal(false)}
           onSave={async (time, repeat) => {
             if (!recoverySlotId) {
@@ -342,9 +377,14 @@ function LandingPage() {
                 notificationEnabled: true,
                 repeatRule: repeat ? "DAILY" : "",
               });
+              await cancelSnapshotRecoverySlotsBefore({
+                before: scheduledAtLocal,
+                excludeSlot: recoverySlotId,
+              });
 
               setRepeatAlarm(repeat);
-              refreshNextReset();
+              await refreshNextReset();
+              await loadTodayRecoverySlots();
               return true;
             } catch (error) {
               console.error("리셋 시간 변경 실패:", error);

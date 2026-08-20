@@ -5,6 +5,7 @@ import * as S from "./SetupModal.styled";
 function ConditionStep({
     selectedCondition,
     setSelectedCondition,
+    isSubmitting = false,
     onNext,
 }) {
     return (
@@ -52,8 +53,9 @@ function ConditionStep({
                 <S.ButtonGroup>
                     <S.PrimaryButton
                         onClick={onNext}
+                        disabled={isSubmitting}
                     >
-                        다음
+                        {isSubmitting ? "확인 중..." : "다음"}
                     </S.PrimaryButton>
                 </S.ButtonGroup>
             </S.BottomArea>

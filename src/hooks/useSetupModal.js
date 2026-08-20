@@ -3,11 +3,15 @@ import {
     createContextSnapshot,
     createNextActivityPlan,
     CONDITION_LABEL_TO_STATE_CODE,
+    getCurrentNextActivityPlan,
     activityLabelToCode,
     timeLabelToMinutes,
 } from "../api/context";
+import { consumeNearestSnapshotRecoverySlot } from "../api/plans";
 
-export const useSetupModal = () => {
+export const useSetupModal = ({
+    forceNextActivityInput = false,
+} = {}) => {
     const [step, setStep] = useState(1);
 
     const [selectedCondition, setSelectedCondition] = useState("");
@@ -22,6 +26,9 @@ export const useSetupModal = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
+    const [contextSnapshotId, setContextSnapshotId] = useState(null);
+    const [snapshotCondition, setSnapshotCondition] = useState("");
+    const [hasConsumedReentrySlot, setHasConsumedReentrySlot] = useState(false);
 
     const goNext = () => {
         if (!selectedCondition) {
@@ -77,94 +84,191 @@ export const useSetupModal = () => {
         setIsTimeInputOpen(false);
     };
 
-    // "완료" 버튼 클릭 시 실제 백엔드에 반영한다.
-    // - mode === "initial": 상태(있으면) + 활동/시간(있으면) 둘 다 생성
-    // - mode === "reset"("내 계획 다시 설정"): 상태는 건드리지 않고 활동/시간만 새로 생성
-    //   (지금 상태 스냅샷은 그대로 두고 NextActivityPlan만 새로 쌓는다는 백엔드 설계에 맞춤)
-    //
-    // 단, reset 모드는 상태 선택 UI 자체가 없어서 "오늘 스냅샷이 이미 있다"고 가정하는데,
-    // 실제로는 없을 수 있다(온보딩 모달을 건너뛰었거나, hasSeenSetupModal이 세션에 남아있어
-    // 재방문 시 초기 온보딩이 자동으로 안 뜨는 경우 등). 그 상태로 "내 계획 다시 설정"만
-    // 반복해도 AI 생성이 "오늘의 상태 스냅샷이 필요합니다"로 매번 실패하는 버그가 있었다.
-    // 그래서 reset 모드에선 완료 직전에 오늘 스냅샷 존재 여부를 확인하고, 없으면 중립
-    // 상태("아직 괜찮아요")로 하나 만들어서 AI 생성이 항상 성공하도록 한다.
-    const completeSetup = async (mode) => {
-        console.log("completeSetup 호출됨");
-        console.log("mode:", mode);
-        console.log("selectedCondition:", selectedCondition);
+    const createSelectedSnapshot = async () => {
+        if (!selectedCondition) {
+            return {
+                errorMessage: "현재 상태를 선택해주세요.",
+            };
+        }
+
+        if (
+            contextSnapshotId &&
+            snapshotCondition === selectedCondition
+        ) {
+            return {
+                snapshot: {
+                    id: contextSnapshotId,
+                },
+            };
+        }
+
+        const stateCode =
+            CONDITION_LABEL_TO_STATE_CODE[
+            selectedCondition
+            ];
+
+        if (!stateCode) {
+            return {
+                errorMessage: "선택한 상태를 저장할 수 없어요.",
+            };
+        }
+
+        const snapshot = await createContextSnapshot([
+            stateCode,
+        ]);
+
+        setContextSnapshotId(snapshot.id);
+        setSnapshotCondition(selectedCondition);
+        return {
+            snapshot,
+        };
+    };
+
+    // 1단계 완료: 현재 상태는 항상 새 스냅샷으로 저장한다. 이후 활동이 아직 유효하면
+    // 기존 활동/시간과 그 활동에 붙은 기존 상태를 유지하고 바로 AI 계획 생성으로 넘긴다.
+    const submitCurrentState = async () => {
         setIsSubmitting(true);
         setSubmitError(null);
 
         try {
-            let contextSnapshotId = null;
+            const snapshotResult =
+                await createSelectedSnapshot();
 
-            // 상태가 선택돼 있으면 mode와 상관없이 오늘 상태 스냅샷 생성
-            if (selectedCondition) {
-                const stateCode =
-                    CONDITION_LABEL_TO_STATE_CODE[
-                    selectedCondition
-                    ];
+            if (snapshotResult.errorMessage) {
+                setSubmitError(snapshotResult.errorMessage);
+                return {
+                    errorMessage: snapshotResult.errorMessage,
+                };
+            }
 
-                console.log("선택 상태:", selectedCondition);
-                console.log("변환 상태 코드:", stateCode);
-
-                if (stateCode) {
-                    const snapshot =
-                        await createContextSnapshot([
-                            stateCode,
-                        ]);
-
-                    contextSnapshotId =
-                        snapshot.id;
-                }
-            } else if (mode === "reset") {
-                const todaySnapshot = await getTodayContextSnapshot();
-                if (!todaySnapshot) {
-                    const fallbackStateCode = CONDITION_LABEL_TO_STATE_CODE["아직 괜찮아요"];
-                    if (fallbackStateCode) {
-                        await createContextSnapshot([fallbackStateCode]);
-                    }
+            if (!hasConsumedReentrySlot) {
+                try {
+                    await consumeNearestSnapshotRecoverySlot();
+                    setHasConsumedReentrySlot(true);
+                } catch (error) {
+                    console.error(
+                        "재진입 스냅샷 알림 정리 실패:",
+                        error
+                    );
                 }
             }
 
-            // 활동/시간 입력이 있으면 다음 활동 계획 생성
-            if (
-                selectedActivity ||
-                selectedTime
-            ) {
-                await createNextActivityPlan({
-                    activityTags:
-                        selectedActivity
-                            ? [
-                                activityLabelToCode(
-                                    selectedActivity
-                                ),
-                            ]
-                            : [],
+            const currentActivityPlan =
+                forceNextActivityInput
+                    ? null
+                    : await getCurrentNextActivityPlan();
 
-                    expectedActivityMinutes:
-                        timeLabelToMinutes(
-                            selectedTime
-                        ),
-
-                    contextSnapshotId,
-                });
+            if (currentActivityPlan) {
+                return {
+                    contextSnapshotId:
+                        snapshotResult.snapshot.id,
+                    nextActivityPlanId:
+                        currentActivityPlan.id,
+                    reusedNextActivity: true,
+                };
             }
 
-            return null;
+            setStep(2);
+            return {
+                needsNextActivity: true,
+            };
         } catch (error) {
             console.error(
-                "설정 저장 실패:",
+                "현재 상태 저장 실패:",
                 error
             );
 
             const message =
                 error?.message ??
-                "설정을 저장하지 못했습니다.";
+                "현재 상태를 저장하지 못했습니다.";
 
             setSubmitError(message);
 
-            return message;
+            return {
+                errorMessage: message,
+            };
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // 2단계 완료: 유효한 이후 활동이 없을 때만 새 활동/시간을 만들고, 방금 상태 스냅샷에 묶는다.
+    const completeSetup = async () => {
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            if (!selectedActivity || !selectedTime) {
+                const message =
+                    "이후 활동과 활동 시간을 모두 선택해주세요.";
+                setSubmitError(message);
+                return {
+                    errorMessage: message,
+                };
+            }
+
+            let snapshotId = contextSnapshotId;
+            if (!snapshotId) {
+                const snapshotResult =
+                    await createSelectedSnapshot();
+
+                if (snapshotResult.errorMessage) {
+                    setSubmitError(snapshotResult.errorMessage);
+                    return {
+                        errorMessage: snapshotResult.errorMessage,
+                    };
+                }
+
+                snapshotId = snapshotResult.snapshot.id;
+            }
+
+            const expectedActivityMinutes =
+                timeLabelToMinutes(
+                    selectedTime
+                );
+
+            if (!expectedActivityMinutes) {
+                const message =
+                    "활동 시간을 분 단위로 입력해주세요.";
+                setSubmitError(message);
+                return {
+                    errorMessage: message,
+                };
+            }
+
+            const nextActivityPlan =
+                await createNextActivityPlan({
+                    activityTags: [
+                        activityLabelToCode(
+                            selectedActivity
+                        ),
+                    ],
+
+                    expectedActivityMinutes,
+
+                    contextSnapshotId: snapshotId,
+                });
+
+            return {
+                contextSnapshotId: snapshotId,
+                nextActivityPlanId: nextActivityPlan.id,
+                reusedNextActivity: false,
+            };
+        } catch (error) {
+            console.error(
+                "이후 활동 저장 실패:",
+                error
+            );
+
+            const message =
+                error?.message ??
+                "이후 활동을 저장하지 못했습니다.";
+
+            setSubmitError(message);
+
+            return {
+                errorMessage: message,
+            };
         } finally {
             setIsSubmitting(false);
         }
@@ -198,6 +302,7 @@ export const useSetupModal = () => {
 
         isSubmitting,
         submitError,
+        submitCurrentState,
         completeSetup,
     };
 };
