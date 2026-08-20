@@ -111,3 +111,11 @@ export function getRecoverySlotHistory(date) {
     params: { date },
   });
 }
+
+/**
+ * 오늘 active plan의 회복 슬롯 목록 조회(재생성 없이 조회만). AI 재생성 없이도
+ * "오늘의 추천 휴식 일정" 카드를 채울 때 쓴다.
+ */
+export function getTodayRecoverySlots() {
+  return apiClient.get("/plans/recovery-slots/today/");
+}
