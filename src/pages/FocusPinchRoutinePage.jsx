@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
@@ -28,7 +28,7 @@ export default function FocusPinchRoutinePage() {
   const isMissionComplete = pinchCount >= targetCount;
 
   const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("HAND");
+    useMultiTracking("HAND", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
     initLandmarker().then(startCamera);
@@ -54,10 +54,13 @@ export default function FocusPinchRoutinePage() {
         rings.length > 0 &&
         rings.every((ring) => Math.abs(ring.sizePercent - targetSize) <= pinchMatchTolerancePercent);
 
+      let holdProgress = 0;
       if (!isMissionComplete) {
         if (allMatched) {
           if (matchSinceRef.current == null) matchSinceRef.current = t;
-          if (t - matchSinceRef.current >= pinchHoldMs) {
+          const heldMs = t - matchSinceRef.current;
+          holdProgress = Math.min(1, heldMs / pinchHoldMs);
+          if (heldMs >= pinchHoldMs) {
             matchSinceRef.current = null;
             setPinchCount((prev) => Math.min(prev + 1, targetCount));
             setTargetSize(randomTargetSize());
@@ -73,14 +76,15 @@ export default function FocusPinchRoutinePage() {
           rings,
           targetSizePercent: targetSize,
           matched: allMatched,
+          holdProgress,
         });
       }
 
       animId = requestAnimationFrame(loop);
     };
-    if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
+    if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, detectFrame, targetSize]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, targetSize]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -96,23 +100,44 @@ export default function FocusPinchRoutinePage() {
     setIsTerminated(false);
   }, []);
 
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
+
+  const cameraPreviewProps = useMemo(
+    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
+    [videoRef, cameraReady, isTerminated]
+  );
+  const dataPanelProps = useMemo(
+    () => ({ elapsedTime, successCount: pinchCount, handCount }),
+    [elapsedTime, pinchCount, handCount]
+  );
+  const instructionProps = useMemo(
+    () => ({
+      missionText: SESSION.title,
+      instructionSub: `${SESSION.guideText} (목표 ${targetSize}%)`,
+    }),
+    [targetSize]
+  );
+  const progressProps = useMemo(
+    () => ({ progressPercent: (pinchCount / targetCount) * 100 }),
+    [pinchCount]
+  );
+
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
-      onCloseQuit={() => setIsQuitModalOpen(false)}
-      onConfirmQuit={() => navigate("/")}
+      onCloseQuit={handleCloseQuit}
+      onConfirmQuit={handleConfirmQuit}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
-      onStopSession={() => setIsQuitModalOpen(true)}
+      onStopSession={handleStopSession}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }}
-      dataPanelProps={{ elapsedTime, successCount: pinchCount, handCount }}
-      instructionProps={{
-        missionText: SESSION.title,
-        instructionSub: `${SESSION.guideText} (목표 ${targetSize}%)`,
-      }}
-      progressProps={{ progressPercent: (pinchCount / targetCount) * 100 }}
+      cameraPreviewProps={cameraPreviewProps}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
     >
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
     </SessionPage>

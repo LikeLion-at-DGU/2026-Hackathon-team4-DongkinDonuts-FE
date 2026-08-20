@@ -1,31 +1,39 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
-import { prepareCanvas, drawNeckJelly, drawPoseLandmarks, drawDebugLabel } from "../engine/sessionVisuals";
+import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
+import { lerp, normalizeAngleDeg } from "../utils/handUtils";
 
 const SESSION = ROUTINE_SESSIONS["neck-stretch"];
+const BURST_MS = 700;
+const TOTAL_STAGES = 2;
 
 export default function NeckStretchRoutinePage() {
   const navigate = useNavigate();
+  const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
-  const holdSecRef = useRef(0);
+  const stageRef = useRef(1); // 1: 첫 번째 방향, 2: 반대쪽 방향
   const baselineTiltRef = useRef(null);
   const calibSumRef = useRef(0);
   const calibCountRef = useRef(0);
+  const displayDegRef = useRef(0);
+  const alignStartRef = useRef(null);
+  const burstRef = useRef(null);
+  const finalPendingRef = useRef(false);
 
-  const [holdSec, setHoldSec] = useState(0);
+  const [stage, setStage] = useState(1);
+  const [successCount, setSuccessCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const targetHold = 5;
-  const isMissionComplete = holdSec >= targetHold;
+  const isMissionComplete = successCount >= TOTAL_STAGES;
 
   const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("POSE");
+    useMultiTracking("POSE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
     initLandmarker().then(startCamera);
@@ -37,7 +45,6 @@ export default function NeckStretchRoutinePage() {
     const loop = (t) => {
       const data = detectFrame(t);
 
-      let isNeckTilted = false;
       let deltaDeg = 0;
       if (data?.neckTiltDeg != null) {
         if (baselineTiltRef.current == null) {
@@ -48,38 +55,102 @@ export default function NeckStretchRoutinePage() {
             baselineTiltRef.current = calibSumRef.current / calibCountRef.current;
           }
         } else {
-          deltaDeg = data.neckTiltDeg - baselineTiltRef.current;
-          isNeckTilted = Math.abs(deltaDeg) > TRACKING_CONFIG.neckTiltDeltaThresholdDeg;
+          // normalizeAngleDeg: 기준각과 현재각이 ±180° 경계 양쪽에 걸쳐 있을 때(예: 179° - (-179°))
+          // 발생하는 350°대의 오버플로우 값을 -180~180 범위로 감싸 순간이동을 방지한다.
+          deltaDeg = normalizeAngleDeg(data.neckTiltDeg - baselineTiltRef.current);
+        }
+      }
+      const isCalibrating = baselineTiltRef.current == null;
+
+      // 인디케이터가 표시할 수 있는 최대 범위를 절대 벗어나지 않도록 먼저 선형 제한(clamp)한 뒤,
+      // 그 목표값으로 LERP 보간해 갑작스러운 감지 튐이 있어도 막대가 매끄럽게 뒤따라가도록 한다.
+      const clampedTargetDeg = Math.min(
+        TRACKING_CONFIG.neckTiltMaxDeg,
+        Math.max(-TRACKING_CONFIG.neckTiltMaxDeg, deltaDeg)
+      );
+      displayDegRef.current = lerp(
+        displayDegRef.current,
+        clampedTargetDeg,
+        TRACKING_CONFIG.neckIndicatorSmoothing
+      );
+
+      // 현재 단계(stage)의 목표 각도 범위: 1단계는 +15°~+25°, 2단계는 반대쪽 -25°~-15°
+      const stageSign = stageRef.current === 1 ? 1 : -1;
+      const targetMinDeg = Math.min(
+        stageSign * TRACKING_CONFIG.neckTargetMinDeg,
+        stageSign * TRACKING_CONFIG.neckTargetMaxDeg
+      );
+      const targetMaxDeg = Math.max(
+        stageSign * TRACKING_CONFIG.neckTargetMinDeg,
+        stageSign * TRACKING_CONFIG.neckTargetMaxDeg
+      );
+      const aligned =
+        !isCalibrating &&
+        !isMissionComplete &&
+        deltaDeg >= targetMinDeg &&
+        deltaDeg <= targetMaxDeg;
+
+      // 목표 각도 범위에 정렬된 채 neckAlignHoldMs(1초) 연속 유지하면 해당 단계 성공 처리.
+      // 유지 도중 범위를 벗어나면 alignStartRef가 즉시 null로 초기화되어 타이머가 리셋된다.
+      let holdProgress = 0;
+      let holdRemainingSec = TRACKING_CONFIG.neckAlignHoldMs / 1000;
+      if (aligned) {
+        if (alignStartRef.current == null) alignStartRef.current = t;
+        const heldMs = t - alignStartRef.current;
+        holdProgress = Math.min(1, heldMs / TRACKING_CONFIG.neckAlignHoldMs);
+        holdRemainingSec = Math.max(0, (TRACKING_CONFIG.neckAlignHoldMs - heldMs) / 1000);
+        if (heldMs >= TRACKING_CONFIG.neckAlignHoldMs && !finalPendingRef.current) {
+          alignStartRef.current = null;
+          const isFinal = stageRef.current !== 1;
+          burstRef.current = { startedAt: t, isFinal };
+          if (!isFinal) {
+            stageRef.current = 2;
+            setStage(2);
+            setSuccessCount(1);
+          } else {
+            finalPendingRef.current = true;
+          }
+        }
+      } else {
+        alignStartRef.current = null;
+      }
+
+      let burstProgress = 0;
+      if (burstRef.current) {
+        const burstElapsed = t - burstRef.current.startedAt;
+        if (burstElapsed <= BURST_MS) {
+          burstProgress = burstElapsed / BURST_MS;
+        } else {
+          // 마지막 단계의 burst 애니메이션이 끝난 뒤에야 완료 카운트를 올려 미션 완료 모달이
+          // 애니메이션을 잘라먹지 않도록 한다.
+          burstProgress = 1;
+          if (burstRef.current.isFinal) {
+            setSuccessCount(TOTAL_STAGES);
+          }
+          burstRef.current = null;
         }
       }
 
-      if (isNeckTilted && !isMissionComplete) {
-        holdSecRef.current = Math.min(holdSecRef.current + 0.02, targetHold);
-        setHoldSec(holdSecRef.current);
-      }
-
-      const side = deltaDeg >= 0 ? "right" : "left";
-      const prepared = prepareCanvas(previewCanvasRef.current);
+      const prepared = prepareCanvas(canvasRef.current);
       if (prepared) {
-        drawPoseLandmarks(prepared.ctx, prepared.width, prepared.height, { pose: data?.raw });
-        drawNeckJelly(prepared.ctx, prepared.width, prepared.height, {
-          holdRatio: holdSecRef.current / targetHold,
-          side,
+        drawTiltIndicator(prepared.ctx, prepared.width, prepared.height, {
+          currentDeg: displayDegRef.current,
+          targetMinDeg,
+          targetMaxDeg,
+          maxDeg: TRACKING_CONFIG.neckTiltMaxDeg,
+          aligned,
+          holdProgress,
+          holdRemainingSec,
+          isCalibrating,
+          burstProgress,
         });
-
-        const statusText = !data?.raw
-          ? "포즈 인식 안 됨 - 어깨까지 화면에 나오게 조정해주세요"
-          : baselineTiltRef.current == null
-            ? `캘리브레이션 중... ${calibCountRef.current}/${TRACKING_CONFIG.calibrationFrames} (정면을 봐주세요)`
-            : `목 기울기 변화: ${deltaDeg.toFixed(1)}° / 기준 ${TRACKING_CONFIG.neckTiltDeltaThresholdDeg}°`;
-        drawDebugLabel(prepared.ctx, prepared.width, prepared.height, statusText);
       }
 
       animId = requestAnimationFrame(loop);
     };
-    if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
+    if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -88,29 +159,60 @@ export default function NeckStretchRoutinePage() {
   }, [isTerminated, isQuitModalOpen, isMissionComplete]);
 
   const handleReset = useCallback(() => {
-    setHoldSec(0);
-    holdSecRef.current = 0;
+    stageRef.current = 1;
+    setStage(1);
+    setSuccessCount(0);
     baselineTiltRef.current = null;
     calibSumRef.current = 0;
     calibCountRef.current = 0;
+    displayDegRef.current = 0;
+    alignStartRef.current = null;
+    burstRef.current = null;
+    finalPendingRef.current = false;
     setElapsedTime(0);
     setIsTerminated(false);
   }, []);
 
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
+
+  const cameraPreviewProps = useMemo(
+    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
+    [videoRef, cameraReady, isTerminated]
+  );
+  const dataPanelProps = useMemo(
+    () => ({ elapsedTime, successCount }),
+    [elapsedTime, successCount]
+  );
+  const instructionProps = useMemo(
+    () => ({
+      missionText: SESSION.title,
+      instructionSub: SESSION.guideText
+    }),
+    [stage, isMissionComplete]
+  );
+  const progressProps = useMemo(
+    () => ({ progressPercent: (successCount / TOTAL_STAGES) * 100 }),
+    [successCount]
+  );
+
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
-      onCloseQuit={() => setIsQuitModalOpen(false)}
-      onConfirmQuit={() => navigate("/")}
+      onCloseQuit={handleCloseQuit}
+      onConfirmQuit={handleConfirmQuit}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
-      onStopSession={() => setIsQuitModalOpen(true)}
+      onStopSession={handleStopSession}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated, fullBleed: true }}
-      dataPanelProps={{ elapsedTime, successCount: Math.floor(holdSec) }}
-      instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
-      progressProps={{ progressPercent: (holdSec / targetHold) * 100 }}
-    />
+      cameraPreviewProps={cameraPreviewProps}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
+    >
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+    </SessionPage>
   );
 }

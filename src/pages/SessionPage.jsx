@@ -7,6 +7,8 @@ import SessionControls from "../components/sessions/SessionControls";
 import MissionInstruction from "../components/sessions/MissionInstruction";
 import ProgressBar from "../components/sessions/ProgressBar";
 import QuitConfirmModal from "../components/sessions/QuitConfirmModal";
+import { preloadTracking } from "../hooks/useMultiTracking";
+import { getTrackingTypeForPath } from "../config/sessionData";
 import {
   HandRoutineGlobalStyle,
   RoutineContainer,
@@ -41,20 +43,41 @@ const SessionPage = ({
     if (nextSessionPath) navigate(nextSessionPath);
   }, [navigate, nextSessionPath]);
 
+  // 현재 세션이 진행되는 동안, 다음 세션에 필요한 MediaPipe 모델을 백그라운드에서 미리 로드해둔다.
+  // "다음 세션" 버튼을 눌렀을 때 모델 초기화 대기 없이 즉시 카메라가 뜨도록 하기 위함.
+  useEffect(() => {
+    const nextTrackingType = getTrackingTypeForPath(nextSessionPath);
+    if (nextTrackingType) preloadTracking(nextTrackingType);
+  }, [nextSessionPath]);
+
+  // 완료 모달은 세션당 한 번만 보여준다(hasShownCompletionModal은 이후 계속 true로 유지).
+  // 그 뒤로는 미션을 다시 완료할 때마다 모달 없이 조용히 반복 초기화된다.
+  // 이때도 초기화 렌더(진행바가 100%인 채로 잠깐 드러나는 프레임)가 먼저 화면에 그려지도록
+  // 한 프레임 이상 기다린 뒤에 세션을 초기화한다. resetSession을 모달 close와 같은 틱에서
+  // 바로 호출하면 두 상태 변화가 한 번의 렌더로 묶여 100% 프레임이 그려질 기회 자체가
+  // 사라지기 때문.
   useEffect(() => {
     if (!isMissionComplete || isTerminated || !hasShownCompletionModal) return;
-    resetSession?.();
+    let innerId;
+    const outerId = requestAnimationFrame(() => {
+      innerId = requestAnimationFrame(() => {
+        resetSession?.();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(outerId);
+      if (innerId) cancelAnimationFrame(innerId);
+    };
   }, [hasShownCompletionModal, isMissionComplete, isTerminated, resetSession]);
 
   const handleCloseSessionEnd = useCallback(() => {
     if (isMissionComplete && !isTerminated) {
       setHasShownCompletionModal(true);
-      resetSession?.();
       return;
     }
 
     onCloseSessionEnd?.();
-  }, [isMissionComplete, isTerminated, onCloseSessionEnd, resetSession]);
+  }, [isMissionComplete, isTerminated, onCloseSessionEnd]);
 
   const shouldShowCompletionModal = isMissionComplete && !hasShownCompletionModal;
 

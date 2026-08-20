@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, ModalTitle, ModalDescription, ModalButtons, CloseButton, ConfirmButton } from "./Modal.styled";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
+import SetupModal from "../SetupModal";
 
 const SessionEndModal = ({
   isMissionComplete,
@@ -16,17 +17,17 @@ const SessionEndModal = ({
 
   const finished = isMissionComplete && !isTerminated;
 
+  if (finished && !nextSessionPath) {
+    return <SetupModal mode="complete" onClose={onClose} />;
+  }
+
   const handleConfirm = () => {
     if (finished) {
       if (nextSessionPath) {
         navigate(nextSessionPath);
         return;
       }
-
-      onClose?.();
-      return;
     }
-
     onRestart?.();
   };
 
@@ -34,17 +35,11 @@ const SessionEndModal = ({
     <ModalOverlay>
       <ModalContent onClick={(event) => event.stopPropagation()}>
         <img src={StreamLineIcon} alt="세션 완료 아이콘" width={77} />
-        <ModalTitle>
-          {finished ? <>이번 세션을 완료했어요<br />다음 세션으로 이어갈까요?</> : "세션이 종료됐어요"}
-        </ModalTitle>
-        <ModalDescription>
-          {finished ? "지금 바로 다음 루틴을 시작할 수 있어요." : "지금 상태를 초기화하고 다시 시작할 수 있어요."}
-        </ModalDescription>
+        <ModalTitle>이번 세션을 완료했어요<br />다음 세션으로 이어갈까요?</ModalTitle>
+        <ModalDescription>지금 바로 다음 루틴을 시작할 수 있어요.</ModalDescription>
         <ModalButtons>
-          <CloseButton onClick={finished ? onClose : () => navigate("/")}>
-            {finished ? "취소" : "홈으로"}
-          </CloseButton>
-          <ConfirmButton onClick={handleConfirm}>{finished ? "확인" : "다시 시작"}</ConfirmButton>
+          <CloseButton onClick={onClose}>취소</CloseButton>
+          <ConfirmButton onClick={handleConfirm}>확인</ConfirmButton>
         </ModalButtons>
       </ModalContent>
     </ModalOverlay>

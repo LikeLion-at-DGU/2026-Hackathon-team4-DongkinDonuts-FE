@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useMemo, useState } from "react";
 
 import { getTargetZone, handleBallRelease, completeMission } from "../engine/missionManager";
 import { updateMovingTarget, updateGrabbedBalls, grabNearestBall } from "../engine/ballManager";
@@ -207,6 +207,28 @@ const HandRoutinePage = () => {
 
   const isUIOverlayVisible = !isTerminated;
 
+  const cameraPreviewProps = useMemo(
+    () => ({ videoRef, cameraReady, isTerminated }),
+    [videoRef, cameraReady, isTerminated]
+  );
+  const dataPanelProps = useMemo(
+    () => ({ elapsedTime, successCount, handCount, screenDistance }),
+    [elapsedTime, successCount, handCount, screenDistance]
+  );
+  const instructionProps = useMemo(
+    () => ({
+      mission,
+      sequenceOrder: refs.sequenceOrderRef.current,
+      sameColorTargetType: refs.sameColorTargetTypeRef.current,
+      missionRemaining,
+    }),
+    [mission, refs, missionRemaining]
+  );
+  const progressProps = useMemo(
+    () => ({ missionType: mission.type, sequenceIndex, missionProgress }),
+    [mission, sequenceIndex, missionProgress]
+  );
+
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
@@ -218,28 +240,10 @@ const HandRoutinePage = () => {
       onStopSession={handleStopGame}
       nextSessionPath="/eye-blink"
       showOverlay={isUIOverlayVisible}
-      cameraPreviewProps={{
-        videoRef,
-        cameraReady,
-        isTerminated,
-      }}
-      dataPanelProps={{
-        elapsedTime,
-        successCount,
-        handCount,
-        screenDistance,
-      }}
-      instructionProps={{
-        mission,
-        sequenceOrder: refs.sequenceOrderRef.current,
-        sameColorTargetType: refs.sameColorTargetTypeRef.current,
-        missionRemaining,
-      }}
-      progressProps={{
-        missionType: mission.type,
-        sequenceIndex,
-        missionProgress,
-      }}
+      cameraPreviewProps={cameraPreviewProps}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
     >
       <HandPlayArea canvasRef={canvasRef} />
     </SessionPage>

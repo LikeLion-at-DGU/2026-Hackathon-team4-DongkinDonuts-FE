@@ -1,37 +1,43 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
-import { prepareCanvas, drawEyeFog } from "../engine/sessionVisuals";
+import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
 
 const SESSION = ROUTINE_SESSIONS["eye-blink"];
-const FOG_RECOVER_STEP = 0.05;
+const POP_MS = 900;
+const CLOSE_EASE = 0.18;
 
 export default function EyeBlinkRoutinePage() {
   const navigate = useNavigate();
+  const canvasRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const closedSinceRef = useRef(null);
-  const countedRef = useRef(false);
-  const fogClearRef = useRef(0);
+  const holdCompleteRef = useRef(false);
+  const closeAmountRef = useRef(0);
+  const popRef = useRef(null);
+  const blinkCountRef = useRef(0);
 
   const [blinkCount, setBlinkCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
 
-  const targetCount = 5;
+  const targetCount = 3;
   const isMissionComplete = blinkCount >= targetCount;
 
   const { videoRef, cameraReady, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("FACE_EYE");
+    useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
 
   useEffect(() => {
     initLandmarker().then(startCamera);
     return () => cleanup();
   }, [initLandmarker, startCamera, cleanup]);
 
+  // 눈을 감는 동안은 중앙 링이 웜톤으로 작게 축소되고, 1초 이상 감았다가 뜨면(rising edge)
+  // 링이 파스텔 입자를 남기며 사방으로 퐁 퍼지다 잔물결처럼 사라지는 파동을 재생한다.
   useEffect(() => {
     let animId;
     const loop = (t) => {
@@ -41,27 +47,53 @@ export default function EyeBlinkRoutinePage() {
       if (isBlinking) {
         if (closedSinceRef.current == null) closedSinceRef.current = t;
         const heldMs = t - closedSinceRef.current;
-        fogClearRef.current = Math.min(1, heldMs / TRACKING_CONFIG.blinkHoldMs);
-        if (heldMs >= TRACKING_CONFIG.blinkHoldMs && !countedRef.current && !isMissionComplete) {
-          countedRef.current = true;
-          setBlinkCount((prev) => Math.min(prev + 1, targetCount));
-        }
+        if (heldMs >= TRACKING_CONFIG.blinkHoldMs) holdCompleteRef.current = true;
       } else {
+        if (closedSinceRef.current != null && holdCompleteRef.current && blinkCountRef.current < targetCount) {
+          const isFinal = blinkCountRef.current + 1 >= targetCount;
+          popRef.current = { startedAt: t, isFinal };
+          if (!isFinal) {
+            blinkCountRef.current += 1;
+            setBlinkCount(blinkCountRef.current);
+          }
+        }
         closedSinceRef.current = null;
-        countedRef.current = false;
-        fogClearRef.current = Math.max(0, fogClearRef.current - FOG_RECOVER_STEP);
+        holdCompleteRef.current = false;
       }
 
-      const prepared = prepareCanvas(previewCanvasRef.current);
+      const targetClose = isBlinking ? 1 : 0;
+      closeAmountRef.current += (targetClose - closeAmountRef.current) * CLOSE_EASE;
+
+      let popProgress = 0;
+      if (popRef.current) {
+        const popElapsed = t - popRef.current.startedAt;
+        if (popElapsed <= POP_MS) {
+          popProgress = popElapsed / POP_MS;
+        } else {
+          // 마지막 반복의 pop 애니메이션이 끝난 뒤에야 완료 카운트를 올려 미션 완료 모달이
+          // 애니메이션을 잘라먹지 않도록 한다.
+          popProgress = 1;
+          if (popRef.current.isFinal) {
+            blinkCountRef.current = targetCount;
+            setBlinkCount(targetCount);
+          }
+          popRef.current = null;
+        }
+      }
+
+      const prepared = prepareCanvas(canvasRef.current);
       if (prepared) {
-        drawEyeFog(prepared.ctx, prepared.width, prepared.height, { fogClear: fogClearRef.current });
+        drawEyeBlinkPulse(prepared.ctx, prepared.width, prepared.height, {
+          closeAmount: closeAmountRef.current,
+          popProgress,
+        });
       }
 
       animId = requestAnimationFrame(loop);
     };
-    if (cameraReady && !isTerminated) animId = requestAnimationFrame(loop);
+    if (cameraReady && !isTerminated && !isMissionComplete && !isQuitModalOpen) animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [cameraReady, isTerminated, isMissionComplete, detectFrame]);
+  }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame]);
 
   useEffect(() => {
     if (isTerminated || isQuitModalOpen || isMissionComplete) return;
@@ -73,25 +105,50 @@ export default function EyeBlinkRoutinePage() {
     setBlinkCount(0);
     setElapsedTime(0);
     closedSinceRef.current = null;
-    countedRef.current = false;
-    fogClearRef.current = 0;
+    holdCompleteRef.current = false;
+    closeAmountRef.current = 0;
+    popRef.current = null;
+    blinkCountRef.current = 0;
     setIsTerminated(false);
   }, []);
+
+  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
+  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
+
+  const cameraPreviewProps = useMemo(
+    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
+    [videoRef, cameraReady, isTerminated]
+  );
+  const dataPanelProps = useMemo(
+    () => ({ elapsedTime, successCount: blinkCount }),
+    [elapsedTime, blinkCount]
+  );
+  const instructionProps = useMemo(
+    () => ({ missionText: SESSION.title, instructionSub: SESSION.guideText }),
+    []
+  );
+  const progressProps = useMemo(
+    () => ({ progressPercent: (blinkCount / targetCount) * 100 }),
+    [blinkCount]
+  );
 
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
-      onCloseQuit={() => setIsQuitModalOpen(false)}
-      onConfirmQuit={() => navigate("/")}
+      onCloseQuit={handleCloseQuit}
+      onConfirmQuit={handleConfirmQuit}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={handleReset}
-      onStopSession={() => setIsQuitModalOpen(true)}
+      onStopSession={handleStopSession}
       nextSessionPath={SESSION.nextSessionPath}
-      cameraPreviewProps={{ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated, fullBleed: true }}
-      dataPanelProps={{ elapsedTime, successCount: blinkCount }}
-      instructionProps={{ missionText: SESSION.title, instructionSub: SESSION.guideText }}
-      progressProps={{ progressPercent: (blinkCount / targetCount) * 100 }}
-    />
+      cameraPreviewProps={cameraPreviewProps}
+      dataPanelProps={dataPanelProps}
+      instructionProps={instructionProps}
+      progressProps={progressProps}
+    >
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+    </SessionPage>
   );
 }

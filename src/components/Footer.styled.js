@@ -4,7 +4,7 @@ import styled from "styled-components";
 export const FooterContainer = styled.footer`
     width: 100%;
     padding: 20px 0;
-    background-color: ${(props) => (props.$isDark ? "#17181d" : "#F4F5F6")};
+    background-color: ${(props) => (props.$isDark ? "#000" : "#F4F5F6")};
 
     transition: background-color 0.3s ease;
 

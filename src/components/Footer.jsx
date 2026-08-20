@@ -6,11 +6,9 @@ const Footer = () => {
 
     const location = useLocation();
     // 어두운 푸터를 적용할 페이지 경로 목록
-    const lightPages = ["/", "/about", "/login"];
+    const lightPages = ["/",];
     const isDark = !lightPages.includes(location.pathname);
-    
-    //const darkPages = ["/handroutine", "/breathroutine",];
-    //const isDark = darkPages.includes(location.pathname);
+
 
     return (
         <S.FooterContainer $isDark={isDark}>

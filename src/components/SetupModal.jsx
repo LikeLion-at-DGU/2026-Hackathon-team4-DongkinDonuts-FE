@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSetupModal } from "../hooks/useSetupModal";
 import CloseButton from "../assets/icons/CloseButton.svg";
 
@@ -10,6 +10,19 @@ const conditionOptions = [
     "집중이 안 돼요",
     "머리가 멍하고 졸려요",
     "아직 괜찮아요",
+];
+
+// complete 모드용 피드백 옵션
+const statusOptions = [
+    "훨씬 나아졌어요",
+    "조금 나아졌어요",
+    "비슷해요",
+];
+
+const difficultyOptions = [
+    "딱 좋았어요",
+    "너무 쉬웠어요",
+    "조금 힘들었어요",
 ];
 
 const activityOptions = [
@@ -55,23 +68,26 @@ function SetupModal({ onClose, mode = "initial" }) {
         completeSetup,
     } = useSetupModal();
 
+    // complete 모드(모든 세션 완료 피드백) 전용 내부 상태
+    const [completeStep, setCompleteStep] = useState(1);
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedDifficulty, setSelectedDifficulty] = useState("");
+
     const handleComplete = async () => {
-        // completeSetup은 성공 시 null, 실패 시 에러 메시지 문자열을 반환한다.
         const errorMessage = await completeSetup(mode);
         if (errorMessage) {
-            // 실패해도 사용자를 모달에 가둬두지 않는다 — 다음 리셋 시간 등은
-            // 다시 "내 계획 다시 설정"으로 재시도 가능하니 일단 닫고 알림으로만 안내.
             window.alert(errorMessage);
         }
         onClose();
     };
 
-    // reset 모드면 무조건 2단계만 보여줌
-    const currentStep = mode === "reset" ? 2 : step;
+    // mode 종류에 따른 스텝 제어
+    const isReset = mode === "reset";
+    const isComplete = mode === "complete";
+    const currentStep = isReset ? 2 : step;
 
     useEffect(() => {
         const originalOverflow = document.body.style.overflow;
-
         document.body.style.overflow = "hidden";
 
         return () => {
@@ -90,7 +106,185 @@ function SetupModal({ onClose, mode = "initial" }) {
                     화면을 끄지 않고 리셋하기, Brainfit
                 </S.SmallLabel>
 
-                {currentStep === 1 && (
+                {/* ==================== 1. 모든 세션 완료 모드 (mode === "complete") ==================== */}
+                {isComplete && completeStep === 1 && (
+                    <>
+                        <S.Title>
+                            모든 세션 완료! 리셋 루틴은 어떠셨나요?
+                        </S.Title>
+
+                        <S.Description>
+                            피드백을 반영하여
+                            <br />
+                            다음에는 더 딱 맞는 리셋 루틴을 추천해 드릴게요.
+                        </S.Description>
+
+                        <S.SectionLabel>
+                            현재 상태 변화
+                        </S.SectionLabel>
+
+                        <S.OptionGroup>
+                            {statusOptions.map((option) => (
+                                <S.OptionButton
+                                    key={option}
+                                    $selected={selectedStatus === option}
+                                    onClick={() => setSelectedStatus(option)}
+                                >
+                                    {option}
+                                </S.OptionButton>
+                            ))}
+                        </S.OptionGroup>
+
+                        <S.SectionLabel $marginTop>
+                            동작 난이도
+                        </S.SectionLabel>
+
+                        <S.OptionGroup>
+                            {difficultyOptions.map((option) => (
+                                <S.OptionButton
+                                    key={option}
+                                    $selected={selectedDifficulty === option}
+                                    onClick={() => setSelectedDifficulty(option)}
+                                >
+                                    {option}
+                                </S.OptionButton>
+                            ))}
+                        </S.OptionGroup>
+
+                        <S.BottomArea>
+                            <S.StepDots>
+                                <S.Dot $active />
+                                <S.Dot />
+                                <S.Dot />
+                            </S.StepDots>
+
+                            <S.ButtonGroup>
+                                <S.SkipButton onClick={() => setCompleteStep(2)}>
+                                    건너뛰기
+                                </S.SkipButton>
+
+                                <S.PrimaryButton onClick={() => setCompleteStep(2)}>
+                                    제출하기
+                                </S.PrimaryButton>
+                            </S.ButtonGroup>
+                        </S.BottomArea>
+                    </>
+                )}
+
+                {isComplete && completeStep === 2 && (
+                    <>
+                        <S.Title>
+                            다음 리셋 알림 시간 설정
+                        </S.Title>
+
+                        <S.Description>
+                            분산된 주의를 바로잡고 깊이 몰입할 수 있도록 미리 활동과 시간을 세팅해 주세요.
+                            <br />
+                            설정한 시간이 지나면 Brainfit이 잊지 않고 리셋 알림을 보내드려요.
+                        </S.Description>
+
+                        <S.SectionLabel>
+                            활동 선택
+                        </S.SectionLabel>
+
+                        <S.OptionGroup>
+                            {activityOptions.map((option) => (
+                                <S.OptionButton
+                                    key={option}
+                                    $selected={selectedActivity === option}
+                                    onClick={() => setSelectedActivity(option)}
+                                >
+                                    {option}
+                                </S.OptionButton>
+                            ))}
+
+                            {isActivityInputOpen ? (
+                                <S.CustomInput
+                                    autoFocus
+                                    type="text"
+                                    value={customActivity}
+                                    placeholder="활동 입력"
+                                    onChange={(e) => setCustomActivity(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && submitCustomActivity()}
+                                    onBlur={submitCustomActivity}
+                                />
+                            ) : (
+                                <S.OptionButton
+                                    onClick={openActivityInput}
+                                    $selected={
+                                        customActivity !== "" &&
+                                        selectedActivity === customActivity
+                                    }
+                                >
+                                    {customActivity || "+ 직접입력"}
+                                </S.OptionButton>
+                            )}
+                        </S.OptionGroup>
+
+                        <S.SectionLabel $marginTop>
+                            활동 시간
+                        </S.SectionLabel>
+
+                        <S.OptionGroup>
+                            {timeOptions.map((option) => (
+                                <S.OptionButton
+                                    key={option}
+                                    $selected={selectedTime === option}
+                                    onClick={() => setSelectedTime(option)}
+                                >
+                                    {option}
+                                </S.OptionButton>
+                            ))}
+
+                            {isTimeInputOpen ? (
+                                <S.CustomInput
+                                    autoFocus
+                                    type="text"
+                                    value={customTime}
+                                    placeholder="시간 입력"
+                                    onChange={(e) => setCustomTime(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && submitCustomTime()}
+                                    onBlur={submitCustomTime}
+                                />
+                            ) : (
+                                <S.OptionButton
+                                    onClick={openTimeInput}
+                                    $selected={
+                                        customTime !== "" &&
+                                        selectedTime === customTime
+                                    }
+                                >
+                                    {customTime || "+ 직접입력"}
+                                </S.OptionButton>
+                            )}
+                        </S.OptionGroup>
+
+                        <S.BottomArea>
+                            <S.StepDots>
+                                <S.Dot />
+                                <S.Dot $active />
+                                <S.Dot />
+                            </S.StepDots>
+
+                            <S.ButtonGroup>
+                                <S.SecondaryButton onClick={onClose}>
+                                    끝내기
+                                </S.SecondaryButton>
+
+                                <S.PrimaryButton
+                                    style={{ width: "auto", padding: "0 25px" }}
+                                    onClick={handleComplete}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "저장 중..." : "저장하고 타이머 시작"}
+                                </S.PrimaryButton>
+                            </S.ButtonGroup>
+                        </S.BottomArea>
+                    </>
+                )}
+
+                {/* ==================== 2. 기존 모드 (mode === "initial" | "reset") ==================== */}
+                {!isComplete && currentStep === 1 && (
                     <>
                         <S.Title>
                             지금 화면 앞, 내 몸과 마음은 어떤 상태인가요?
@@ -133,7 +327,7 @@ function SetupModal({ onClose, mode = "initial" }) {
                     </>
                 )}
 
-                {currentStep === 2 && (
+                {!isComplete && currentStep === 2 && (
                     <>
                         <S.Title>
                             짧은 리셋 후, 어떤 활동에 몰입할 계획인가요?
@@ -166,14 +360,8 @@ function SetupModal({ onClose, mode = "initial" }) {
                                     type="text"
                                     value={customActivity}
                                     placeholder="활동 입력"
-                                    onChange={(e) =>
-                                        setCustomActivity(e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            submitCustomActivity();
-                                        }
-                                    }}
+                                    onChange={(e) => setCustomActivity(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && submitCustomActivity()}
                                     onBlur={submitCustomActivity}
                                 />
                             ) : (
@@ -210,14 +398,8 @@ function SetupModal({ onClose, mode = "initial" }) {
                                     type="text"
                                     value={customTime}
                                     placeholder="시간 입력"
-                                    onChange={(e) =>
-                                        setCustomTime(e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            submitCustomTime();
-                                        }
-                                    }}
+                                    onChange={(e) => setCustomTime(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && submitCustomTime()}
                                     onBlur={submitCustomTime}
                                 />
                             ) : (
@@ -234,8 +416,7 @@ function SetupModal({ onClose, mode = "initial" }) {
                         </S.OptionGroup>
 
                         <S.BottomArea>
-                            {/* 처음 접속일 때만 점 표시 */}
-                            {mode !== "reset" && (
+                            {!isReset && (
                                 <S.StepDots>
                                     <S.Dot />
                                     <S.Dot $active />
@@ -243,8 +424,7 @@ function SetupModal({ onClose, mode = "initial" }) {
                             )}
 
                             <S.ButtonGroup>
-                                {/* 처음 접속일 때만 건너뛰기 + 이전 */}
-                                {mode !== "reset" && (
+                                {!isReset && (
                                     <>
                                         <S.SkipButton onClick={onClose}>
                                             건너뛰기
