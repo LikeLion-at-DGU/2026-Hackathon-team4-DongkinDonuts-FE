@@ -199,21 +199,42 @@ export const TimeButton = styled.button`
 
     border: 2px solid
         ${({ $active, $recommended }) => {
-            if ($active) return "#E04141";
-            if ($recommended) return "#4F7DFF";
+            /* 추천 시간은 선택해도 무조건 파란색 */
+            if ($recommended) {
+                return "#4F7DFF";
+            }
+
+            /* 일반 시간 선택 시 빨간색 */
+            if ($active) {
+                return "#E04141";
+            }
+
             return "#777777";
         }};
 
     border-radius: 6px;
 
-    background: ${({ $recommended }) =>
-        $recommended
-            ? "rgba(79, 125, 255, 0.08)"
-            : "transparent"};
+    background: ${({ $active, $recommended }) => {
+        if ($recommended) {
+            return "rgba(79, 125, 255, 0.08)";
+        }
+
+        if ($active) {
+            return "rgba(224, 65, 65, 0.08)";
+        }
+
+        return "transparent";
+    }};
 
     color: ${({ $active, $recommended }) => {
-        if ($active) return "#E04141";
-        if ($recommended) return "#8B8B8B";
+        if ($recommended) {
+            return "#4F7DFF";
+        }
+
+        if ($active) {
+            return "#E04141";
+        }
+
         return "#DDDDDD";
     }};
 
@@ -227,13 +248,18 @@ export const TimeButton = styled.button`
 
     &:hover {
         border-color: ${({ $active, $recommended }) => {
-            if ($active) return "#E04141";
-            if ($recommended) return "#4F7DFF";
+            if ($recommended) {
+                return "#4F7DFF";
+            }
+
+            if ($active) {
+                return "#E04141";
+            }
+
             return "#999999";
         }};
     }
 `;
-
 /* 직접 설정 */
 
 export const TimePicker = styled.div`

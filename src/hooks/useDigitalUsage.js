@@ -472,10 +472,14 @@ export function useDigitalUsage({
                 } else {
                     await ensureTodayGenerationInputs();
 
+                    // PC 사용 패턴을 직접 입력하고 만든 흐름이라 useAiDecision:
+                    // true로, 실제 LLM이 개수/시각을 자율적으로 판단하게 한다.
                     const recoveryPlan =
                         await generateAIRecoveryPlan(
                             {
                                 notificationEnabled:
+                                    true,
+                                useAiDecision:
                                     true,
                             }
                         );

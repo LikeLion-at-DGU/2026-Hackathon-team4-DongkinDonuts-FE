@@ -102,7 +102,10 @@ function LandingPage() {
     });
 
   /*
-   * AI 계획 생성
+   * AI 계획 생성 — 상태 선택 모달("회복 루틴 시작하기"/알림 클릭) 흐름은
+   * useAiDecision을 안 보내서(기본 false) 원래대로 서버 정책 엔진만 탄다.
+   * 실제 LLM은 My Digital State의 PC 사용 패턴 흐름에서만 쓴다
+   * (useDigitalUsage.js의 handleCreate 참고).
    */
   const handleGenerateRecoveryPlan =
     async () => {
