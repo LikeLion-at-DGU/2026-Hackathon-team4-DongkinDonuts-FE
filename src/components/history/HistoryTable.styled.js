@@ -22,7 +22,7 @@ export const TableHead = styled.thead`
 
         box-sizing: border-box;
 
-        font-family: Inter;
+        font-family: "SUIT", sans-serif;
         font-size: 16px;
         font-weight: 600;
         color: #4f5459;
@@ -72,7 +72,7 @@ export const TimeCell = styled.td`
 
     text-align: center;
 
-    font-family: Inter;
+    font-family: "SUIT", sans-serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 150%;
@@ -84,7 +84,7 @@ export const ActivityCell = styled.td`
     padding: 16px;
     text-align: center;
 
-    font-family: Inter;
+    font-family: "SUIT", sans-serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 150%;
@@ -95,7 +95,7 @@ export const ActivityCell = styled.td`
 export const RoutineCell = styled.td`
     padding: 16px;
     text-align: center;
-    font-family: Poppins;
+    font-family: "SUIT", sans-serif;
     font-size: 17px;
     font-weight: 500;
     line-height: 150%;
@@ -113,7 +113,7 @@ export const StatusCell = styled.td`
 export const NoteCell = styled.td`
     padding: 16px;
 
-    font-family: Inter;
+    font-family: "SUIT", sans-serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 150%;
@@ -136,7 +136,7 @@ export const RoutineBadge = styled.span`
 
     background: #f0f0f0;
 
-    font-family: Poppins;
+    font-family: "SUIT", sans-serif;
     font-size: 15px;
     font-weight: 500;
     line-height: 150%;
