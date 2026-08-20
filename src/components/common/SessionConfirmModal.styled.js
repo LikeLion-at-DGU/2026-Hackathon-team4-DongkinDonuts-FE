@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Overlay = styled.div`
     position: fixed;
@@ -50,7 +51,7 @@ export const Icon = styled.div`
     background: #d8d8d8;
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 700;
 `;
@@ -69,7 +70,7 @@ export const CheckIcon = styled.div`
 
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 23px;
     font-weight: 700;
 
@@ -84,7 +85,7 @@ export const CheckIcon = styled.div`
 export const Title = styled.h3`
     margin: 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 17px;
     font-weight: 700;
     line-height: 1.5;
@@ -95,7 +96,7 @@ export const Title = styled.h3`
 export const Description = styled.p`
     margin: 10px 0 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
     line-height: 1.5;
@@ -106,7 +107,7 @@ export const Description = styled.p`
 export const SubDescription = styled.p`
     margin: 6px 0 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 10px;
     font-weight: 400;
 
@@ -132,7 +133,7 @@ export const CancelButton = styled.button`
     background: #ffffff;
     color: #333333;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 500;
 
@@ -148,7 +149,7 @@ export const StartButton = styled.button`
     background: #252525;
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 500;
 

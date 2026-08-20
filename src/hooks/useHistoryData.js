@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { getRecoverySlotHistory } from "../api/plans";
-
-function formatDateParam(date) {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-}
+import { formatDateParam } from "../utils/dateUtils";
 
 // recommended_routines에는 슬롯 하나당 Wake/Shift/Reset 3개가 다 들어있는데, 개인화가
 // 실제로 적용되는 건 Brain Shift 하나뿐이라 표에는 그것만 대표로 보여준다.

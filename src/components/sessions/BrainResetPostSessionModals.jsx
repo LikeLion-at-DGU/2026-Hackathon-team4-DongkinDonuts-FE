@@ -12,6 +12,10 @@ import {
   TIME_OPTIONS,
 } from "../../config/setupModalConfig";
 import { useSetupModal } from "../../hooks/useSetupModal";
+import {
+  ActivityOptionGroup,
+  TimeOptionGroup,
+} from "../common/SetupOptionGroups";
 
 import * as S from "../common/SetupModal.styled";
 import * as C from "../common/SessionConfirmModal.styled";
@@ -235,96 +239,36 @@ export function NextRestSetupModal({
         </S.Description>
 
         <S.SectionLabel>활동 선택</S.SectionLabel>
-        <S.OptionGroup>
-          {ACTIVITY_OPTIONS.map((option) => (
-            <S.OptionButton
-              key={option}
-              type="button"
-              $selected={setup.selectedActivity === option}
-              onClick={() =>
-                setup.setSelectedActivity(
-                  setup.selectedActivity === option ? "" : option
-                )
-              }
-            >
-              {option}
-            </S.OptionButton>
-          ))}
-
-          {setup.isActivityInputOpen ? (
-            <S.CustomInput
-              autoFocus
-              value={setup.customActivity}
-              placeholder="활동 입력"
-              onChange={(event) =>
-                setup.setCustomActivity(event.target.value)
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  setup.submitCustomActivity();
-                }
-              }}
-              onBlur={setup.submitCustomActivity}
-            />
-          ) : (
-            <S.OptionButton
-              type="button"
-              onClick={setup.openActivityInput}
-              $selected={
-                setup.customActivity !== "" &&
-                setup.selectedActivity === setup.customActivity
-              }
-            >
-              {setup.customActivity || "+ 직접입력"}
-            </S.OptionButton>
-          )}
-        </S.OptionGroup>
+        <ActivityOptionGroup
+          options={ACTIVITY_OPTIONS}
+          selectedActivity={setup.selectedActivity}
+          onSelectActivity={(option) =>
+            setup.setSelectedActivity(
+              setup.selectedActivity === option ? "" : option
+            )
+          }
+          isActivityInputOpen={setup.isActivityInputOpen}
+          customActivity={setup.customActivity}
+          onCustomActivityChange={setup.setCustomActivity}
+          onOpenActivityInput={setup.openActivityInput}
+          onSubmitCustomActivity={setup.submitCustomActivity}
+        />
 
         <S.SectionLabel $marginTop>활동 시간</S.SectionLabel>
-        <S.OptionGroup>
-          {TIME_OPTIONS.map((option) => (
-            <S.OptionButton
-              key={option}
-              type="button"
-              $selected={setup.selectedTime === option}
-              onClick={() =>
-                setup.setSelectedTime(
-                  setup.selectedTime === option ? "" : option
-                )
-              }
-            >
-              {option}
-            </S.OptionButton>
-          ))}
-
-          {setup.isTimeInputOpen ? (
-            <S.CustomInput
-              autoFocus
-              value={setup.customTime}
-              placeholder="시간 입력"
-              onChange={(event) =>
-                setup.setCustomTime(event.target.value)
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  setup.submitCustomTime();
-                }
-              }}
-              onBlur={setup.submitCustomTime}
-            />
-          ) : (
-            <S.OptionButton
-              type="button"
-              onClick={setup.openTimeInput}
-              $selected={
-                setup.customTime !== "" &&
-                setup.selectedTime === setup.customTime
-              }
-            >
-              {setup.customTime || "+ 직접입력"}
-            </S.OptionButton>
-          )}
-        </S.OptionGroup>
+        <TimeOptionGroup
+          options={TIME_OPTIONS}
+          selectedTime={setup.selectedTime}
+          onSelectTime={(option) =>
+            setup.setSelectedTime(
+              setup.selectedTime === option ? "" : option
+            )
+          }
+          isTimeInputOpen={setup.isTimeInputOpen}
+          customTime={setup.customTime}
+          onCustomTimeChange={setup.setCustomTime}
+          onOpenTimeInput={setup.openTimeInput}
+          onSubmitCustomTime={setup.submitCustomTime}
+        />
 
         <S.BottomArea>
           <S.ButtonGroup>

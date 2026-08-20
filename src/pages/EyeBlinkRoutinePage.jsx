@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
-import { useMultiTracking } from "../hooks/useMultiTracking";
-import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { useCameraRoutineSession } from "../hooks/useCameraRoutineSession";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
@@ -16,11 +14,9 @@ const CLOSE_EASE = 0.18;
 const FAIL_DISPLAY_MS = 1500;
 
 export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
-  const navigate = useNavigate();
   const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
   const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
-  const previewCanvasRef = useRef(null);
   const closedSinceRef = useRef(null);
   const holdCompleteRef = useRef(false);
   const closeAmountRef = useRef(0);
@@ -29,25 +25,23 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
   const blinkCountRef = useRef(0);
 
   const [blinkCount, setBlinkCount] = useState(0);
-  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
-  const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const targetCount = LEVEL.targetCount;
   const isMissionComplete = blinkCount >= targetCount;
 
-  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
-
-  useEffect(() => {
-    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
-    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
-    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
-    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
-    initLandmarker();
-    startCamera();
-    return () => cleanup();
-  }, [initLandmarker, startCamera, cleanup]);
+  const {
+    cameraReady,
+    screenDistance,
+    detectFrame,
+    elapsedTime,
+    isQuitModalOpen,
+    isTerminated,
+    setIsTerminated,
+    handleCloseQuit,
+    handleConfirmQuit,
+    handleStopSession,
+    cameraPreviewProps,
+  } = useCameraRoutineSession({ trackingType: "FACE_EYE", isMissionComplete });
 
   // 눈을 감는 동안은 중앙 링이 웜톤으로 작게 축소되고, 1초 이상 감았다가 뜨면(rising edge)
   // 링이 파스텔 입자를 남기며 사방으로 퐁 퍼지다 잔물결처럼 사라지는 파동을 재생한다.
@@ -134,12 +128,6 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     return () => cancelAnimationFrame(animId);
   }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
-  useEffect(() => {
-    if (isTerminated || isQuitModalOpen || isMissionComplete) return;
-    const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isTerminated, isQuitModalOpen, isMissionComplete]);
-
   const handleReset = useCallback(() => {
     setBlinkCount(0);
     closedSinceRef.current = null;
@@ -158,10 +146,6 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
   );
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
-  const cameraPreviewProps = useMemo(
-    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
-    [videoRef, cameraReady, isTerminated]
-  );
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, blinkCount, difficulty, screenDistance]

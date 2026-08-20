@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Overlay = styled.div`
     position: absolute;
@@ -121,7 +122,7 @@ export const Title = styled.h2`
 
     color: #ccc;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 500;
     line-height: 1.4;
@@ -132,7 +133,7 @@ export const Description = styled.p`
 
     color: #aaa;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
@@ -156,7 +157,7 @@ export const SectionTitle = styled.h3`
 
     color: #ccc;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 18px;
     font-weight: 500;
     line-height: 1.4;
@@ -167,7 +168,7 @@ export const SectionDescription = styled.p`
 
     color: #888;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
     line-height: 1.5;
@@ -238,7 +239,7 @@ export const TimeButton = styled.button`
         return "#DDDDDD";
     }};
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
 
@@ -429,7 +430,7 @@ export const CancelButton = styled.button`
     background: #353535;
     color: #ccc;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
 
@@ -450,7 +451,7 @@ export const SaveButton = styled.button`
     background: #e04141;
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 12px;
     font-weight: 400;
 

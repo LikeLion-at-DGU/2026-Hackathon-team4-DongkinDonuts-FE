@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
-import { useMultiTracking } from "../hooks/useMultiTracking";
-import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { useCameraRoutineSession } from "../hooks/useCameraRoutineSession";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -17,11 +15,9 @@ const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 
 export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
-  const navigate = useNavigate();
   const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
   const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
-  const previewCanvasRef = useRef(null);
   const wasMouthOpenRef = useRef(false);
   const riseRef = useRef(0);
   const peakRiseRef = useRef(0);
@@ -30,25 +26,23 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
   const [stage, setStage] = useState("idle"); // idle | rising | ready | converging
 
   const [sunriseCount, setSunriseCount] = useState(0);
-  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
-  const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const targetCount = LEVEL.targetCount;
   const isMissionComplete = sunriseCount >= targetCount;
 
-  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("FACE_EYE", { paused: isMissionComplete || isQuitModalOpen });
-
-  useEffect(() => {
-    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
-    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
-    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
-    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
-    initLandmarker();
-    startCamera();
-    return () => cleanup();
-  }, [initLandmarker, startCamera, cleanup]);
+  const {
+    cameraReady,
+    screenDistance,
+    detectFrame,
+    elapsedTime,
+    isQuitModalOpen,
+    isTerminated,
+    setIsTerminated,
+    handleCloseQuit,
+    handleConfirmQuit,
+    handleStopSession,
+    cameraPreviewProps,
+  } = useCameraRoutineSession({ trackingType: "FACE_EYE", isMissionComplete });
 
   // 입을 벌린 정도(MAR)를 0~1 상승도로 변환해 부드럽게 보간하며 햇살을 끌어올리고,
   // 충분히 떠오른 상태에서 입을 다물면(닫는 동작) 화면 중앙으로 수렴하는 애니메이션을 시작한다.
@@ -119,12 +113,6 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     return () => cancelAnimationFrame(animId);
   }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
-  useEffect(() => {
-    if (isTerminated || isQuitModalOpen || isMissionComplete) return;
-    const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isTerminated, isQuitModalOpen, isMissionComplete]);
-
   const handleReset = useCallback(() => {
     setSunriseCount(0);
     wasMouthOpenRef.current = false;
@@ -143,10 +131,6 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
   );
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
-  const cameraPreviewProps = useMemo(
-    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
-    [videoRef, cameraReady, isTerminated]
-  );
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, sunriseCount, difficulty, screenDistance]

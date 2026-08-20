@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Container = styled.section`
     width: calc(100% + 88px);
@@ -28,7 +29,7 @@ export const Label = styled.p`
     color: #000;
     text-align: center;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 400;
     line-height: 30px;
@@ -40,7 +41,7 @@ export const Title = styled.h2`
     color: #000;
     text-align: center;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 32px;
     font-weight: 700;
     line-height: 40px;
@@ -73,7 +74,7 @@ export const TextArea = styled.div`
 export const Step = styled.span`
     color: #3355fa;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 20px;
     font-weight: 600;
     line-height: 29px;
@@ -88,7 +89,7 @@ export const SlideTitle = styled.h3`
 
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 600;
     line-height: 32px;
@@ -101,7 +102,7 @@ export const Description = styled.p`
 
     color: #7e7e7e;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 17px;
     font-weight: 500;
     line-height: 32px;
@@ -149,7 +150,7 @@ export const CardCategory = styled.span`
 
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 18px;
     font-weight: 500;
     line-height: 28px;
@@ -162,7 +163,7 @@ export const CardTitle = styled.h4`
 
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-weight: 600;
     line-height: 28px;
@@ -177,7 +178,7 @@ export const CardDescription = styled.p`
 
     color: #484848;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 17px;
     font-weight: 500;
     line-height: 22px;
@@ -202,7 +203,7 @@ export const Tag = styled.span`
 
     color: #000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 15px;
     font-weight: 300;
     line-height: 28px;

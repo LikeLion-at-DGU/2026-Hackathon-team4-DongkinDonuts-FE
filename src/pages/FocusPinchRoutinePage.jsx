@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
-import { useMultiTracking } from "../hooks/useMultiTracking";
-import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { useCameraRoutineSession } from "../hooks/useCameraRoutineSession";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -26,35 +24,31 @@ const randomTargetSize = (prevSize) => {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
-  const navigate = useNavigate();
   const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
   const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   const canvasRef = useRef(null);
-  const previewCanvasRef = useRef(null);
   const holdMsRef = useRef(0);
   const lastFrameTimeRef = useRef(null);
 
   const [pinchCount, setPinchCount] = useState(0);
   const [targetSize, setTargetSize] = useState(randomTargetSize);
-  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
-  const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const targetCount = LEVEL.targetCount;
   const isMissionComplete = pinchCount >= targetCount;
 
-  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("HAND", { paused: isMissionComplete || isQuitModalOpen });
-
-  useEffect(() => {
-    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
-    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
-    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
-    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
-    initLandmarker();
-    startCamera();
-    return () => cleanup();
-  }, [initLandmarker, startCamera, cleanup]);
+  const {
+    cameraReady,
+    screenDistance,
+    detectFrame,
+    elapsedTime,
+    isQuitModalOpen,
+    isTerminated,
+    setIsTerminated,
+    handleCloseQuit,
+    handleConfirmQuit,
+    handleStopSession,
+    cameraPreviewProps,
+  } = useCameraRoutineSession({ trackingType: "HAND", isMissionComplete });
 
   // 각 손의 다섯 손가락 끝이 만드는 원 크기를 링 크기(%)로 변환, 두 손 모두 목표 크기에 맞춰 2초 유지하면 성공
   useEffect(() => {
@@ -109,12 +103,6 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
     };
   }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, targetSize, LEVEL]);
 
-  useEffect(() => {
-    if (isTerminated || isQuitModalOpen || isMissionComplete) return;
-    const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isTerminated, isQuitModalOpen, isMissionComplete]);
-
   const handleReset = useCallback(() => {
     setPinchCount(0);
     setTargetSize((prev) => randomTargetSize(prev));
@@ -130,10 +118,6 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
   );
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
-  const cameraPreviewProps = useMemo(
-    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
-    [videoRef, cameraReady, isTerminated]
-  );
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: pinchCount, difficulty, screenDistance, sessionImage: handImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, pinchCount, difficulty, screenDistance]

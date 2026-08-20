@@ -26,16 +26,6 @@ export const lerp = (current, target, amount) => {
   return current + (target - current) * amount;
 };
 
-// 각도를 -180~180 범위로 정규화한다 (예: 350 -> -10).
-// atan2 기반 각도는 ±180° 경계를 넘나들 때 350°처럼 불연속적으로 튀는 값을 반환할 수 있어,
-// 두 각도의 차이를 계산하기 전에 이 함수로 정규화해야 UI가 순간이동(teleport)하지 않는다.
-export const normalizeAngleDeg = (deg) => {
-  let normalized = deg % 360;
-  if (normalized > 180) normalized -= 360;
-  if (normalized < -180) normalized += 360;
-  return normalized;
-};
-
 // ======================================================
 // 랜덤 미션
 // ======================================================

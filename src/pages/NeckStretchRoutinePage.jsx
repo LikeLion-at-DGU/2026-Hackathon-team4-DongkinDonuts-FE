@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
-import { useMultiTracking } from "../hooks/useMultiTracking";
-import { usePersistedElapsedTime } from "../hooks/usePersistedElapsedTime";
+import { useCameraRoutineSession } from "../hooks/useCameraRoutineSession";
 import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionStepInfo } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
@@ -16,13 +14,11 @@ const BASE_ID = "neck-stretch";
 const BURST_MS = 700;
 
 export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) {
-  const navigate = useNavigate();
   const SESSION = ROUTINE_SESSIONS[sessionIdFor(BASE_ID, difficulty)];
   const LEVEL = DIFFICULTY_CONFIG[BASE_ID][difficulty];
   // 좌우 왕복(2단계)을 cycles번 반복 — 홀수 단계는 첫 방향(+), 짝수 단계는 반대 방향(-)
   const TOTAL_STAGES = LEVEL.cycles * 2;
   const canvasRef = useRef(null);
-  const previewCanvasRef = useRef(null);
   const stageRef = useRef(1); // 1: 첫 번째 방향, 2: 반대쪽 방향
   const displayDegRef = useRef(0);
   const alignStartRef = useRef(null);
@@ -31,25 +27,22 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
 
   const [stage, setStage] = useState(1);
   const [successCount, setSuccessCount] = useState(0);
-  const [elapsedTime, setElapsedTime] = usePersistedElapsedTime();
-  const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const isMissionComplete = successCount >= TOTAL_STAGES;
 
-  const { videoRef, cameraReady, screenDistance, startCamera, initLandmarker, detectFrame, cleanup } =
-    useMultiTracking("POSE", { paused: isMissionComplete || isQuitModalOpen });
-
-  useEffect(() => {
-    // 모델 로딩(initLandmarker)과 카메라 시작(startCamera)은 서로 의존 관계가 없는 독립적인
-    // 준비 작업이라 병렬로 시작한다. .then()으로 체이닝해 순차적으로 실행하면 모델 로딩이
-    // 느리거나(네트워크 상태에 따라 WASM/모델 파일 다운로드가 오래 걸림) 멈춰 있을 때 카메라
-    // 요청 자체가 시작조차 되지 않아 "카메라 준비 중..."에서 계속 멈춰 보이는 원인이 된다.
-    // detectFrame은 두 자원이 각각 준비될 때까지 자연스럽게 기다리므로 순서를 강제할 필요가 없다.
-    initLandmarker();
-    startCamera();
-    return () => cleanup();
-  }, [initLandmarker, startCamera, cleanup]);
+  const {
+    cameraReady,
+    screenDistance,
+    detectFrame,
+    elapsedTime,
+    isQuitModalOpen,
+    isTerminated,
+    setIsTerminated,
+    handleCloseQuit,
+    handleConfirmQuit,
+    handleStopSession,
+    cameraPreviewProps,
+  } = useCameraRoutineSession({ trackingType: "POSE", isMissionComplete });
 
   useEffect(() => {
     let animId;
@@ -177,12 +170,6 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     return () => cancelAnimationFrame(animId);
   }, [cameraReady, isTerminated, isMissionComplete, isQuitModalOpen, detectFrame, LEVEL]);
 
-  useEffect(() => {
-    if (isTerminated || isQuitModalOpen || isMissionComplete) return;
-    const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isTerminated, isQuitModalOpen, isMissionComplete]);
-
   const handleReset = useCallback(() => {
     stageRef.current = 1;
     setStage(1);
@@ -201,10 +188,6 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
   );
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
-  const cameraPreviewProps = useMemo(
-    () => ({ videoRef, canvasRef: previewCanvasRef, cameraReady, isTerminated }),
-    [videoRef, cameraReady, isTerminated]
-  );
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, successCount, difficulty, screenDistance]

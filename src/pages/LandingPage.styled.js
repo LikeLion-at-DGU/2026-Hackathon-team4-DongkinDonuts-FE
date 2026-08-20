@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../styles/fonts";
 
 export const PageViewport = styled.div`
     width: 100%;
@@ -65,7 +66,7 @@ export const HeroText = styled.div`
 export const Title = styled.h1`
     margin: 0;
     color: #ffffff;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 55px;
     font-style: normal;
     font-weight: 500;
@@ -77,7 +78,7 @@ export const Description = styled.p`
 
     font-size: 24px;
     line-height: 1.7;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-style: normal;
     font-weight: 400;
     color: #ffffff;
@@ -106,7 +107,7 @@ export const StartButton = styled.button`
     background: #ffffff;
     color: #000000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 20px;
     font-weight: 600;
     line-height: normal;
@@ -156,7 +157,7 @@ export const ReportTop = styled.div`
 export const ReportLabel = styled.span`
     color: #CCC;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 22px;
     font-weight: 500;
     line-height: normal;
@@ -176,7 +177,7 @@ export const AiBadge = styled.span`
     background: #E04141;
 
     color: #ffffff;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 400;
 `;
@@ -190,7 +191,7 @@ export const ReportTime = styled.div`
     align-self: stretch;
 
     color: #ffffff;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 45px;
     font-weight: 500;
     line-height: normal;
@@ -202,7 +203,7 @@ export const ReportDescription = styled.p`
 
     color: #CCC;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 400;
     line-height: normal;
@@ -234,7 +235,7 @@ export const ReportBottomText = styled.div`
 export const ReportBottomLabel = styled.span`
     color: #CCC;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 22px;
     font-weight: 500;
 `;
@@ -242,7 +243,7 @@ export const ReportBottomLabel = styled.span`
 export const ReportBottomDescription = styled.span`
     color: #CCC;
     margin-top: 4px;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 400;
 `;
@@ -250,7 +251,7 @@ export const ReportBottomDescription = styled.span`
 export const Countdown = styled.span`
     color: #e04141;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 32px;
     font-weight: 600;
     letter-spacing: 1.474px;
@@ -274,7 +275,7 @@ export const ChangeTimeButton = styled.button`
 
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 17px;
     font-weight: 500;
 
@@ -315,7 +316,7 @@ export const TabButton = styled.button`
     font-style: normal;
     font-weight: 400;
     line-height: 32px;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     letter-spacing: -0.24px;
 
     cursor: pointer;
@@ -347,7 +348,7 @@ export const SectionHeader = styled.div`
 export const SectionLabel = styled.p`
     color: #000; 
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 24px;
     font-style: normal;
     font-weight: 400;
@@ -359,7 +360,7 @@ export const SectionLabel = styled.p`
 export const SectionTitle = styled.h2`
     color: #000; 
     text-align: center;
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 32px;
     font-style: normal;
     font-weight: 700;

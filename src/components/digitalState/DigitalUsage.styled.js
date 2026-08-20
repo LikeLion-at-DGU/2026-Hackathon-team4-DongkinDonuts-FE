@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { FONT_POPPINS } from "../../styles/fonts";
 
 export const Container = styled.div`
     width: 100%;
@@ -57,7 +58,7 @@ export const CardTitle = styled.h3`
     align-items: center;
     gap: 12px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 30px;
     font-weight: 600;
     line-height: 40.232px;
@@ -126,7 +127,7 @@ export const EmptyIcon = styled.div`
 export const EmptyTitle = styled.p`
     margin: 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 21px;
     font-weight: 600;
     line-height: 29.247px;
@@ -140,7 +141,7 @@ export const EmptyTitle = styled.p`
 export const EmptyDescription = styled.p`
     margin: 28px 0 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 400;
     line-height: 23px;
@@ -193,7 +194,7 @@ export const StatBox = styled.div`
     strong {
         margin: 0;
 
-        font-family: Poppins;
+        font-family: ${FONT_POPPINS};
         font-size: 22px;
         font-weight: 500;
         line-height: 32px;
@@ -204,7 +205,7 @@ export const StatBox = styled.div`
     span {
         margin: 4px 0 0;
 
-        font-family: Poppins;
+        font-family: ${FONT_POPPINS};
         font-size: 16px;
         font-weight: 500;
         line-height: 32px;
@@ -233,7 +234,7 @@ export const AnalysisBox = styled.div`
     border: 1.091px solid rgba(166, 166, 166, 0.7);
     border-radius: 15px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 18px;
     font-weight: 500;
     line-height: 32px;
@@ -261,7 +262,7 @@ export const AnalysisBox = styled.div`
 export const ScheduleDescription = styled.p`
     margin: 0 50px 50px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 14px;
     font-weight: 400;
     line-height: 21px;
@@ -335,7 +336,7 @@ export const TimeArea = styled.div`
 
     gap: 28px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 27px;
     font-weight: 500;
     line-height: 26px;
@@ -365,7 +366,7 @@ export const AlarmArea = styled.div`
 
     gap: 10px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 15px;
     font-weight: 400;
 
@@ -420,7 +421,7 @@ export const TopAlarmArea = styled.div`
 
     gap: 12px;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 15px;
     font-weight: 400;
 
@@ -441,7 +442,7 @@ export const Caption = styled.p`
 
     margin: 0;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 16px;
     font-weight: 400;
     line-height: normal;
@@ -473,7 +474,7 @@ export const SaveButton = styled.button`
     background: #fafafa;
     color: #000000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 21px;
     font-weight: 500;
     line-height: 30.929px;
@@ -494,7 +495,7 @@ export const CreateButton = styled.button`
     background: #404040;
     color: #ffffff;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 21px;
     font-weight: 500;
     line-height: 30.929px;
@@ -517,7 +518,7 @@ export const EditButton = styled.button`
     background: #fafafa;
     color: #000000;
 
-    font-family: Poppins;
+    font-family: ${FONT_POPPINS};
     font-size: 21px;
     font-weight: 500;
     line-height: 30.929px;

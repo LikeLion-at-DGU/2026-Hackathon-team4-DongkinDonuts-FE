@@ -9,13 +9,6 @@ export const getDigitalPatterns = async () => {
     return response.data;
 };
 
-// 2. PC 사용 패턴 있음/없음 판별
-export const getDigitalPatternStatus = async () => {
-    return await apiClient.get(
-        "/digital-state/patterns/status/"
-    );
-};
-
 // 3. PC 사용 패턴 분석 결과 조회(자기보고 체크값 기반) — 지금은 "분석 결과" 카드에서
 // 안 쓰고, 실제 세션 기록 기반인 getRecentSessionAnalysis를 대신 쓴다.
 export const getDigitalPatternAnalysis = async () => {

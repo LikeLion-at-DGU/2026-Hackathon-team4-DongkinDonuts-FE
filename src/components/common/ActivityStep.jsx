@@ -4,6 +4,7 @@ import {
 } from "../../config/setupModalConfig";
 
 import * as S from "./SetupModal.styled";
+import { ActivityOptionGroup, TimeOptionGroup } from "./SetupOptionGroups";
 
 function ActivityStep({
     mode,
@@ -32,9 +33,7 @@ function ActivityStep({
     onSkip,
     onComplete,
 }) {
-    const handleCustomTimeChange = (e) => {
-        const value = e.target.value;
-
+    const handleCustomTimeChange = (value) => {
         // 숫자만 허용
         if (!/^\d*$/.test(value)) {
             return;
@@ -95,112 +94,43 @@ function ActivityStep({
                 활동 선택
             </S.SectionLabel>
 
-            <S.OptionGroup>
-                {ACTIVITY_OPTIONS.map((option) => (
-                    <S.OptionButton
-                        key={option}
-                        type="button"
-                        $selected={
-                            selectedActivity === option
-                        }
-                        onClick={() =>
-                            setSelectedActivity(
-                                selectedActivity === option
-                                    ? ""
-                                    : option
-                            )
-                        }
-                    >
-                        {option}
-                    </S.OptionButton>
-                ))}
-
-                {isActivityInputOpen ? (
-                    <S.CustomInput
-                        autoFocus
-                        value={customActivity}
-                        placeholder="활동 입력"
-                        onChange={(e) =>
-                            setCustomActivity(
-                                e.target.value
-                            )
-                        }
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                submitCustomActivity();
-                            }
-                        }}
-                        onBlur={submitCustomActivity}
-                    />
-                ) : (
-                    <S.OptionButton
-                        type="button"
-                        onClick={openActivityInput}
-                        $selected={
-                            customActivity !== "" &&
-                            selectedActivity ===
-                            customActivity
-                        }
-                    >
-                        {customActivity ||
-                            "+ 직접입력"}
-                    </S.OptionButton>
-                )}
-            </S.OptionGroup>
+            <ActivityOptionGroup
+                options={ACTIVITY_OPTIONS}
+                selectedActivity={selectedActivity}
+                onSelectActivity={(option) =>
+                    setSelectedActivity(
+                        selectedActivity === option ? "" : option
+                    )
+                }
+                isActivityInputOpen={isActivityInputOpen}
+                customActivity={customActivity}
+                onCustomActivityChange={setCustomActivity}
+                onOpenActivityInput={openActivityInput}
+                onSubmitCustomActivity={submitCustomActivity}
+            />
 
             <S.SectionLabel $marginTop>
                 활동 시간
             </S.SectionLabel>
 
-            <S.OptionGroup>
-                {TIME_OPTIONS.map((option) => (
-                    <S.OptionButton
-                        key={option}
-                        type="button"
-                        $selected={
-                            selectedTime === option
-                        }
-                        onClick={() =>
-                            setSelectedTime(
-                                selectedTime === option
-                                    ? ""
-                                    : option
-                            )
-                        }
-                    >
-                        {option}
-                    </S.OptionButton>
-                ))}
-
-                {isTimeInputOpen ? (
-                    <S.CustomInput
-                        autoFocus
-                        inputMode="numeric"
-                        value={customTime}
-                        placeholder="시간 입력"
-                        onChange={handleCustomTimeChange}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                handleSubmitCustomTime();
-                            }
-                        }}
-                        onBlur={handleSubmitCustomTime}
-                    />
-                ) : (
-                    <S.OptionButton
-                        type="button"
-                        onClick={openTimeInput}
-                        $selected={
-                            customTime !== "" &&
-                            selectedTime === customTime
-                        }
-                    >
-                        {customTime
-                            ? `${customTime}분`
-                            : "+ 직접입력"}
-                    </S.OptionButton>
-                )}
-            </S.OptionGroup>
+            <TimeOptionGroup
+                options={TIME_OPTIONS}
+                selectedTime={selectedTime}
+                onSelectTime={(option) =>
+                    setSelectedTime(
+                        selectedTime === option ? "" : option
+                    )
+                }
+                isTimeInputOpen={isTimeInputOpen}
+                customTime={customTime}
+                onCustomTimeChange={handleCustomTimeChange}
+                onOpenTimeInput={openTimeInput}
+                onSubmitCustomTime={handleSubmitCustomTime}
+                inputMode="numeric"
+                customButtonLabel={(value) =>
+                    value ? `${value}분` : "+ 직접입력"
+                }
+            />
 
             <S.BottomArea>
                 {mode !== "reset" && (
