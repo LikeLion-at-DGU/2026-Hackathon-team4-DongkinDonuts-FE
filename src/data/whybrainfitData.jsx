@@ -16,7 +16,7 @@ export const whyBrainfitData = [
         image: "/images/problem.png",
         cardCategory: "CONTENTS CONSUMPTION",
         cardTitle: "콘텐츠 소비",
-        cardDescription:(
+        cardDescription: (
             <>
                 화면을 보고
                 <br />
@@ -51,7 +51,7 @@ export const whyBrainfitData = [
         cardTitle: "능동적인 상호작용",
         cardDescription: (
             <>
-                화면을 매개로 
+                화면을 매개로
                 <br />
                 직접 움직이고 반응하는 방식
             </>
@@ -79,10 +79,16 @@ export const whyBrainfitData = [
                 즉각적인 피드백을 통해 능동적인 상호작용을 만들어냅니다.
             </>
         ),
-        cardCategory: "BLAHBLA",
-        cardTitle: "즉각적인 피드백",
-        cardDescription:
-            "웹캠 기반 움직임을 활용한 인터랙션",
-        tags: ["얼굴인식", "손동작", "상체움직임"],
+        image: "/images/movement.png",
+        cardCategory: "MOVEMENT INPUT",
+        cardTitle: "움직임 기반 입력",
+        cardDescription: (
+            <>
+                웹캠이 사용자를 인식해
+                <br />
+                화면 속 활동으로 연결하는 방식
+            </>
+        ),
+        tags: ["웹캠 인식", "화면 상호작용"],
     },
 ];

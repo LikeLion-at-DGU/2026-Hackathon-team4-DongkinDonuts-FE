@@ -13,6 +13,7 @@ import * as S from "./TimeChangeModal.styled";
 function TimeChangeModal({
     currentTime = "15:00",
     currentRepeat = true,
+    activeRecommendedTimes = [],
     onClose,
     onSave,
 }) {
@@ -146,7 +147,7 @@ function TimeChangeModal({
 
                     <S.ModalScroll>
                         <S.Title>
-                            시간 변경하기
+                            시간 선택하기
                         </S.Title>
 
                         <S.Description>
@@ -157,33 +158,38 @@ function TimeChangeModal({
 
                         <S.Section>
                             <S.SectionTitle>
-                                추천 시간
+                                알림 예정 시간
                             </S.SectionTitle>
 
                             <S.SectionDescription>
-                                사용 패턴과 입력 내용을 바탕으로 설정한 최적의 시간이에요.
+                                파란색은 권장 휴식 시간으로, 알림을 해제할 수 없어요.
                             </S.SectionDescription>
 
                             <S.RecommendedTimes>
-                                {RECOMMENDED_TIMES.map(
-                                    (time) => (
+                                {RECOMMENDED_TIMES.map((time) => {
+                                    const isRecommended =
+                                        activeRecommendedTimes.includes(time);
+
+                                    return (
                                         <S.TimeButton
                                             key={time}
                                             type="button"
                                             $active={
-                                                selectedTime ===
-                                                time
+                                                selectedTime === time &&
+                                                !isRecommended
                                             }
-                                            onClick={() =>
-                                                handleRecommendedTime(
-                                                    time
-                                                )
-                                            }
+                                            $recommended={isRecommended}
+                                            disabled={isRecommended}
+                                            onClick={() => {
+                                                if (isRecommended) return;
+
+                                                handleRecommendedTime(time);
+                                            }}
                                         >
                                             {time}
                                         </S.TimeButton>
-                                    )
-                                )}
+                                    );
+                                })}
                             </S.RecommendedTimes>
                         </S.Section>
 
@@ -195,7 +201,7 @@ function TimeChangeModal({
                             </S.SectionTitle>
 
                             <S.SectionDescription>
-                                원하는 시간을 직접 설정할 수 있어요.
+                                알림을 받고 싶은 시간으로 직접 설정해보세요.
                             </S.SectionDescription>
 
                             <S.TimePicker>

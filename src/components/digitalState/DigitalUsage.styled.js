@@ -202,7 +202,7 @@ export const StatBox = styled.div`
     }
 
     span {
-        margin: 8px 0 0;
+        margin: 4px 0 0;
 
         font-family: Poppins;
         font-size: 16px;
@@ -372,7 +372,7 @@ export const AlarmArea = styled.div`
     color: #7b7878;
 `;
 
-export const Toggle = styled.div`
+export const Toggle = styled.button`
     position: relative;
 
     width: 59px;
@@ -380,10 +380,16 @@ export const Toggle = styled.div`
 
     flex-shrink: 0;
 
+    padding: 0;
+    border: none;
     border-radius: 999px;
 
     background: ${({ $active }) =>
         $active ? "#76ee59" : "#d4d4d4"};
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
 `;
 
 export const ToggleCircle = styled.span`
@@ -399,6 +405,28 @@ export const ToggleCircle = styled.span`
     border-radius: 50%;
 
     background: #ffffff;
+
+    transition: left 0.2s ease;
+`;
+
+export const TopAlarmArea = styled.div`
+    position: absolute;
+
+    top: 43px;
+    right: 45px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    font-family: Poppins;
+    font-size: 15px;
+    font-weight: 400;
+
+    color: #7b7878;
+
+    z-index: 5;
 `;
 
 /* =========================

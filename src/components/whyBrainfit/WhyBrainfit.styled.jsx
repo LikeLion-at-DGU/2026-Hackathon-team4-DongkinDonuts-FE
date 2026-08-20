@@ -51,7 +51,7 @@ export const SlideArea = styled.div`
 
     width: 1352px;
     height: 240px;
-    margin: 0 auto;
+    margin: 40px 0 0;
 
     display: flex;
     justify-content: center;
@@ -125,12 +125,14 @@ export const InfoCard = styled.div`
 `;
 
 export const CardImage = styled.img`
-    width: 214px;
-    height: 167px;
+    width: 230px;
+    height: 179px;
+    object-fit: contain;
 
-    flex-shrink: 0;
+    transform: ${({ $large }) =>
+        $large ? "scale(1.55)" : "scale(1)"};
 
-    background: #f7f7f7;
+    transform-origin: center;
 `;
 
 export const CardContent = styled.div`

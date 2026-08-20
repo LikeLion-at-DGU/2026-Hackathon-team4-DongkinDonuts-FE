@@ -6,6 +6,7 @@ import { renderSession } from "../engine/canvasRenderer";
 import { CONFIG } from "../config/handRoutineConfig";
 
 import { useHandTracking } from "../hooks/useHandTracking";
+import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { useSessionLoop } from "../hooks/useSessionLoop";
 import { useSessionState } from "../hooks/useSessionState";
 
@@ -204,6 +205,18 @@ const HandRoutinePage = () => {
   }, [initializeMission]);
 
   const isUIOverlayVisible = !isTerminated;
+  const recoverySession = useRecoveryRoutineSession({
+    isMissionComplete,
+    metrics: {
+      elapsedTime,
+      successCount,
+      missionType: mission.type,
+    },
+  });
+
+  const nextSessionPath = recoverySession.isBackendRoutine
+    ? recoverySession.nextSessionPath
+    : "/eye-blink";
 
   const cameraPreviewProps = useMemo(
     () => ({ videoRef, cameraReady, isTerminated }),
@@ -231,7 +244,10 @@ const HandRoutinePage = () => {
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
       onCloseQuit={handleCloseModal}
-      onConfirmQuit={handleConfirmQuit}
+      onConfirmQuit={() => {
+        recoverySession.abortSession();
+        handleConfirmQuit();
+      }}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={resetGame}

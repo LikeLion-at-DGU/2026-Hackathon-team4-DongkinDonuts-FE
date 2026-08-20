@@ -49,6 +49,7 @@ function WhyBrainfit() {
                     <S.CardImage
                         src={current.image}
                         alt={current.cardTitle}
+                        $large={current.id === 3}
                     />
 
                     <S.CardContent>

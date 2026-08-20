@@ -1,5 +1,6 @@
 import { useHistoryCalendar } from "../../hooks/useHistoryCalendar";
 import { useHistoryData } from "../../hooks/useHistoryData";
+import HistoryTable from "./HistoryTable";
 
 import * as S from "./YourHistory.styled";
 
@@ -113,68 +114,12 @@ function YourHistory() {
                 </S.DateSelectorWrapper>
             </S.TableTop>
 
-            <S.Table>
-                <S.TableHead>
-                    <tr>
-                        <S.TimeHeader>시간</S.TimeHeader>
-                        <S.ActivityHeader>
-                            상황 / 업무내용
-                        </S.ActivityHeader>
-                        <S.RoutineHeader>
-                            추천 루틴
-                        </S.RoutineHeader>
-                        <S.StatusHeader>
-                            상태
-                        </S.StatusHeader>
-                    </tr>
-                </S.TableHead>
-
-                <tbody>
-                    {loading ? (
-                        <tr>
-                            <S.ActivityCell colSpan={4}>
-                                불러오는 중...
-                            </S.ActivityCell>
-                        </tr>
-                    ) : historyData.length === 0 ? (
-                        <tr>
-                            <S.ActivityCell colSpan={4}>
-                                이 날짜엔 기록이 없어요
-                            </S.ActivityCell>
-                        </tr>
-                    ) : (
-                        historyData.map((history) => (
-                            <S.TableRow key={history.id}>
-                                <S.TimeCell>
-                                    {history.time}
-                                </S.TimeCell>
-
-                                <S.ActivityCell>
-                                    {history.activity}
-                                </S.ActivityCell>
-
-                                <S.RoutineCell>
-                                    {history.routine ? (
-                                        <S.RoutineBadge>
-                                            {history.routine}
-                                        </S.RoutineBadge>
-                                    ) : (
-                                        "-"
-                                    )}
-                                </S.RoutineCell>
-
-                                <S.StatusCell>
-                                    <S.StatusBadge
-                                        $status={history.status}
-                                    >
-                                        {history.status}
-                                    </S.StatusBadge>
-                                </S.StatusCell>
-                            </S.TableRow>
-                        ))
-                    )}
-                </tbody>
-            </S.Table>
+            <S.TableViewport>
+                <HistoryTable
+                    historyData={historyData}
+                    loading={loading}
+                />
+            </S.TableViewport>
         </S.Section>
     );
 }

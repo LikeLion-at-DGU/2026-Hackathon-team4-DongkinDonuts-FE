@@ -34,7 +34,7 @@ export const Card = styled.article`
   }
 
   &:hover {
-    transform: translateY(-2px);
+    transform: ${({ $locked }) => ($locked ? "none" : "translateY(-2px)")};
   }
 
   &:hover button {
@@ -138,12 +138,15 @@ export const ArrowButton = styled.button`
 
   background: #ffffff;
 
-  cursor: pointer;
+  cursor: ${({ $locked, $completed }) =>
+    $locked || $completed ? "not-allowed" : "pointer"};
 
   opacity: 0;
   visibility: hidden;
 
   transform: scale(0.8);
+  filter: ${({ $locked, $completed }) =>
+    $locked || $completed ? "grayscale(1)" : "none"};
 
   transition:
     opacity 0.2s ease,
@@ -184,7 +187,8 @@ export const Status = styled.span`
 
   border-radius: 30px;
 
-  background: rgba(255, 255, 255, 0.2);
+  background: ${({ $completed }) =>
+    $completed ? "rgba(255, 255, 255, 0.34)" : "rgba(255, 255, 255, 0.2)"};
 
   box-shadow: 0 4px 8px 0 rgba(27, 27, 27, 0.16);
   backdrop-filter: blur(10px);

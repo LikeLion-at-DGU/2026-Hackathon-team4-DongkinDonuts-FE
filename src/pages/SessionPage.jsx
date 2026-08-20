@@ -29,7 +29,10 @@ const SessionPage = ({
   onStopSession,
   onCloseSessionEnd,
   nextSessionPath,
+  isNextSessionPending = false,
   instantReset = false,
+  showCompletionModal = true,
+  showNextSessionControl = true,
   showOverlay = true,
   cameraPreviewProps,
   dataPanelProps,
@@ -41,8 +44,20 @@ const SessionPage = ({
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
 
   const handleNextSession = useCallback(() => {
-    if (nextSessionPath) navigate(nextSessionPath);
-  }, [navigate, nextSessionPath]);
+    if (isNextSessionPending) return;
+
+    if (nextSessionPath) {
+      navigate(
+        nextSessionPath,
+        nextSessionPath === "/"
+          ? { state: { skipSetup: true } }
+          : undefined
+      );
+      return;
+    }
+
+    navigate("/recovery-session");
+  }, [isNextSessionPending, navigate, nextSessionPath]);
 
   // 현재 세션이 진행되는 동안, 다음 세션에 필요한 MediaPipe 모델을 백그라운드에서 미리 로드해둔다.
   // "다음 세션" 버튼을 눌렀을 때 모델 초기화 대기 없이 즉시 카메라가 뜨도록 하기 위함.
@@ -59,7 +74,15 @@ const SessionPage = ({
   // 사라지기 때문. 다만 이 지연이 오히려 완료 이펙트(파동 등)가 한 번 더 재생되는 것처럼
   // 보이는 세션(instantReset)에서는 지연 없이 즉시 초기화한다.
   useEffect(() => {
-    if (!isMissionComplete || isTerminated || !hasShownCompletionModal) return;
+    if (
+      !showCompletionModal ||
+      !isMissionComplete ||
+      isTerminated ||
+      !hasShownCompletionModal
+    ) {
+      return;
+    }
+
     if (instantReset) {
       resetSession?.();
       return;
@@ -74,7 +97,14 @@ const SessionPage = ({
       cancelAnimationFrame(outerId);
       if (innerId) cancelAnimationFrame(innerId);
     };
-  }, [hasShownCompletionModal, isMissionComplete, isTerminated, resetSession, instantReset]);
+  }, [
+    hasShownCompletionModal,
+    instantReset,
+    isMissionComplete,
+    isTerminated,
+    resetSession,
+    showCompletionModal,
+  ]);
 
   const handleCloseSessionEnd = useCallback(() => {
     if (isMissionComplete && !isTerminated) {
@@ -85,7 +115,8 @@ const SessionPage = ({
     onCloseSessionEnd?.();
   }, [isMissionComplete, isTerminated, onCloseSessionEnd]);
 
-  const shouldShowCompletionModal = isMissionComplete && !hasShownCompletionModal;
+  const shouldShowCompletionModal =
+    showCompletionModal && isMissionComplete && !hasShownCompletionModal;
 
   return (
     <>
@@ -117,6 +148,7 @@ const SessionPage = ({
               onClose={handleCloseSessionEnd}
               onRestart={resetSession}
               nextSessionPath={nextSessionPath}
+              isNextSessionPending={isNextSessionPending}
             />
           </PlayContainer>
 
@@ -124,6 +156,7 @@ const SessionPage = ({
             <SessionControls
               handleStopGame={onStopSession}
               nextSession={handleNextSession}
+              showNextSession={showNextSessionControl}
             />
           </ControlsWrapper>
         </ContentWrapper>

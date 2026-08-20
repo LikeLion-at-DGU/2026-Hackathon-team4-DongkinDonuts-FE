@@ -25,6 +25,12 @@ function DigitalScheduleCard({
         );
     };
 
+    const firstSchedule = schedules[0];
+
+    const alarmActive = firstSchedule
+        ? alarmStates?.[firstSchedule.id] ?? false
+        : false;
+
     return (
         <S.InfoCard $schedule>
             <S.CardTitle>
@@ -36,6 +42,28 @@ function DigitalScheduleCard({
                 />
                 오늘의 추천 휴식 일정
             </S.CardTitle>
+
+            {showResult && firstSchedule && (
+                <S.TopAlarmArea>
+                    <span>자동 알림</span>
+
+                    <S.Toggle
+                        type="button"
+                        $active={alarmActive}
+                        onClick={() =>
+                            onToggleAlarm(
+                                firstSchedule.id
+                            )
+                        }
+                    >
+                        <S.ToggleCircle
+                            $active={
+                                alarmActive
+                            }
+                        />
+                    </S.Toggle>
+                </S.TopAlarmArea>
+            )}
 
             {!showResult ? (
                 <S.EmptyContent>
@@ -61,9 +89,9 @@ function DigitalScheduleCard({
             ) : (
                 <S.ResultContent>
                     <S.ScheduleDescription>
-                        자동 알림을 통해
+                        개인 사용 데이터를 분석해 설정된
                         <br />
-                        추천 휴식마다 편하게 알림을 받아보세요.
+                        필수 휴식 시간이에요.
                     </S.ScheduleDescription>
 
                     <S.ScheduleList>
@@ -84,36 +112,6 @@ function DigitalScheduleCard({
                                                 )}
                                             </span>
                                         </S.TimeArea>
-
-                                        <S.AlarmArea>
-                                            <span>
-                                                자동 알림
-                                            </span>
-
-                                            <S.Toggle
-                                                type="button"
-                                                $active={
-                                                    alarmStates?.[
-                                                    schedule.id
-                                                    ] ??
-                                                    false
-                                                }
-                                                onClick={() =>
-                                                    onToggleAlarm(
-                                                        schedule.id
-                                                    )
-                                                }
-                                            >
-                                                <S.ToggleCircle
-                                                    $active={
-                                                        alarmStates?.[
-                                                        schedule.id
-                                                        ] ??
-                                                        false
-                                                    }
-                                                />
-                                            </S.Toggle>
-                                        </S.AlarmArea>
                                     </S.ScheduleItem>
                                 )
                             )
