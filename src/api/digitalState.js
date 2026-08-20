@@ -2,9 +2,11 @@ import apiClient from "./client";
 
 // 1. PC 사용 패턴 조회
 export const getDigitalPatterns = async () => {
-    return await apiClient.get(
+    const response = await apiClient.get(
         "/digital-state/patterns/"
     );
+
+    return response.data;
 };
 
 // 2. PC 사용 패턴 있음/없음 판별

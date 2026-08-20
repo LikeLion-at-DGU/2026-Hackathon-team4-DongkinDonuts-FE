@@ -13,7 +13,7 @@ function HistoryTable({
                     </S.TimeHeader>
 
                     <S.ActivityHeader>
-                        상황 / 업무내용
+                        업무내용 / 상황
                     </S.ActivityHeader>
 
                     <S.RoutineHeader>
