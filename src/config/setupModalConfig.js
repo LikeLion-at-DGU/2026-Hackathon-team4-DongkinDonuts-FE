@@ -13,7 +13,7 @@ export const ACTIVITY_OPTIONS = [
 ];
 
 export const TIME_OPTIONS = [
-    "30분",
+    "45분",
     "1시간",
     "2시간",
 ];

@@ -125,12 +125,14 @@ export const InfoCard = styled.div`
 `;
 
 export const CardImage = styled.img`
-    width: 214px;
-    height: 167px;
+    width: 230px;
+    height: 179px;
+    object-fit: contain;
 
-    flex-shrink: 0;
+    transform: ${({ $large }) =>
+        $large ? "scale(1.55)" : "scale(1)"};
 
-    background: #f7f7f7;
+    transform-origin: center;
 `;
 
 export const CardContent = styled.div`
