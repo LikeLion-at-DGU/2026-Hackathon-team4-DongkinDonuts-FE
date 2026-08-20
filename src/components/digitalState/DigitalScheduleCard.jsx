@@ -99,9 +99,7 @@ function DigitalScheduleCard({
                                                     false
                                                 }
                                                 onClick={() =>
-                                                    onToggleAlarm(
-                                                        schedule.id
-                                                    )
+                                                    onToggleAlarm(schedule)
                                                 }
                                             >
                                                 <S.ToggleCircle

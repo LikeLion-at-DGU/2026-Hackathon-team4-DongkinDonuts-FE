@@ -197,14 +197,25 @@ export const TimeButton = styled.button`
 
     padding: 0 8px;
 
-    border: 1px solid
-        ${({ $active }) => ($active ? "#e04141" : "#777")};
+    border: 2px solid
+        ${({ $active, $recommended }) => {
+            if ($active) return "#E04141";
+            if ($recommended) return "#4F7DFF";
+            return "#777777";
+        }};
 
     border-radius: 6px;
 
-    background: transparent;
+    background: ${({ $recommended }) =>
+        $recommended
+            ? "rgba(79, 125, 255, 0.08)"
+            : "transparent"};
 
-    color: ${({ $active }) => ($active ? "#e04141" : "#ddd")};
+    color: ${({ $active, $recommended }) => {
+        if ($active) return "#E04141";
+        if ($recommended) return "#8B8B8B";
+        return "#DDDDDD";
+    }};
 
     font-family: Poppins;
     font-size: 12px;
@@ -212,8 +223,14 @@ export const TimeButton = styled.button`
 
     cursor: pointer;
 
+    transition: 0.2s ease;
+
     &:hover {
-        border-color: #e04141;
+        border-color: ${({ $active, $recommended }) => {
+            if ($active) return "#E04141";
+            if ($recommended) return "#4F7DFF";
+            return "#999999";
+        }};
     }
 `;
 

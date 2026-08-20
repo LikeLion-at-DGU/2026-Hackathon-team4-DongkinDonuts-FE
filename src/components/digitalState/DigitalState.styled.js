@@ -97,34 +97,35 @@ export const DigitalResult = styled.div`
     }
 `;
 
-export const BlurredDigitalText = styled.p`
+export const BlurredUsageTable = styled.div`
     position: absolute;
 
-    top: 110px;
+    top: 70px;
     left: 50%;
 
-    width: 620px;
+    width: 1280px;
+    min-width: 1280px;
 
     transform: translateX(-50%);
 
-    margin: 0;
-
-    color: rgba(30, 30, 30, 0.46);
-
-    font-family: Poppins;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 25px;
-
-    text-align: center;
-
     filter: blur(5px);
-    opacity: 0.95;
+    opacity: 0.42;
 
     z-index: 0;
 
-    user-select: none;
     pointer-events: none;
+    user-select: none;
+`;
+
+export const LockContent = styled.div`
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
 `;
 
 export const LockIcon = styled.div`

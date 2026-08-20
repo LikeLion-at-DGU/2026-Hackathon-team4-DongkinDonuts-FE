@@ -1,5 +1,4 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import Settings from "../../assets/icons/Settings.svg";
 import * as S from "./Header.styled";
 console.log(S);
 
@@ -52,8 +51,7 @@ function Header() {
             </S.LeftGroup>
 
             <S.SettingsButton onClick={() => navigate("/settings")}>
-                <img src={Settings} alt="" />
-                Settings
+                More Services
             </S.SettingsButton>
         </S.Header>
     );

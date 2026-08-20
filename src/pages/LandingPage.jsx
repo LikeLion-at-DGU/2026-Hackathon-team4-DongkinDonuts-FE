@@ -31,6 +31,9 @@ function LandingPage() {
   const [repeatAlarm, setRepeatAlarm] = useState(true);
   const [generatingPlan, setGeneratingPlan] = useState(false);
 
+  const [activeRecommendedTimes, setActiveRecommendedTimes] =
+    useState(["16:00", "18:00"]);
+
   const {
     hasPlan,
     recoverySlotId,
@@ -181,8 +184,8 @@ function LandingPage() {
               {generatingPlan
                 ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
                 : hasPlan
-                ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
-                : "\"내 계획 다시 설정\"으로 오늘의 리셋 시간을 만들어보세요"}
+                  ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
+                  : "\"내 계획 다시 설정\"으로 오늘의 리셋 시간을 만들어보세요"}
             </S.ReportDescription>
 
             <S.ReportDivider />
@@ -206,7 +209,7 @@ function LandingPage() {
             <S.ChangeTimeButton
               onClick={() => setShowTimeModal(true)}
             >
-              시간 변경하기
+              시간 선택하기
             </S.ChangeTimeButton>
           </S.ReportBox>
         </S.HeroContent>
@@ -276,7 +279,11 @@ function LandingPage() {
         )}
 
         <div ref={digitalRef}>
-          <DigitalState />
+          <DigitalState
+            onRecommendedTimesChange={
+              setActiveRecommendedTimes
+            }
+          />
         </div>
       </S.MainContent>
 
@@ -304,6 +311,7 @@ function LandingPage() {
         <TimeChangeModal
           currentTime={hasPlan ? resetTimeLabel : "15:00"}
           currentRepeat={repeatAlarm}
+          activeRecommendedTimes={activeRecommendedTimes}
           onClose={() => setShowTimeModal(false)}
           onSave={async (time, repeat) => {
             if (!recoverySlotId) {
