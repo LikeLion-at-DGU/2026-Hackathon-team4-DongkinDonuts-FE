@@ -18,6 +18,7 @@ function DigitalUsage({
         isSaving,
 
         toggleCell,
+        setCellValue,
         toggleRow,
         resetAll,
         handleTemporarySave,
@@ -35,6 +36,7 @@ function DigitalUsage({
                 <UsageTable
                     selected={selected}
                     toggleCell={toggleCell}
+                    setCellValue={setCellValue}
                     toggleRow={toggleRow}
                     resetAll={resetAll}
                     readOnly={isResult}
