@@ -61,12 +61,9 @@ function DigitalLockedView({
                     showResult={false}
                 />
 
-                <DigitalScheduleCard
-                    showResult={false}
-                    schedules={[]}
-                    alarmStates={{}}
-                    onToggleAlarm={() => {}}
-                />
+                {/* PC 패턴을 아직 안 넣었어도, 오늘 예정된 일정은 스스로 조회해서
+                    보여준다("내 계획 다시 설정"으로만 만든 계획도 포함) */}
+                <DigitalScheduleCard />
             </U.CardRow>
         </U.Container>
     );

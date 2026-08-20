@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import UsageTable from "./UsageTable";
 import DigitalAnalysisCard from "./DigitalAnalysisCard";
 import DigitalScheduleCard from "./DigitalScheduleCard";
@@ -14,7 +12,6 @@ function DigitalUsage({
     setSelected,
     onCreate,
     onEdit,
-    onRecommendedTimesChange,
 }) {
     const {
         isResult,
@@ -22,13 +19,6 @@ function DigitalUsage({
         hasGeneratedResult,
         resultVersion,
 
-        schedules,
-        alarmStates,
-
-        // 추가
-        activeRecommendedTimes,
-
-        toggleAlarm,
         toggleCell,
         toggleRow,
         resetAll,
@@ -40,17 +30,6 @@ function DigitalUsage({
         setSelected,
         onCreate,
     });
-
-    // 추천시간/알림 상태가 바뀌면
-    // LandingPage까지 올려줌
-    useEffect(() => {
-        onRecommendedTimesChange?.(
-            activeRecommendedTimes
-        );
-    }, [
-        activeRecommendedTimes,
-        onRecommendedTimesChange,
-    ]);
 
     return (
         <S.Container>
@@ -70,12 +49,9 @@ function DigitalUsage({
                     resultVersion={resultVersion}
                 />
 
-                <DigitalScheduleCard
-                    showResult={hasGeneratedResult}
-                    schedules={schedules}
-                    alarmStates={alarmStates}
-                    onToggleAlarm={toggleAlarm}
-                />
+                {/* PC 사용 패턴 입력 여부와 무관하게 스스로 오늘 예정된 일정을
+                    조회해서 보여준다 — props 필요 없음 */}
+                <DigitalScheduleCard />
             </S.CardRow>
 
             <S.ActionRow
