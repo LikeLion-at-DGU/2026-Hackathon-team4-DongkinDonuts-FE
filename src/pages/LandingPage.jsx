@@ -428,8 +428,8 @@ function LandingPage() {
               {generatingPlan
                 ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
                 : hasPlan
-                  ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
-                  : '"내 계획 다시 설정"으로 오늘의 리셋 시간을 만들어보세요'}
+                  ? "입력한 정보를 바탕으로 AI가 휴식 시간을 추천했어요"
+                  : '"내 계획 다시 설정"으로 오늘의 휴식 시간을 만들어보세요'}
             </S.ReportDescription>
 
             <S.ReportDivider />

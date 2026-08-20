@@ -16,7 +16,7 @@ function ConditionStep({
             <S.Description>
                 수동적인 SNS/영상 소비 대신,
                 <br />
-                지금 상태에 딱 맞는 능동적 리셋 활동을 준비해 드립니다.
+                지금 상태에 딱 맞는 능동적 휴식 활동을 준비해 드립니다.
             </S.Description>
 
             <S.SectionLabel>

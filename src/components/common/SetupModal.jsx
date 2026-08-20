@@ -134,7 +134,7 @@ function SetupModal({
                 </S.CloseButton>
 
                 <S.SmallLabel>
-                    화면을 끄지 않고 리셋하기,
+                    화면을 끄지 않고 휴식하기,
                     Brainfit
                 </S.SmallLabel>
 
