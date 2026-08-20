@@ -1,75 +1,120 @@
 import styled from "styled-components";
 
 export const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(2px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    padding-top: 190px;
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+
+    z-index: 9999;
 `;
 
 export const ModalContent = styled.div`
-  background-color: #ffffff;
-  border-radius: 17.7px;
-  padding: 32px 44px;
-  width: 370px;
-  text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    position: relative;
+
+    width: 786px;
+    height: 518px;
+
+    padding: 32px 50px 24px;
+    box-sizing: border-box;
+
+    background: #f5f5f5;
+    border-radius: 56px;
+
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+
+    transform: scale(0.9);
+    transform-origin: top center;
 `;
 
 export const ModalTitle = styled.h2`
-  font-size: 21px;
-  font-weight: 600;
-  font-family: Poppins;
-  font-style: normal;
-  color: #000;
-  line-height: 1.45;
-  margin-top: 20.5px;
-  margin-bottom: 19.5px;
+    margin: 110px 0 20px;
+
+    font-family: Poppins;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 30px;
+    letter-spacing: 0.56px;
+
+    color: #000;
 `;
 
 export const ModalDescription = styled.p`
-  font-size: 14px;
-  font-weight: 500;
-  font-family: Poppins;
-  font-style: normal;
-  color: #949494;
-  margin-bottom: 36px;
+    margin: 0;
+
+    font-family: Poppins;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 23px;
+    letter-spacing: 0.32px;
+
+    color: #777;
 `;
 
 export const ModalButtons = styled.div`
-  display: flex;
-  gap: 13px;
+    position: absolute;
+
+    left: 50px;
+    right: 50px;
+    bottom: 24px;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 19px;
+
+    padding-top: 23px;
+
+    border-top: 1px solid #dddddd;
 `;
 
-// 버튼 공통 스타일 Base
 const ButtonBase = styled.button`
-  flex: 1;
-  width: 134px;
-  height: 45px;
-  padding: 12px 47px;
-  border-radius: 8.8px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: Poppins;
-  font-style: normal;
-  cursor: pointer;
+    width: 145px;
+    height: 55px;
+
+    padding: 0;
+
+    border-radius: 56px;
+
+    font-family: Poppins;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 21px;
+    letter-spacing: 0.42px;
+
+    cursor: pointer;
 `;
 
 export const CloseButton = styled(ButtonBase)`
-  background-color: #ffffff;
-  border: 0.5px solid #cbd5e1;
-  color: #191919;
+    border: 0.3px solid #2e2e2e;
+
+    background: #ffffff;
+    color: #2e2e2e;
 `;
 
 export const ConfirmButton = styled(ButtonBase)`
-  background-color: #191919;
-  border: none;
-  color: #ffffff;
+    border: none;
+
+    background: #2e2e2e;
+    color: #ffffff;
+
+    &:hover {
+        background: #111111;
+    }
 `;

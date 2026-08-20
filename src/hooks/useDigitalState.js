@@ -3,228 +3,222 @@ import {
     useState,
 } from "react";
 
-import {
-    getDigitalPatterns,
-} from "../api/digitalState";
-
-const DAY_INDEX_MAP = {
-    SUN: 0,
-    MON: 1,
-    TUE: 2,
-    WED: 3,
-    THU: 4,
-    FRI: 5,
-    SAT: 6,
-};
-
 const DIGITAL_SELECTED_KEY =
     "brainfit-digital-selected";
 
-export const useDigitalState = () => {
-    const [
-        digitalStep,
-        setDigitalStep,
-    ] = useState("locked");
+const getSavedSelected = () => {
+    try {
+        const saved =
+            localStorage.getItem(
+                DIGITAL_SELECTED_KEY
+            );
 
+        if (!saved) {
+            return {};
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        if (
+            !parsed ||
+            typeof parsed !== "object" ||
+            Array.isArray(parsed)
+        ) {
+            return {};
+        }
+
+        return parsed;
+    } catch (error) {
+        console.error(
+            "디지털 사용 시간 복원 실패:",
+            error
+        );
+
+        return {};
+    }
+};
+
+const hasSelectedTime = (
+    selected
+) => {
+    return Object.values(
+        selected
+    ).some(Boolean);
+};
+
+export const useDigitalState = () => {
+    /*
+     * 최초 렌더링부터 localStorage 복원
+     *
+     * 저장값 있음
+     * → 바로 result
+     *
+     * 저장값 없음
+     * → locked
+     */
     const [
         selected,
         setSelected,
-    ] = useState({});
+    ] = useState(() =>
+        getSavedSelected()
+    );
+
+    const [
+        digitalStep,
+        setDigitalStep,
+    ] = useState(() => {
+        const savedSelected =
+            getSavedSelected();
+
+        return hasSelectedTime(
+            savedSelected
+        )
+            ? "result"
+            : "locked";
+    });
 
     const [
         initialized,
         setInitialized,
     ] = useState(false);
 
+    /*
+     * 첫 렌더링 완료
+     */
     useEffect(() => {
-        const restoreDigitalState =
-            async () => {
-                try {
-                    const response =
-                        await getDigitalPatterns();
-
-                    const patterns =
-                        Array.isArray(response)
-                            ? response
-                            : Array.isArray(
-                                  response?.data
-                              )
-                              ? response.data
-                              : [];
-
-                    const restoredSelected =
-                        {};
-
-                    patterns.forEach(
-                        (pattern) => {
-                            if (
-                                !pattern.is_used
-                            ) {
-                                return;
-                            }
-
-                            const colIndex =
-                                DAY_INDEX_MAP[
-                                    pattern
-                                        .day_of_week
-                                ];
-
-                            if (
-                                colIndex ===
-                                undefined
-                            ) {
-                                return;
-                            }
-
-                            restoredSelected[
-                                `${pattern.hour}-${colIndex}`
-                            ] = true;
-                        }
-                    );
-
-                    setSelected(
-                        restoredSelected
-                    );
-
-                    localStorage.setItem(
-                        DIGITAL_SELECTED_KEY,
-                        JSON.stringify(
-                            restoredSelected
-                        )
-                    );
-
-                    /*
-                     * 핵심:
-                     * 현재 서버에 선택된 시간이
-                     * 하나라도 있을 때만 result
-                     */
-                    if (
-                        Object.keys(
-                            restoredSelected
-                        ).length > 0
-                    ) {
-                        setDigitalStep(
-                            "result"
-                        );
-                    } else {
-                        setDigitalStep(
-                            "locked"
-                        );
-                    }
-                } catch (error) {
-                    console.error(
-                        "디지털 패턴 복원 실패:",
-                        error
-                    );
-
-                    /*
-                     * 서버 조회 실패 시에는
-                     * localStorage를 보조 수단으로 사용
-                     */
-                    try {
-                        const saved =
-                            localStorage.getItem(
-                                DIGITAL_SELECTED_KEY
-                            );
-
-                        const savedSelected =
-                            saved
-                                ? JSON.parse(
-                                      saved
-                                  )
-                                : {};
-
-                        setSelected(
-                            savedSelected
-                        );
-
-                        if (
-                            Object.keys(
-                                savedSelected
-                            ).some(
-                                (key) =>
-                                    savedSelected[
-                                        key
-                                    ]
-                            )
-                        ) {
-                            setDigitalStep(
-                                "result"
-                            );
-                        } else {
-                            setDigitalStep(
-                                "locked"
-                            );
-                        }
-                    } catch {
-                        setSelected({});
-                        setDigitalStep(
-                            "locked"
-                        );
-                    }
-                } finally {
-                    setInitialized(true);
-                }
-            };
-
-        restoreDigitalState();
+        setInitialized(true);
     }, []);
 
     /*
-     * 선택 상태 로컬에도 저장
+     * 선택값이 바뀔 때마다
+     * localStorage에 그대로 저장
      */
     useEffect(() => {
         if (!initialized) {
             return;
         }
 
-        localStorage.setItem(
-            DIGITAL_SELECTED_KEY,
-            JSON.stringify(
+        const hasSelection =
+            hasSelectedTime(
                 selected
-            )
+            );
+
+        /*
+         * 선택된 시간이 하나라도 있으면 저장
+         */
+        if (hasSelection) {
+            localStorage.setItem(
+                DIGITAL_SELECTED_KEY,
+                JSON.stringify(
+                    selected
+                )
+            );
+
+            return;
+        }
+
+        /*
+         * 선택된 시간이 하나도 없으면
+         * 저장 데이터 삭제
+         *
+         * 단 input 화면에서는
+         * 사용자가 다시 선택할 수 있어야 하므로
+         * 바로 잠그지는 않음
+         */
+        localStorage.removeItem(
+            DIGITAL_SELECTED_KEY
         );
     }, [
         selected,
         initialized,
     ]);
 
+    /*
+     * 잠금 화면 → 입력 화면
+     */
     const openInput = () => {
-        setDigitalStep("input");
+        setDigitalStep(
+            "input"
+        );
     };
 
+    /*
+     * 패턴 생성/저장 완료
+     */
     const showResult = () => {
-        const hasSelectedTime =
-            Object.values(
+        const hasSelection =
+            hasSelectedTime(
                 selected
-            ).some(Boolean);
+            );
 
         /*
-         * 선택값이 없으면 결과 화면으로
-         * 보내지 않음
+         * 하나도 선택하지 않았다면
+         * 다시 잠금
          */
-        if (!hasSelectedTime) {
+        if (!hasSelection) {
+            localStorage.removeItem(
+                DIGITAL_SELECTED_KEY
+            );
+
             setDigitalStep(
                 "locked"
             );
+
             return;
         }
 
-        setDigitalStep("result");
+        /*
+         * 현재 선택 상태 확실히 저장
+         */
+        localStorage.setItem(
+            DIGITAL_SELECTED_KEY,
+            JSON.stringify(
+                selected
+            )
+        );
+
+        setDigitalStep(
+            "result"
+        );
     };
 
+    /*
+     * 다시 수정
+     */
     const editInput = () => {
-        setDigitalStep("input");
+        setDigitalStep(
+            "input"
+        );
+    };
+
+    /*
+     * 전체 선택 해제 후
+     * 잠금 화면으로 돌릴 때 사용
+     */
+    const lockDigitalState = () => {
+        setSelected({});
+
+        localStorage.removeItem(
+            DIGITAL_SELECTED_KEY
+        );
+
+        setDigitalStep(
+            "locked"
+        );
     };
 
     return {
         digitalStep,
+
         selected,
         setSelected,
+
         initialized,
 
         openInput,
         showResult,
         editInput,
+        lockDigitalState,
     };
 };
