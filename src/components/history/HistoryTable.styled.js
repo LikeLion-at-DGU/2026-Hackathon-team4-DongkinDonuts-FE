@@ -27,7 +27,7 @@ export const TableHead = styled.thead`
         font-weight: 600;
         color: #4f5459;
 
-        text-align: left;
+        text-align: center;
 
         background: #fafafa;
     }
@@ -43,12 +43,14 @@ export const ActivityHeader = styled.th`
 `;
 
 export const RoutineHeader = styled.th`
-    width: 256px;
+    width: 210px;
+    text-align: left; 
+    padding-left: 15px !important;
 `;
 
 export const StatusHeader = styled.th`
     width: 116px;
-    text-align: center !important;
+    text-align: left; 
 `;
 
 export const NoteHeader = styled.th`
@@ -80,6 +82,7 @@ export const TimeCell = styled.td`
 
 export const ActivityCell = styled.td`
     padding: 16px;
+    text-align: center;
 
     font-family: Inter;
     font-size: 16px;
@@ -91,7 +94,7 @@ export const ActivityCell = styled.td`
 
 export const RoutineCell = styled.td`
     padding: 16px;
-
+    text-align: center;
     font-family: Poppins;
     font-size: 17px;
     font-weight: 500;
@@ -102,6 +105,7 @@ export const RoutineCell = styled.td`
 
 export const StatusCell = styled.td`
     padding: 17px;
+    padding-left: 8px;
 
     text-align: center;
 `;
@@ -116,7 +120,7 @@ export const NoteCell = styled.td`
 
     color: #444444;
 
-    text-align: left;
+    text-align: center;
 `;
 
 export const RoutineBadge = styled.span`
