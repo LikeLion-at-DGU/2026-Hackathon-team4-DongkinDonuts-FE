@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
-
 import DigitalUsage from "./DigitalUsage";
 import HistoryTable from "../history/HistoryTable";
 import { historyPreviewData } from "../../data/historyPreviewData";
 
 import LockIcon from "../../assets/icons/LockIcon.svg";
 import { useDigitalState } from "../../hooks/useDigitalState";
-import { getDigitalPatternStatus } from "../../api/digitalState";
 
 import * as S from "./DigitalState.styled";
 
@@ -21,33 +18,6 @@ function DigitalState({
         showResult,
         editInput,
     } = useDigitalState();
-
-    const [status, setStatus] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchDigitalState = async () => {
-            try {
-                const statusData =
-                    await getDigitalPatternStatus();
-
-                setStatus(statusData);
-            } catch (error) {
-                console.error(
-                    "디지털 상태 조회 실패:",
-                    error
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDigitalState();
-    }, []);
-
-    if (loading) {
-        return null;
-    }
 
     const isLocked =
         digitalStep === "locked";

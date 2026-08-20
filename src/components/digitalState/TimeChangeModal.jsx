@@ -162,7 +162,7 @@ function TimeChangeModal({
                             </S.SectionTitle>
 
                             <S.SectionDescription>
-                                파란색은 권장 휴식 시간으로, 알림을 해제할 수 있어요.
+                                파란색은 권장 휴식 시간으로, 알림을 해제할 수 없어요.
                             </S.SectionDescription>
 
                             <S.RecommendedTimes>

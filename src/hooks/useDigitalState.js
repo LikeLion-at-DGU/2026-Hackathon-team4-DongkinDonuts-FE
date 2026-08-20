@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState,
+} from "react";
 
 import {
     getDigitalPatterns,
@@ -20,59 +23,90 @@ const DIGITAL_STEP_KEY =
 const DIGITAL_SELECTED_KEY =
     "brainfit-digital-selected";
 
+const DIGITAL_USED_KEY =
+    "brainfit-digital-used";
+
 export const useDigitalState = () => {
-    // 같은 탭에서 기존 단계가 있으면 유지
-    // 새 탭이면 locked
-    const [digitalStep, setDigitalStep] =
-        useState(() => {
-            const savedStep =
-                sessionStorage.getItem(
-                    DIGITAL_STEP_KEY
-                );
+    const [
+        digitalStep,
+        setDigitalStep,
+    ] = useState(() => {
+        /*
+         * 한 번이라도 Digital State를 사용했다면
+         * 새 탭에서도 result 화면부터 시작
+         */
+        const hasUsed =
+            localStorage.getItem(
+                DIGITAL_USED_KEY
+            );
 
-            return savedStep || "locked";
-        });
+        if (hasUsed === "true") {
+            return "result";
+        }
 
-    // 같은 탭에서 선택값이 있으면 즉시 복원
-    const [selected, setSelected] =
-        useState(() => {
-            const savedSelected =
-                sessionStorage.getItem(
-                    DIGITAL_SELECTED_KEY
-                );
+        return "locked";
+    });
 
-            if (!savedSelected) {
-                return {};
-            }
+    const [
+        selected,
+        setSelected,
+    ] = useState(() => {
+        const savedSelected =
+            localStorage.getItem(
+                DIGITAL_SELECTED_KEY
+            );
 
-            try {
-                return JSON.parse(
-                    savedSelected
-                );
-            } catch (error) {
-                console.error(
-                    "디지털 선택값 복원 실패:",
-                    error
-                );
+        if (!savedSelected) {
+            return {};
+        }
 
-                return {};
-            }
-        });
+        try {
+            return JSON.parse(
+                savedSelected
+            );
+        } catch (error) {
+            console.error(
+                "디지털 선택값 복원 실패:",
+                error
+            );
 
-    // 서버에 저장된 패턴도 조회
+            return {};
+        }
+    });
+
+    /*
+     * 서버에 저장된 패턴 복원
+     */
     useEffect(() => {
         const fetchDigitalPatterns =
             async () => {
                 try {
-                    const patterns =
+                    const response =
                         await getDigitalPatterns();
+
+                    /*
+                     * apiClient 구조에 따라
+                     * response 자체가 배열일 수도 있고
+                     * response.data가 배열일 수도 있으므로 대응
+                     */
+                    const patterns =
+                        Array.isArray(
+                            response
+                        )
+                            ? response
+                            : Array.isArray(
+                                  response?.data
+                              )
+                              ? response.data
+                              : [];
 
                     console.log(
                         "저장된 PC 사용 패턴:",
                         patterns
                     );
 
-                    const restoredSelected = {};
+                    const restoredSelected =
+                        {};
 
                     patterns.forEach(
                         (pattern) => {
@@ -84,7 +118,8 @@ export const useDigitalState = () => {
 
                             const colIndex =
                                 DAY_INDEX_MAP[
-                                    pattern.day_of_week
+                                    pattern
+                                        .day_of_week
                                 ];
 
                             if (
@@ -101,20 +136,37 @@ export const useDigitalState = () => {
                     );
 
                     /*
-                     * 같은 탭에서 이미 선택값이 있으면
-                     * 그 값을 우선 유지.
-                     *
-                     * sessionStorage가 비어 있는 경우에만
-                     * 서버 값을 복원.
+                     * 서버에 실제 저장된 패턴이 있다면
+                     * 이미 사용한 사용자
                      */
-                    const savedSelected =
-                        sessionStorage.getItem(
-                            DIGITAL_SELECTED_KEY
-                        );
-
-                    if (!savedSelected) {
+                    if (
+                        Object.keys(
+                            restoredSelected
+                        ).length > 0
+                    ) {
                         setSelected(
                             restoredSelected
+                        );
+
+                        setDigitalStep(
+                            "result"
+                        );
+
+                        localStorage.setItem(
+                            DIGITAL_USED_KEY,
+                            "true"
+                        );
+
+                        localStorage.setItem(
+                            DIGITAL_SELECTED_KEY,
+                            JSON.stringify(
+                                restoredSelected
+                            )
+                        );
+
+                        localStorage.setItem(
+                            DIGITAL_STEP_KEY,
+                            "result"
                         );
                     }
                 } catch (error) {
@@ -122,25 +174,50 @@ export const useDigitalState = () => {
                         "PC 사용 패턴 조회 실패:",
                         error
                     );
+
+                    /*
+                     * 서버 조회 실패해도
+                     * localStorage에 사용 기록이 있으면
+                     * 잠금으로 되돌리지 않음
+                     */
+                    const hasUsed =
+                        localStorage.getItem(
+                            DIGITAL_USED_KEY
+                        );
+
+                    if (
+                        hasUsed ===
+                        "true"
+                    ) {
+                        setDigitalStep(
+                            "result"
+                        );
+                    }
                 }
             };
 
         fetchDigitalPatterns();
     }, []);
 
-    // 단계 변경 시 같은 탭에 저장
+    /*
+     * 단계 저장
+     */
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             DIGITAL_STEP_KEY,
             digitalStep
         );
     }, [digitalStep]);
 
-    // 선택 상태 변경 시 같은 탭에 저장
+    /*
+     * 선택 시간 저장
+     */
     useEffect(() => {
-        sessionStorage.setItem(
+        localStorage.setItem(
             DIGITAL_SELECTED_KEY,
-            JSON.stringify(selected)
+            JSON.stringify(
+                selected
+            )
         );
     }, [selected]);
 
@@ -150,6 +227,20 @@ export const useDigitalState = () => {
 
     const showResult = () => {
         setDigitalStep("result");
+
+        /*
+         * 최초 생성 완료 순간부터
+         * 앞으로는 잠금 화면을 보여주지 않음
+         */
+        localStorage.setItem(
+            DIGITAL_USED_KEY,
+            "true"
+        );
+
+        localStorage.setItem(
+            DIGITAL_STEP_KEY,
+            "result"
+        );
     };
 
     const editInput = () => {
@@ -160,6 +251,7 @@ export const useDigitalState = () => {
         digitalStep,
         selected,
         setSelected,
+
         openInput,
         showResult,
         editInput,

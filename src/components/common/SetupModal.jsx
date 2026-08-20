@@ -12,37 +12,80 @@ import * as S from "./SetupModal.styled";
 function SetupModal({
     onClose,
     mode = "initial",
+    conditionOnly = false,
+    onConditionComplete,
+    onSetupComplete,
 }) {
-    const setup = useSetupModal();
+    const setup =
+        useSetupModal();
 
     const currentStep =
         mode === "reset"
             ? 2
             : setup.step;
 
-    const handleComplete = async () => {
-        if (
-            !setup.selectedActivity ||
-            !setup.selectedTime
-        ) {
-            window.alert(
-                "활동과 활동 시간을 하나씩 선택해주세요."
-            );
-            return;
-        }
+    const handleConditionNext =
+        () => {
+            if (
+                !setup.selectedCondition
+            ) {
+                window.alert(
+                    "현재 상태를 하나 선택해주세요."
+                );
 
-        const errorMessage =
-            await setup.completeSetup(mode);
+                return;
+            }
 
-        if (errorMessage) {
-            window.alert(
-                "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
-            );
-            return;
-        }
+            // 기존 타이머가 있거나
+            // 알림으로 진입한 경우
+            if (conditionOnly) {
+                onConditionComplete?.(
+                    setup.selectedCondition
+                );
 
-        onClose();
-    };
+                return;
+            }
+
+            setup.goNext();
+        };
+
+    const handleComplete =
+        async () => {
+            if (
+                !setup.selectedActivity ||
+                !setup.selectedTime
+            ) {
+                window.alert(
+                    "활동과 활동 시간을 하나씩 선택해주세요."
+                );
+
+                return;
+            }
+
+            const errorMessage =
+                await setup.completeSetup(
+                    mode
+                );
+
+            if (errorMessage) {
+                window.alert(
+                    "설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요."
+                );
+
+                return;
+            }
+
+            onSetupComplete?.({
+                condition:
+                    setup.selectedCondition,
+
+                activity:
+                    setup.selectedActivity,
+
+                activityTime:
+                    setup.selectedTime,
+            });
+        };
 
     useEffect(() => {
         const original =
@@ -82,7 +125,14 @@ function SetupModal({
                         setSelectedCondition={
                             setup.setSelectedCondition
                         }
-                        onNext={setup.goNext}
+                        onNext={
+                            handleConditionNext
+                        }
+                        buttonText={
+                            conditionOnly
+                                ? "제출하기"
+                                : "다음"
+                        }
                     />
                 )}
 
@@ -90,7 +140,9 @@ function SetupModal({
                     <ActivityStep
                         {...setup}
                         mode={mode}
-                        onPrev={setup.goPrev}
+                        onPrev={
+                            setup.goPrev
+                        }
                         onSkip={onClose}
                         onComplete={
                             handleComplete

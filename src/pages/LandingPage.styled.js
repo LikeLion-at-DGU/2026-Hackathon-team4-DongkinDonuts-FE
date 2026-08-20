@@ -258,7 +258,7 @@ export const Countdown = styled.span`
 
 export const ChangeTimeButton = styled.button`
     width: 100%;
-    height: 55px;
+    height: 60px;
 
     margin-top: 24px;
 

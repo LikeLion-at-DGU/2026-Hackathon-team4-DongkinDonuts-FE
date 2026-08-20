@@ -1,496 +1,530 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+
+import {
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 
 import RoutineCard from "../components/routine/RoutineCard.jsx";
 import RoutineModal from "../components/routine/RoutineModal.jsx";
-import { routineData } from "../data/routineData.jsx";
+
 import WhyBrainfit from "../components/whyBrainfit/WhyBrainfit.jsx";
 import YourHistory from "../components/history/YourHistory.jsx";
 import DigitalState from "../components/digitalState/DigitalState.jsx";
-import SetupModal from "../components/common/SetupModal.jsx";
+
 import TimeChangeModal from "../components/digitalState/TimeChangeModal.jsx";
+
+import RecoveryFlowModals from "../components/common/RecoveryFlowModals.jsx";
+
+import { routineData } from "../data/routineData.jsx";
+
+import { useRecoverySessionFlow } from "../hooks/useRecoverySessionFlow";
+import { useRoutineHome } from "../hooks/useRoutineHome";
+import { useRecoveryTimeSettings } from "../hooks/useRecoveryTimeSettings";
+
 import { useNextReset } from "../hooks/useNextReset";
 import { usePushSubscription } from "../hooks/usePushSubscription";
+
 import {
-  generateAIRecoveryPlan,
-  getNextRecoverySlot,
-  getTodayRecoverySlots,
-  updateRecoverySlotNotification,
-  updateRecoverySlotSchedule,
+    generateAIRecoveryPlan,
 } from "../api/plans";
+
 import {
-  arePreviousStagesComplete,
-  buildRecoveryRoutinePath,
-  findRunnableRoutineForStage,
-  isStageComplete,
-  selectHomeRoutineSlot,
-  stageStatusLabel,
+    arePreviousStagesComplete,
+    isStageComplete,
+    stageStatusLabel,
 } from "../config/recoveryRouting";
 
 import * as S from "./LandingPage.styled";
 
 function LandingPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const navigate =
+        useNavigate();
 
+    const location =
+        useLocation();
 
-  const [showSetupModal, setShowSetupModal] = useState(false);
-  const [setupModalMode, setSetupModalMode] = useState("initial");
+    const [
+        activeTab,
+        setActiveTab,
+    ] = useState("routine");
 
-  const [showTimeModal, setShowTimeModal] = useState(false);
-  const [repeatAlarm, setRepeatAlarm] = useState(true);
-  const [generatingPlan, setGeneratingPlan] = useState(false);
-  const [routineSlot, setRoutineSlot] = useState(null);
-  const [loadingRoutineSlot, setLoadingRoutineSlot] = useState(false);
-  const [routineModalContent, setRoutineModalContent] = useState(null);
+    const [
+        generatingPlan,
+        setGeneratingPlan,
+    ] = useState(false);
 
-  const [activeRecommendedTimes, setActiveRecommendedTimes] =
-    useState(["16:00", "18:00"]);
+    const routineRef =
+        useRef(null);
 
-  const {
-    hasPlan,
-    recoverySlotId,
-    resetTimeLabel,
-    countdownLabel,
-    refresh: refreshNextReset,
-  } = useNextReset(() => navigate("/recovery-session"));
+    const digitalRef =
+        useRef(null);
 
-  // 탭이 닫혀있거나 오래 백그라운드에 있어도 회복 타이머 알림이 오도록 진짜 Web
-  // Push를 구독한다(권한 이미 거부/미지원이면 조용히 스킵).
-  usePushSubscription();
+    /*
+     * 알림 콜백과
+     * sessionFlow 사이 연결
+     */
+    const notificationFlowRef =
+        useRef(null);
 
-  const loadRoutineSlot = useCallback(async () => {
-    setLoadingRoutineSlot(true);
-
-    try {
-      const slots = await getTodayRecoverySlots();
-      const normalizedSlots = Array.isArray(slots) ? slots : [];
-      const slot = selectHomeRoutineSlot(normalizedSlots);
-      setRoutineSlot(slot);
-      return slot;
-    } catch (error) {
-      try {
-        const slot = await getNextRecoverySlot();
-        setRoutineSlot(slot);
-        return slot;
-      } catch (fallbackError) {
-        console.error("오늘 회복 루틴 조회 실패:", fallbackError);
-        setRoutineSlot(null);
-        return null;
-      }
-    } finally {
-      setLoadingRoutineSlot(false);
-    }
-  }, []);
-
-  // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
-  // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
-  // 닫아주고, 카드 쪽에 로딩 상태만 보여준다(사용자를 모달에 가둬두지 않음).
-  const handleGenerateRecoveryPlan = () => {
-    setGeneratingPlan(true);
-    generateAIRecoveryPlan({ notificationEnabled: true })
-      .then(async () => {
-        await Promise.all([
-          refreshNextReset(),
-          loadRoutineSlot(),
-        ]);
-      })
-      .catch((error) => {
-        console.error("AI 회복 계획 생성 실패:", error);
-      })
-      .finally(() => setGeneratingPlan(false));
-  };
-
-  const [activeTab, setActiveTab] = useState("routine");
-  const [showRoutineModal, setShowRoutineModal] = useState(false);
-
-  const routineRef = useRef(null);
-  const digitalRef = useRef(null);
-  const skipInitialSetupRef = useRef(Boolean(location.state?.skipSetup));
-
-  useEffect(() => {
-    loadRoutineSlot();
-  }, [loadRoutineSlot]);
-
-  useEffect(() => {
-    const refreshRoutineSlot = () => {
-      if (document.visibilityState === "visible") {
-        loadRoutineSlot();
-      }
-    };
-
-    window.addEventListener("focus", loadRoutineSlot);
-    document.addEventListener("visibilitychange", refreshRoutineSlot);
-
-    return () => {
-      window.removeEventListener("focus", loadRoutineSlot);
-      document.removeEventListener("visibilitychange", refreshRoutineSlot);
-    };
-  }, [loadRoutineSlot]);
-
-  // 브라우저 탭에서 처음 접속했을 때만 SetupModal 띄우기
-  useEffect(() => {
-    if (skipInitialSetupRef.current) {
-      setShowSetupModal(false);
-      navigate(location.pathname, {
-        replace: true,
-        state: null,
-      });
-      return;
-    }
-
-    const hasSeenSetupModal = sessionStorage.getItem(
-      "hasSeenSetupModal"
-    );
-
-    if (!hasSeenSetupModal) {
-      setSetupModalMode("initial");
-      setShowSetupModal(true);
-
-      sessionStorage.setItem(
-        "hasSeenSetupModal",
-        "true"
-      );
-    }
-  }, [location.pathname, navigate]);
-
-
-  // Header에서 들어온 scrollTo 처리
-  useEffect(() => {
-    const target = location.state?.scrollTo;
-
-    if (!target) return;
-
-    if (target === "routine") {
-      setActiveTab("routine");
-
-      setTimeout(() => {
-        routineRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
-    }
-
-    if (target === "digital") {
-      setTimeout(() => {
-        digitalRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
-    }
-
-    // scrollTo state 제거
-    navigate(location.pathname, {
-      replace: true,
-      state: null,
+    const {
+        hasPlan,
+        recoverySlotId,
+        resetTimeLabel,
+        countdownLabel,
+        refresh:
+            refreshNextReset,
+    } = useNextReset(() => {
+        notificationFlowRef.current?.();
     });
-  }, [location.state, location.pathname, navigate]);
 
-  const openRoutineModal = (content = null) => {
-    setRoutineModalContent(content);
-    setShowRoutineModal(true);
-  };
+    /*
+     * PUSH 알림 등록
+     */
+    usePushSubscription();
 
-  const handleRoutineStart = (routine) => {
-    if (!routineSlot) {
-      navigate("/recovery-session");
-      return;
-    }
+    /*
+     * 루틴 카드 관련
+     */
+    const routineHome =
+        useRoutineHome({
+            navigate,
+        });
 
-    if (isStageComplete(routineSlot, routine.stageType)) {
-      openRoutineModal({
-        title: (
-          <>
-            이미 완료한
-            <br />
-            루틴이에요
-          </>
-        ),
-        description: "아직 남은 루틴을 이어서 진행해주세요",
-      });
-      return;
-    }
-
-    if (!arePreviousStagesComplete(routineSlot, routine.stageType)) {
-      openRoutineModal();
-      return;
-    }
-
-    const runnableRoutine = findRunnableRoutineForStage(
-      routineSlot,
-      routine.stageType
-    );
-
-    if (!runnableRoutine) {
-      openRoutineModal({
-        title: (
-          <>
-            지금 시작할
-            <br />
-            루틴이 없어요
-          </>
-        ),
-        description: "회복 루틴 시작하기로 현재 상태를 확인해주세요",
-      });
-      return;
-    }
-
-    navigate(buildRecoveryRoutinePath(routineSlot, runnableRoutine));
-  };
-
-
-  return (
-    <S.LandingPage>
-      {/* HERO */}
-      <S.HeroSection>
-        <S.HeroContent>
-          <S.HeroText>
-            <S.Title>
-              나를 위한
-              <br />
-              맞춤 회복 루틴, Brainfit
-            </S.Title>
-
-            <S.Description>
-              지친 순간을 알아채고
-              <br />
-              짧은 움직임으로 나를 다시 깨워요
-            </S.Description>
-
-            <S.ButtonGroup>
-              <S.StartButton
-                onClick={() => navigate("/recovery-session")}
-              >
-                회복 루틴 시작하기
-              </S.StartButton>
-            </S.ButtonGroup>
-          </S.HeroText>
-
-          <S.ReportBox>
-            <S.ReportTop>
-              <S.ReportLabel>
-                다음 리셋 시간
-              </S.ReportLabel>
-
-              <S.AiBadge>
-                Brainfit 추천
-              </S.AiBadge>
-            </S.ReportTop>
-
-            <S.ReportTime>
-              {generatingPlan ? "생성 중..." : hasPlan ? resetTimeLabel : "계획 없음"}
-            </S.ReportTime>
-
-            <S.ReportDescription>
-              {generatingPlan
-                ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
-                : hasPlan
-                  ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
-                  : "\"내 계획 다시 설정\"으로 오늘의 리셋 시간을 만들어보세요"}
-            </S.ReportDescription>
-
-            <S.ReportDivider />
-
-            <S.ReportBottom>
-              <S.ReportBottomText>
-                <S.ReportBottomLabel>
-                  다음 리셋까지
-                </S.ReportBottomLabel>
-
-                <S.ReportBottomDescription>
-                  시간이 되면 알림을 보내드려요
-                </S.ReportBottomDescription>
-              </S.ReportBottomText>
-
-              <S.Countdown>
-                {!generatingPlan && hasPlan ? countdownLabel : "--:--"}
-              </S.Countdown>
-            </S.ReportBottom>
-
-            <S.ChangeTimeButton
-              onClick={() => setShowTimeModal(true)}
-            >
-              시간 선택하기
-            </S.ChangeTimeButton>
-          </S.ReportBox>
-        </S.HeroContent>
-      </S.HeroSection>
-
-      {/* MAIN */}
-      <S.MainContent>
-        {/* TABS */}
-        <S.TabMenu>
-          <S.TabButton
-            $active={activeTab === "routine"}
-            onClick={() => setActiveTab("routine")}
-          >
-            Today's Routine
-          </S.TabButton>
-
-          <S.TabButton
-            $active={activeTab === "digital"}
-            onClick={() => setActiveTab("digital")}
-          >
-            Your History
-          </S.TabButton>
-
-          <S.TabButton
-            $active={activeTab === "progress"}
-            onClick={() => setActiveTab("progress")}
-          >
-            Why Brainfit
-          </S.TabButton>
-        </S.TabMenu>
-
-        {/* TODAY'S ROUTINE */}
-        {activeTab === "routine" && (
-          <S.RoutineSection ref={routineRef}>
-            <S.SectionHeader>
-              <S.SectionLabel>
-                Today's Routine
-              </S.SectionLabel>
-
-              <S.SectionTitle>
-                잠깐 리프레시할까요?
-              </S.SectionTitle>
-            </S.SectionHeader>
-
-            <S.RoutineCards>
-              {routineData.map((routine) => {
-                const isCompleted = Boolean(
-                  routineSlot &&
-                  isStageComplete(routineSlot, routine.stageType)
-                );
-                const isLocked = Boolean(
-                  routineSlot &&
-                  !isCompleted &&
-                  !arePreviousStagesComplete(routineSlot, routine.stageType)
-                );
-                const status = loadingRoutineSlot
-                  ? "확인 중"
-                  : routineSlot
-                    ? stageStatusLabel(routineSlot, routine.stageType)
-                    : routine.status;
-
-                return (
-                  <RoutineCard
-                    key={routine.id}
-                    {...routine}
-                    status={status}
-                    isCompleted={isCompleted}
-                    isLocked={isLocked}
-                    onStart={() =>
-                      handleRoutineStart(routine)
-                    }
-                  />
-                );
-              })}
-            </S.RoutineCards>
-          </S.RoutineSection>
-        )}
-
-        {/* WHY BRAINFIT */}
-        {activeTab === "progress" && (
-          <WhyBrainfit />
-        )}
-
-        {/* YOUR HISTORY */}
-        {activeTab === "digital" && (
-          <YourHistory />
-        )}
-
-        <div ref={digitalRef}>
-          <DigitalState
-            onRecommendedTimesChange={
-              setActiveRecommendedTimes
-            }
-          />
-        </div>
-      </S.MainContent>
-
-      {/* ROUTINE MODAL */}
-      {showRoutineModal && (
-        <RoutineModal
-          {...(routineModalContent ?? {})}
-          onClose={() =>
-            {
-              setShowRoutineModal(false);
-              setRoutineModalContent(null);
-            }
-          }
-        />
-      )}
-
-      {/* SETUP MODAL */}
-      {showSetupModal && (
-        <SetupModal
-          mode={setupModalMode}
-          onClose={() => {
-            setShowSetupModal(false);
-            handleGenerateRecoveryPlan();
-          }}
-        />
-      )}
-
-      {showTimeModal && (
-        <TimeChangeModal
-          currentTime={hasPlan ? resetTimeLabel : "15:00"}
-          currentRepeat={repeatAlarm}
-          activeRecommendedTimes={activeRecommendedTimes}
-          onClose={() => setShowTimeModal(false)}
-          onSave={async (time, repeat) => {
-            if (!recoverySlotId) {
-              window.alert("변경할 예정된 리셋이 없어요. 먼저 \"내 계획 다시 설정\"으로 계획을 만들어주세요.");
-              return false;
-            }
-
-            const [hour, minute] = time.split(":").map(Number);
-            const scheduledAt = new Date();
-            scheduledAt.setHours(hour, minute, 0, 0);
-
-            // 현재 시간보다 이전 시간으로는 리셋 시간을 옮길 수 없다 — 허용하면
-            // next_reset_time이 이미 지난 시각이 되어버려서(is_overdue) "다음
-            // 리셋까지" 카운트다운이 곧바로 00:00에 멈춰버린다.
-            const now = new Date();
-            if (scheduledAt.getTime() < now.getTime()) {
-              window.alert("현재 시간 이전으로는 리셋 시간을 변경할 수 없어요.");
-              return false;
-            }
-
+    /*
+     * AI 계획 생성
+     */
+    const handleGenerateRecoveryPlan =
+        async () => {
             try {
-              // 주의: Date.toISOString()은 항상 UTC로 변환한다. 백엔드는
-              // USE_TZ=False + TIME_ZONE="Asia/Seoul"라서 naive datetime을
-              // "그 시각 그대로"(KST 벽시계 시간)로 저장한다. 여기서 toISOString()을
-              // 쓰면 KST(UTC+9) 브라우저 기준 "16:00"이 "07:00Z"로 변환되고, 백엔드는
-              // 그 "07:00"을 그대로 저장해버려서 사용자가 고른 시간과 9시간 어긋난
-              // 값이 저장되는 버그가 있었다. UTC 변환 없이 로컬 벽시계 시간을 그대로
-              // 문자열로 만들어서 보낸다.
-              const pad = (n) => String(n).padStart(2, "0");
-              const scheduledAtLocal =
-                `${scheduledAt.getFullYear()}-${pad(scheduledAt.getMonth() + 1)}-${pad(scheduledAt.getDate())}` +
-                `T${pad(scheduledAt.getHours())}:${pad(scheduledAt.getMinutes())}:00`;
+                setGeneratingPlan(
+                    true
+                );
 
-              await updateRecoverySlotSchedule(recoverySlotId, scheduledAtLocal);
-              await updateRecoverySlotNotification(recoverySlotId, {
-                notificationEnabled: true,
-                repeatRule: repeat ? "DAILY" : "",
-              });
+                await generateAIRecoveryPlan({
+                    notificationEnabled:
+                        true,
+                });
 
-              setRepeatAlarm(repeat);
-              refreshNextReset();
-              return true;
+                await Promise.all([
+                    refreshNextReset(),
+                    routineHome.loadRoutineSlot(),
+                ]);
             } catch (error) {
-              console.error("리셋 시간 변경 실패:", error);
-              window.alert("시간 변경에 실패했어요. 잠시 후 다시 시도해주세요.");
-              return false;
+                console.error(
+                    "AI 회복 계획 생성 실패:",
+                    error
+                );
+            } finally {
+                setGeneratingPlan(
+                    false
+                );
             }
-          }}
-        />
-      )}
-    </S.LandingPage>
-  );
+        };
+
+    /*
+     * 세션 시작 모달 흐름
+     */
+    const sessionFlow =
+        useRecoverySessionFlow({
+            hasPlan,
+            navigate,
+            onGeneratePlan:
+                handleGenerateRecoveryPlan,
+        });
+
+    useEffect(() => {
+        notificationFlowRef.current =
+            sessionFlow.openNotificationFlow;
+    }, [
+        sessionFlow.openNotificationFlow,
+    ]);
+
+    /*
+     * 시간 변경 관련
+     */
+    const timeSettings =
+        useRecoveryTimeSettings({
+            recoverySlotId,
+            resetTimeLabel,
+            refreshNextReset,
+        });
+
+    /*
+     * 최초 접속 Setup
+     */
+    const skipInitialSetupRef =
+        useRef(
+            Boolean(
+                location.state
+                    ?.skipSetup
+            )
+        );
+
+    useEffect(() => {
+        if (
+            skipInitialSetupRef.current
+        ) {
+            skipInitialSetupRef.current =
+                false;
+
+            return;
+        }
+
+        const hasSeen =
+            sessionStorage.getItem(
+                "hasSeenSetupModal"
+            );
+
+        if (!hasSeen) {
+            sessionFlow.openInitialSetup();
+
+            sessionStorage.setItem(
+                "hasSeenSetupModal",
+                "true"
+            );
+        }
+    }, []);
+
+    /*
+     * Header scroll
+     */
+    useEffect(() => {
+        const target =
+            location.state
+                ?.scrollTo;
+
+        if (!target) {
+            return;
+        }
+
+        if (
+            target === "routine"
+        ) {
+            setActiveTab(
+                "routine"
+            );
+
+            setTimeout(() => {
+                routineRef.current
+                    ?.scrollIntoView({
+                        behavior:
+                            "smooth",
+                        block:
+                            "start",
+                    });
+            }, 100);
+        }
+
+        if (
+            target === "digital"
+        ) {
+            setTimeout(() => {
+                digitalRef.current
+                    ?.scrollIntoView({
+                        behavior:
+                            "smooth",
+                        block:
+                            "start",
+                    });
+            }, 100);
+        }
+
+        navigate(
+            location.pathname,
+            {
+                replace: true,
+                state: null,
+            }
+        );
+    }, [
+        location.state,
+        location.pathname,
+        navigate,
+    ]);
+
+    return (
+        <S.LandingPage>
+            {/* HERO */}
+            <S.HeroSection>
+                <S.HeroContent>
+                    <S.HeroText>
+                        <S.Title>
+                            나를 위한
+                            <br />
+                            맞춤 회복 루틴,
+                            Brainfit
+                        </S.Title>
+
+                        <S.Description>
+                            지친 순간을 알아채고
+                            <br />
+                            짧은 움직임으로
+                            나를 다시 깨워요
+                        </S.Description>
+
+                        <S.ButtonGroup>
+                            <S.StartButton
+                                onClick={
+                                    sessionFlow.openMainRoutineFlow
+                                }
+                            >
+                                회복 루틴 시작하기
+                            </S.StartButton>
+                        </S.ButtonGroup>
+                    </S.HeroText>
+
+                    <S.ReportBox>
+                        <S.ReportTop>
+                            <S.ReportLabel>
+                                다음 리셋 시간
+                            </S.ReportLabel>
+
+                            <S.AiBadge>
+                                Brainfit 추천
+                            </S.AiBadge>
+                        </S.ReportTop>
+
+                        <S.ReportTime>
+                            {generatingPlan
+                                ? "생성 중..."
+                                : hasPlan
+                                  ? resetTimeLabel
+                                  : "계획 없음"}
+                        </S.ReportTime>
+
+                        <S.ReportDescription>
+                            {generatingPlan
+                                ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
+                                : hasPlan
+                                  ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
+                                  : '"내 계획 다시 설정"으로 오늘의 리셋 시간을 만들어보세요'}
+                        </S.ReportDescription>
+
+                        <S.ReportDivider />
+
+                        <S.ReportBottom>
+                            <S.ReportBottomText>
+                                <S.ReportBottomLabel>
+                                    다음 리셋까지
+                                </S.ReportBottomLabel>
+
+                                <S.ReportBottomDescription>
+                                    시간이 되면 알림을 보내드려요
+                                </S.ReportBottomDescription>
+                            </S.ReportBottomText>
+
+                            <S.Countdown>
+                                {!generatingPlan &&
+                                hasPlan
+                                    ? countdownLabel
+                                    : "--:--"}
+                            </S.Countdown>
+                        </S.ReportBottom>
+
+                        <S.ChangeTimeButton
+                            onClick={
+                                timeSettings.openTimeModal
+                            }
+                        >
+                            시간 선택하기
+                        </S.ChangeTimeButton>
+                    </S.ReportBox>
+                </S.HeroContent>
+            </S.HeroSection>
+
+            {/* MAIN */}
+            <S.MainContent>
+                <S.TabMenu>
+                    <S.TabButton
+                        $active={
+                            activeTab ===
+                            "routine"
+                        }
+                        onClick={() =>
+                            setActiveTab(
+                                "routine"
+                            )
+                        }
+                    >
+                        Today's Routine
+                    </S.TabButton>
+
+                    <S.TabButton
+                        $active={
+                            activeTab ===
+                            "digital"
+                        }
+                        onClick={() =>
+                            setActiveTab(
+                                "digital"
+                            )
+                        }
+                    >
+                        Your History
+                    </S.TabButton>
+
+                    <S.TabButton
+                        $active={
+                            activeTab ===
+                            "progress"
+                        }
+                        onClick={() =>
+                            setActiveTab(
+                                "progress"
+                            )
+                        }
+                    >
+                        Why Brainfit
+                    </S.TabButton>
+                </S.TabMenu>
+
+                {activeTab ===
+                    "routine" && (
+                    <S.RoutineSection
+                        ref={
+                            routineRef
+                        }
+                    >
+                        <S.SectionHeader>
+                            <S.SectionLabel>
+                                Today's Routine
+                            </S.SectionLabel>
+
+                            <S.SectionTitle>
+                                잠깐 리프레시할까요?
+                            </S.SectionTitle>
+                        </S.SectionHeader>
+
+                        <S.RoutineCards>
+                            {routineData.map(
+                                (
+                                    routine
+                                ) => {
+                                    const isCompleted =
+                                        Boolean(
+                                            routineHome.routineSlot &&
+                                                isStageComplete(
+                                                    routineHome.routineSlot,
+                                                    routine.stageType
+                                                )
+                                        );
+
+                                    const isLocked =
+                                        Boolean(
+                                            routineHome.routineSlot &&
+                                                !isCompleted &&
+                                                !arePreviousStagesComplete(
+                                                    routineHome.routineSlot,
+                                                    routine.stageType
+                                                )
+                                        );
+
+                                    const status =
+                                        routineHome.loadingRoutineSlot
+                                            ? "확인 중"
+                                            : routineHome.routineSlot
+                                              ? stageStatusLabel(
+                                                    routineHome.routineSlot,
+                                                    routine.stageType
+                                                )
+                                              : routine.status;
+
+                                    return (
+                                        <RoutineCard
+                                            key={
+                                                routine.id
+                                            }
+                                            {...routine}
+                                            status={
+                                                status
+                                            }
+                                            isCompleted={
+                                                isCompleted
+                                            }
+                                            isLocked={
+                                                isLocked
+                                            }
+                                            onStart={() =>
+                                                routineHome.handleRoutineStart(
+                                                    routine
+                                                )
+                                            }
+                                        />
+                                    );
+                                }
+                            )}
+                        </S.RoutineCards>
+                    </S.RoutineSection>
+                )}
+
+                {activeTab ===
+                    "progress" && (
+                    <WhyBrainfit />
+                )}
+
+                {activeTab ===
+                    "digital" && (
+                    <YourHistory />
+                )}
+
+                <div ref={digitalRef}>
+                    <DigitalState
+                        onRecommendedTimesChange={
+                            timeSettings.setActiveRecommendedTimes
+                        }
+                    />
+                </div>
+            </S.MainContent>
+
+            {/* 루틴 상태 경고 */}
+            {routineHome.showRoutineModal && (
+                <RoutineModal
+                    {...(
+                        routineHome.routineModalContent ??
+                        {}
+                    )}
+                    onClose={
+                        routineHome.closeRoutineModal
+                    }
+                />
+            )}
+
+            {/* 세션 흐름 모달 */}
+            <RecoveryFlowModals
+                flow={
+                    sessionFlow
+                }
+            />
+
+            {/* 시간 변경 */}
+            {timeSettings.showTimeModal && (
+                <TimeChangeModal
+                    currentTime={
+                        hasPlan
+                            ? resetTimeLabel
+                            : "15:00"
+                    }
+                    currentRepeat={
+                        timeSettings.repeatAlarm
+                    }
+                    activeRecommendedTimes={
+                        timeSettings.activeRecommendedTimes
+                    }
+                    onClose={
+                        timeSettings.closeTimeModal
+                    }
+                    onSave={
+                        timeSettings.handleSaveTime
+                    }
+                />
+            )}
+        </S.LandingPage>
+    );
 }
 
 export default LandingPage;
