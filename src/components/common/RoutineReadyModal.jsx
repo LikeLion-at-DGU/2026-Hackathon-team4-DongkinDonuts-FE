@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import CheckIcon from "../../assets/icons/CheckIcon.png";
 
 import * as S from "./SessionConfirmModal.styled";
@@ -5,6 +7,12 @@ import * as S from "./SessionConfirmModal.styled";
 function RoutineReadyModal({
     onClose,
 }) {
+    const navigate = useNavigate();
+
+    const handleStartSession = () => {
+        navigate("/recovery-session");
+    };
+
     return (
         <S.Overlay>
             <S.Modal>
@@ -22,7 +30,7 @@ function RoutineReadyModal({
                 </S.Title>
 
                 <S.Description>
-                    예정된 시간에 맞춰 알려드릴게요
+                    바로 시작할까요?
                 </S.Description>
 
                 <S.ButtonRow>
@@ -35,9 +43,9 @@ function RoutineReadyModal({
 
                     <S.StartButton
                         type="button"
-                        onClick={onClose}
+                        onClick={handleStartSession}
                     >
-                        확인
+                        세션 시작
                     </S.StartButton>
                 </S.ButtonRow>
             </S.Modal>
