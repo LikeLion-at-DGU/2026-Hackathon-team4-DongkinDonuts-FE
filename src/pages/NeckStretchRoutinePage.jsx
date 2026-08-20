@@ -8,7 +8,6 @@ import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfi
 import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
 import { lerp } from "../utils/handUtils";
 import NeckImage from "../assets/images/NeckImage.png";
-import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "neck-stretch";
 const BURST_MS = 700;
@@ -180,13 +179,6 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     finalPendingRef.current = false;
     setIsTerminated(false);
   }, []);
-
-  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(
-    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
-    [navigate]
-  );
-  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),

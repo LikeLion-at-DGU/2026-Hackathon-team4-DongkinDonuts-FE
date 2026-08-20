@@ -124,13 +124,6 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     setIsTerminated(false);
   }, []);
 
-  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(
-    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
-    [navigate]
-  );
-  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
-
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: sunriseCount, difficulty, screenDistance, sessionImage: mouthImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, sunriseCount, difficulty, screenDistance]

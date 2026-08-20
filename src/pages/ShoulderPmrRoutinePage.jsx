@@ -157,13 +157,6 @@ export default function ShoulderPmrRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     setIsTerminated(false);
   }, []);
 
-  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(
-    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
-    [navigate]
-  );
-  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
-
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: repCount, difficulty, screenDistance, sessionImage: ShoulderImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
     [elapsedTime, repCount, difficulty, screenDistance]

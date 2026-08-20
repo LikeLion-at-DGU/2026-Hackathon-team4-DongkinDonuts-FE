@@ -6,7 +6,6 @@ import { ROUTINE_SESSIONS, sessionIdFor, remainingSessionsAfter, customSessionSt
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
 import eyeBlinkImage from "../assets/images/eyeBlinkImage.png";
-import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "eye-blink";
 const POP_MS = 900;
@@ -138,13 +137,6 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     blinkCountRef.current = 0;
     setIsTerminated(false);
   }, []);
-
-  const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(
-    () => navigate("/", { state: SKIP_SETUP_HOME_STATE }),
-    [navigate]
-  );
-  const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const dataPanelProps = useMemo(
     () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage, sessionStage: "custom", stepInfo: customSessionStepInfo(BASE_ID) }),
