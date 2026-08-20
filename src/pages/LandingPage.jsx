@@ -58,14 +58,14 @@ function LandingPage() {
   ] = useState("routine");
 
   const [
-    activeRecommendedTimes,
-    setActiveRecommendedTimes,
-  ] = useState([]);
-
-  const [
     generatingPlan,
     setGeneratingPlan,
   ] = useState(false);
+
+  const [
+    localAlarmStates,
+    setLocalAlarmStates,
+  ] = useState({});
 
   const routineRef =
     useRef(null);
@@ -163,48 +163,73 @@ function LandingPage() {
       refreshNextReset,
     });
 
-  /*
-   * 오늘의 추천 휴식 일정 — PC 사용 패턴 입력 여부와 무관하게 독립적으로
-   * 조회한다. "시간 변경하기" 모달에서 자동 알림이 켜진 추천 시간을
-   * 강조해서 보여줄 때 이 데이터를 그대로 쓴다.
-   */
   const upcomingSchedule =
     useUpcomingSchedule();
 
   useEffect(() => {
-    const formatTime = (dateTime) => {
-      if (!dateTime) return null;
+    setLocalAlarmStates(
+      upcomingSchedule.alarmStates ?? {}
+    );
+  }, [
+    upcomingSchedule.alarmStates,
+  ]);
 
-      return new Date(dateTime).toLocaleTimeString(
-        "ko-KR",
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }
+  useEffect(() => {
+    const handleAlarmToggle = (
+      event
+    ) => {
+      const {
+        slotId,
+        enabled,
+      } = event.detail;
+
+      setLocalAlarmStates(
+        (prev) => ({
+          ...prev,
+          [slotId]:
+            enabled,
+        })
       );
     };
 
-    const activeTimes = upcomingSchedule.schedules
+    window.addEventListener(
+      "brainfit-alarm-toggle",
+      handleAlarmToggle
+    );
+
+    return () => {
+      window.removeEventListener(
+        "brainfit-alarm-toggle",
+        handleAlarmToggle
+      );
+    };
+  }, []);
+
+  const recommendedTimes =
+    upcomingSchedule.schedules
       .filter(
         (schedule) =>
-          upcomingSchedule.alarmStates?.[
-            schedule.id
+          localAlarmStates?.[
+          schedule.id
           ] === true
       )
-      .map((schedule) =>
-        formatTime(schedule.effective_time)
-      )
-      .filter(Boolean);
+      .map((schedule) => {
+        if (!schedule.effective_time) {
+          return null;
+        }
 
-    timeSettings.setActiveRecommendedTimes(
-      activeTimes
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    upcomingSchedule.schedules,
-    upcomingSchedule.alarmStates,
-  ]);
+        return new Date(
+          schedule.effective_time
+        ).toLocaleTimeString(
+          "ko-KR",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }
+        );
+      })
+      .filter(Boolean);
 
   /*
    * 최초 접속 Setup
@@ -526,11 +551,7 @@ function LandingPage() {
           )}
 
         <div ref={digitalRef}>
-          <DigitalState
-            onRecommendedTimesChange={
-              setActiveRecommendedTimes
-            }
-          />
+          <DigitalState />
         </div>
       </S.MainContent>
 
@@ -558,7 +579,7 @@ function LandingPage() {
       {timeSettings.showTimeModal && (
         <TimeChangeModal
           recommendedTimes={
-            activeRecommendedTimes
+            recommendedTimes
           }
           currentTime={
             hasPlan
@@ -567,9 +588,6 @@ function LandingPage() {
           }
           currentRepeat={
             timeSettings.repeatAlarm
-          }
-          activeRecommendedTimes={
-            timeSettings.activeRecommendedTimes
           }
           onClose={
             timeSettings.closeTimeModal
