@@ -69,6 +69,7 @@ export function useHistoryData(date) {
                             slot.recommended_routines
                         ),
                         status: slot.history_status_label,
+                        remark: slot.remark,
                     }))
                 );
             })
