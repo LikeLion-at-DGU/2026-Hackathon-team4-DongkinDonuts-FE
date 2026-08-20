@@ -6,10 +6,12 @@ function RoutineCard({
     description,
     status,
     image,
+    isLocked = false,
+    isCompleted = false,
     onStart,
 }) {
     return (
-        <S.Card $image={image}>
+        <S.Card $image={image} $locked={isLocked}>
             <S.Overlay />
 
             <S.Content>
@@ -19,6 +21,10 @@ function RoutineCard({
                     </S.TitleArea>
 
                     <S.ArrowButton
+                        type="button"
+                        $locked={isLocked}
+                        $completed={isCompleted}
+                        aria-disabled={isLocked || isCompleted}
                         onClick={(e) => {
                             e.stopPropagation();
                             onStart();
@@ -34,7 +40,7 @@ function RoutineCard({
 
                 <S.Divider />
 
-                <S.Status>
+                <S.Status $completed={isCompleted}>
                     {status}
                 </S.Status>
             </S.Content>
