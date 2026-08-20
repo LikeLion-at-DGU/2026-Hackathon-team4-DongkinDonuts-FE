@@ -12,15 +12,9 @@ function Header() {
         window.location.assign("/");
     };
 
-    const handleRoutineClick = () => {
+    const handleSectionClick = (section) => {
         navigate("/", {
-            state: { scrollTo: "routine" },
-        });
-    };
-
-    const handleDigitalClick = () => {
-        navigate("/", {
-            state: { scrollTo: "digital" },
+            state: { scrollTo: section },
         });
     };
 
@@ -53,16 +47,16 @@ function Header() {
 
                 <S.Nav>
                     <S.NavButton
-                        onClick={
-                            handleRoutineClick
+                        onClick={() =>
+                            handleSectionClick("routine")
                         }
                     >
                         Routine
                     </S.NavButton>
 
                     <S.NavButton
-                        onClick={
-                            handleDigitalClick
+                        onClick={() =>
+                            handleSectionClick("digital")
                         }
                     >
                         My Digital State
