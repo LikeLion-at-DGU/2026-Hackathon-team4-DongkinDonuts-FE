@@ -1,5 +1,5 @@
-import { memo, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { memo, useCallback, useEffect, useLayoutEffect, useState, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import CameraPreview from "../components/sessions/CameraPreview";
 import SessionDataPanel from "../components/sessions/SessionDataPanel";
 import SessionEndModal from "../components/sessions/SessionEndModal";
@@ -42,7 +42,10 @@ const SessionPage = ({
   children,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
+
+  const containerRef = useRef(null);
 
   // 최초 1회 미션을 통과해 완료 모달을 본 적이 있어야 "다음 세션" 버튼을 쓸 수 있다.
   // hasShownCompletionModal은 한 번 true가 되면 이후 세션이 반복 초기화되어도 계속 true로
@@ -64,6 +67,21 @@ const SessionPage = ({
 
     navigate("/recovery-session");
   }, [isNextSessionDisabled, isNextSessionPending, navigate, nextSessionPath]);
+
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+
+    // React Router의 <ScrollRestoration /> 동작과 DOM 렌더링이 
+    // 완전히 끝난 직후 프레임에 스크롤을 실행하여 충돌과 깜빡임을 원천 차단합니다.
+    const rafId = requestAnimationFrame(() => {
+      containerRef.current.scrollIntoView({
+        behavior: "auto", // 즉시 화면에 맞추기 위해 auto 사용 (smooth는 충돌 가능성 있음)
+        block: "start",
+      });
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [location.pathname]); // 라우터 경로(pathname)가 바뀔 때마다 확실하게 실행
 
   // 현재 세션이 진행되는 동안, 다음 세션에 필요한 MediaPipe 모델을 백그라운드에서 미리 로드해둔다.
   // "다음 세션" 버튼을 눌렀을 때 모델 초기화 대기 없이 즉시 카메라가 뜨도록 하기 위함.
@@ -127,7 +145,7 @@ const SessionPage = ({
   return (
     <>
       <SessionGlobalStyle />
-      <RoutineContainer>
+      <RoutineContainer ref={containerRef}>
         <QuitConfirmModal
           isOpen={isQuitModalOpen}
           onClose={onCloseQuit}

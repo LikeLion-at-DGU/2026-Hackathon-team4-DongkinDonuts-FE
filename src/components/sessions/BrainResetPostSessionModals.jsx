@@ -310,7 +310,7 @@ export function NextRestScheduledModal({
         </C.Title>
 
         <C.Description>
-          설정된 시간이 되면 휴식 알림이 자동으로 전송돼요.
+          설정된 시간이 되면<br />휴식 알림이 자동으로 전송돼요.
         </C.Description>
 
         <C.SingleButtonRow>
