@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import {
+    useMemo,
+    useState,
+} from "react";
 
 import { DAYS } from "../config/usageTableConfig";
 import { saveDigitalPatterns } from "../api/digitalState";
 import { ensureTodayGenerationInputs } from "../api/context";
+import { useDigitalUsageSession } from "./useDigitalUsageSession";
 
 import {
     generateAIRecoveryPlan,
@@ -28,30 +32,33 @@ export function useDigitalUsage({
     const [isSaving, setIsSaving] =
         useState(false);
 
-    const [schedules, setSchedules] =
-        useState([]);
+    const {
+        schedules,
+        setSchedules,
 
-    const [alarmStates, setAlarmStates] =
-        useState({});
+        alarmStates,
+        setAlarmStates,
 
-    const [
         hasGeneratedResult,
         setHasGeneratedResult,
-    ] = useState(false);
 
-    const [
         resultVersion,
         setResultVersion,
-    ] = useState(0);
+    } = useDigitalUsageSession();
 
     const isResult =
         mode === "result";
 
     // 시간 포맷
-    const formatScheduleTime = (dateTime) => {
-        if (!dateTime) return null;
+    const formatScheduleTime = (
+        dateTime
+    ) => {
+        if (!dateTime) {
+            return null;
+        }
 
-        const date = new Date(dateTime);
+        const date =
+            new Date(dateTime);
 
         return date.toLocaleTimeString(
             "ko-KR",
@@ -63,29 +70,36 @@ export function useDigitalUsage({
         );
     };
 
-    // 자동 알림이 켜져 있는 추천 시간만 추출
+    // 자동 알림이 켜진 추천 시간
     const activeRecommendedTimes =
         useMemo(() => {
             return schedules
                 .filter(
                     (schedule) =>
                         alarmStates?.[
-                        schedule.id
+                            schedule.id
                         ] === true
                 )
-                .map((schedule) =>
-                    formatScheduleTime(
-                        schedule.effective_time
-                    )
+                .map(
+                    (schedule) =>
+                        formatScheduleTime(
+                            schedule.effective_time
+                        )
                 )
                 .filter(Boolean);
-        }, [schedules, alarmStates]);
+        }, [
+            schedules,
+            alarmStates,
+        ]);
 
+    // 개별 칸 선택
     const toggleCell = (
         rowIndex,
         colIndex
     ) => {
-        if (isResult) return;
+        if (isResult) {
+            return;
+        }
 
         const key =
             `${rowIndex}-${colIndex}`;
@@ -96,15 +110,21 @@ export function useDigitalUsage({
         }));
     };
 
+    // 한 행 전체 선택
     const toggleRow = (
         rowIndex
     ) => {
-        if (isResult) return;
+        if (isResult) {
+            return;
+        }
 
         setSelected((prev) => {
             const rowKeys =
                 DAYS.map(
-                    (_, colIndex) =>
+                    (
+                        _,
+                        colIndex
+                    ) =>
                         `${rowIndex}-${colIndex}`
                 );
 
@@ -129,12 +149,16 @@ export function useDigitalUsage({
         });
     };
 
+    // 전체 초기화
     const resetAll = () => {
-        if (isResult) return;
+        if (isResult) {
+            return;
+        }
 
         setSelected({});
     };
 
+    // selected → 백엔드 요청 데이터
     const convertSelectedToPatterns = (
         selectedData
     ) => {
@@ -142,7 +166,12 @@ export function useDigitalUsage({
             selectedData
         )
             .filter(
-                ([, isSelected]) =>
+                (
+                    [
+                        ,
+                        isSelected,
+                    ]
+                ) =>
                     isSelected
             )
             .map(([key]) => {
@@ -156,7 +185,7 @@ export function useDigitalUsage({
                 return {
                     day_of_week:
                         DAY_CODE_MAP[
-                        colIndex
+                            colIndex
                         ],
                     hour: rowIndex,
                     is_used: true,
@@ -164,6 +193,7 @@ export function useDigitalUsage({
             });
     };
 
+    // PC 사용 패턴 저장
     const savePatterns =
         async () => {
             try {
@@ -197,11 +227,13 @@ export function useDigitalUsage({
             }
         };
 
+    // 임시 저장
     const handleTemporarySave =
         async () => {
             await savePatterns();
         };
 
+    // PC 패턴 저장 → AI 회복 계획 생성
     const handleCreate =
         async () => {
             try {
@@ -228,9 +260,7 @@ export function useDigitalUsage({
                     recoveryPlan?.slots ??
                     [];
 
-                setSchedules(
-                    slots
-                );
+                setSchedules(slots);
 
                 const initialAlarmStates =
                     Object.fromEntries(
@@ -238,7 +268,7 @@ export function useDigitalUsage({
                             (slot) => [
                                 slot.id,
                                 slot.notification_enabled ??
-                                false,
+                                    false,
                             ]
                         )
                     );
@@ -272,13 +302,13 @@ export function useDigitalUsage({
         async (slotId) => {
             const current =
                 alarmStates[
-                slotId
+                    slotId
                 ] ?? false;
 
             const next =
                 !current;
 
-            // 먼저 UI 변경
+            // UI 먼저 변경
             setAlarmStates(
                 (prev) => ({
                     ...prev,
@@ -318,7 +348,7 @@ export function useDigitalUsage({
                     error
                 );
 
-                // 실패 시 원래 상태로 복구
+                // 실패 시 롤백
                 setAlarmStates(
                     (prev) => ({
                         ...prev,
@@ -339,7 +369,6 @@ export function useDigitalUsage({
         schedules,
         alarmStates,
 
-        // ⭐ 추가
         activeRecommendedTimes,
 
         toggleCell,
