@@ -20,6 +20,27 @@ export async function getNextResetTime() {
 }
 
 /**
+ * 오늘 활성 회복 계획에 포함된 슬롯 목록 조회.
+ */
+export function getTodayRecoverySlots() {
+  return apiClient.get("/plans/recovery-slots/today/");
+}
+
+/**
+ * 현재 가장 먼저 수행할 회복 슬롯 상세 조회.
+ */
+export function getNextRecoverySlot() {
+  return apiClient.get("/plans/recovery-slots/next/");
+}
+
+/**
+ * 특정 회복 슬롯 상세 조회.
+ */
+export function getRecoverySlot(slotId) {
+  return apiClient.get(`/plans/recovery-slots/${slotId}/`);
+}
+
+/**
  * AI 기반 오늘의 회복 계획 생성
  *
  * contextSnapshot, nextActivityPlan을 생략하면

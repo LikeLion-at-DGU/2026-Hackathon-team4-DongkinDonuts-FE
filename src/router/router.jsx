@@ -10,6 +10,7 @@ import ShoulderPmrRoutinePage from "../pages/ShoulderPmrRoutinePage";
 import FocusPinchRoutinePage from "../pages/FocusPinchRoutinePage";
 import SunriseRoutinePage from "../pages/SunriseRoutinePage";
 import SettingsPage from "../pages/SettingsPage";
+import RecoverySessionStartPage from "../pages/RecoverySessionStartPage";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingPage key="/" />,
+      },
+      {
+        path: "/recovery-session",
+        element: <RecoverySessionStartPage key="/recovery-session" />,
       },
       {
         path: "/handroutine",
