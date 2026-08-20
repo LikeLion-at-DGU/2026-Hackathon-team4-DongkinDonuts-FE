@@ -29,6 +29,7 @@ const SessionPage = ({
   onStopSession,
   onCloseSessionEnd,
   nextSessionPath,
+  isNextSessionPending = false,
   showOverlay = true,
   cameraPreviewProps,
   dataPanelProps,
@@ -111,6 +112,7 @@ const SessionPage = ({
               onClose={handleCloseSessionEnd}
               onRestart={resetSession}
               nextSessionPath={nextSessionPath}
+              isNextSessionPending={isNextSessionPending}
             />
           </PlayContainer>
 

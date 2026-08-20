@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BreathPlayArea from "../components/sessions/BreathPlayArea";
+import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import SessionPage from "./SessionPage";
 
 const BREATH_PHASES = [
@@ -91,6 +92,13 @@ const BreathRoutinePage = () => {
 
   const phase = useMemo(() => BREATH_PHASES[phaseIndex].key, [phaseIndex]);
   const isUIOverlayVisible = !isTerminated;
+  const recoverySession = useRecoveryRoutineSession({
+    isMissionComplete,
+    metrics: {
+      elapsedTime,
+      phase,
+    },
+  });
 
   const dataPanelProps = useMemo(() => ({ elapsedTime }), [elapsedTime]);
   const instructionProps = useMemo(
@@ -106,12 +114,21 @@ const BreathRoutinePage = () => {
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
       onCloseQuit={handleCloseQuit}
-      onConfirmQuit={handleConfirmQuit}
+      onConfirmQuit={() => {
+        recoverySession.abortSession();
+        handleConfirmQuit();
+      }}
       navigateOnQuitConfirm={false}
       isMissionComplete={isMissionComplete}
       isTerminated={isTerminated}
       resetSession={resetGame}
       onStopSession={handleStopGame}
+      nextSessionPath={
+        recoverySession.isBackendRoutine
+          ? recoverySession.nextSessionPath
+          : "/"
+      }
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       showOverlay={isUIOverlayVisible}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}

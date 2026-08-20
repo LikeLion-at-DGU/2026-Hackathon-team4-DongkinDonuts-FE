@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import LandingPage from "../pages/LandingPage";
+import RecoverySessionStartPage from "../pages/RecoverySessionStartPage";
 import HandRoutinePage from "../pages/HandRoutinePage";
 import BreathRoutinePage from "../pages/BreathRoutinePage";
 import EyeBlinkRoutinePage from "../pages/EyeBlinkRoutinePage";
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingPage key="/" />,
+      },
+      {
+        path: "/recovery-session",
+        element: <RecoverySessionStartPage />,
       },
       {
         path: "/handroutine",

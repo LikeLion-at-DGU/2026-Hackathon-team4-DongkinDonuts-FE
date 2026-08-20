@@ -20,6 +20,27 @@ export async function getNextResetTime() {
 }
 
 /**
+ * 오늘 활성 회복 계획에 포함된 슬롯 목록 조회.
+ */
+export function getTodayRecoverySlots() {
+  return apiClient.get("/plans/recovery-slots/today/");
+}
+
+/**
+ * 현재 가장 먼저 수행할 회복 슬롯 상세 조회.
+ */
+export function getNextRecoverySlot() {
+  return apiClient.get("/plans/recovery-slots/next/");
+}
+
+/**
+ * 특정 회복 슬롯 상세 조회.
+ */
+export function getRecoverySlot(slotId) {
+  return apiClient.get(`/plans/recovery-slots/${slotId}/`);
+}
+
+/**
  * AI 기반 오늘의 회복 계획 생성
  *
  * contextSnapshot, nextActivityPlan을 생략하면
@@ -61,6 +82,43 @@ export function updateRecoverySlotSchedule(
     {
       scheduled_at: scheduledAtIso,
     }
+  );
+}
+
+/**
+ * 특정 회복 슬롯 취소.
+ *
+ * 백엔드 cancel_slot이 연결된 대기 알림도 CANCELED로 동기화한다.
+ */
+export function cancelRecoverySlot(slotId) {
+  return apiClient.post(
+    `/plans/recovery-slots/${slotId}/cancel/`
+  );
+}
+
+/**
+ * 선택한 시간 이전의 스냅샷 기반 회복 슬롯을 일괄 취소한다.
+ * 빈도 기반 슬롯은 백엔드에서 제외한다.
+ */
+export function cancelSnapshotRecoverySlotsBefore({
+  before,
+  excludeSlot = null,
+}) {
+  return apiClient.post(
+    "/plans/recovery-slots/cancel-before/",
+    {
+      before,
+      exclude_slot: excludeSlot,
+    }
+  );
+}
+
+/**
+ * 서비스 재진입 시 가장 가까운 미래 스냅샷 기반 알림 1개를 소비 처리한다.
+ */
+export function consumeNearestSnapshotRecoverySlot() {
+  return apiClient.post(
+    "/plans/recovery-slots/consume-nearest-snapshot/"
   );
 }
 

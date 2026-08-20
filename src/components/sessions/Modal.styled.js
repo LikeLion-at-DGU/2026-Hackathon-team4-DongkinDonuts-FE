@@ -72,4 +72,9 @@ export const ConfirmButton = styled(ButtonBase)`
   background-color: #191919;
   border: none;
   color: #ffffff;
+
+  &:disabled {
+    background-color: #6b7280;
+    cursor: not-allowed;
+  }
 `;

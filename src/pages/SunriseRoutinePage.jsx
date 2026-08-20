@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom";
 import SessionPage from "./SessionPage";
 import { useMultiTracking } from "../hooks/useMultiTracking";
+import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
 import { ROUTINE_SESSIONS } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { prepareCanvas, drawSunrise } from "../engine/sessionVisuals";
@@ -125,8 +126,23 @@ export default function SunriseRoutinePage() {
     setIsTerminated(false);
   }, []);
 
+  const recoverySession = useRecoveryRoutineSession({
+    isMissionComplete,
+    metrics: {
+      sunriseCount,
+      stage,
+      elapsedTime,
+    },
+  });
+  const nextSessionPath = recoverySession.isBackendRoutine
+    ? recoverySession.nextSessionPath
+    : SESSION?.nextSessionPath;
+
   const handleCloseQuit = useCallback(() => setIsQuitModalOpen(false), []);
-  const handleConfirmQuit = useCallback(() => navigate("/"), [navigate]);
+  const handleConfirmQuit = useCallback(() => {
+    recoverySession.abortSession();
+    navigate("/");
+  }, [navigate, recoverySession]);
   const handleStopSession = useCallback(() => setIsQuitModalOpen(true), []);
 
   const cameraPreviewProps = useMemo(
@@ -161,7 +177,8 @@ export default function SunriseRoutinePage() {
       isTerminated={isTerminated}
       resetSession={handleReset}
       onStopSession={handleStopSession}
-      nextSessionPath={SESSION?.nextSessionPath}
+      nextSessionPath={nextSessionPath}
+      isNextSessionPending={recoverySession.isPreparingNextSession}
       cameraPreviewProps={cameraPreviewProps}
       dataPanelProps={dataPanelProps}
       instructionProps={instructionProps}
