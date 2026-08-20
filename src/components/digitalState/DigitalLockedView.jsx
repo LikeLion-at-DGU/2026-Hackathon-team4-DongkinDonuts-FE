@@ -18,6 +18,7 @@ function DigitalLockedView({
                     <UsageTable
                         selected={{}}
                         toggleCell={() => {}}
+                        setCellValue={() => {}}
                         toggleRow={() => {}}
                         resetAll={() => {}}
                         readOnly
