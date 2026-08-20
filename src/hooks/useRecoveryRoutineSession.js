@@ -26,6 +26,7 @@ export function useRecoveryRoutineSession({
   const [backendSession, setBackendSession] = useState(null);
   const [nextSessionPath, setNextSessionPath] = useState(null);
   const [sessionError, setSessionError] = useState(null);
+  const [isCompletingSession, setIsCompletingSession] = useState(false);
 
   const startedRef = useRef(false);
   const completedRef = useRef(false);
@@ -47,6 +48,14 @@ export function useRecoveryRoutineSession({
     setNextSessionPath(path);
     return path;
   }, [routineInstanceId, slotId]);
+
+  useEffect(() => {
+    if (!isBackendRoutine) return;
+
+    refreshNextPath().catch((error) => {
+      console.error("다음 백엔드 세션 경로 조회 실패:", error);
+    });
+  }, [isBackendRoutine, refreshNextPath]);
 
   useEffect(() => {
     if (!isBackendRoutine || startedRef.current) return;
@@ -103,15 +112,21 @@ export function useRecoveryRoutineSession({
 
     completedRef.current = true;
 
+    setIsCompletingSession(true);
+
     completeSession(backendSession.id, {
       accuracy,
       metrics,
     })
-      .then(() => refreshNextPath())
+      .then(async () => {
+        await refreshNextPath();
+      })
       .catch((error) => {
-        completedRef.current = false;
         console.error("백엔드 세션 완료 실패:", error);
         setSessionError(error);
+      })
+      .finally(() => {
+        setIsCompletingSession(false);
       });
   }, [
     accuracy,
@@ -138,11 +153,7 @@ export function useRecoveryRoutineSession({
   return {
     isBackendRoutine,
     nextSessionPath,
-    isPreparingNextSession:
-      isBackendRoutine &&
-      isMissionComplete &&
-      !nextSessionPath &&
-      !sessionError,
+    isPreparingNextSession: isCompletingSession,
     sessionError,
     abortSession,
   };

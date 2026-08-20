@@ -41,8 +41,20 @@ const SessionPage = ({
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
 
   const handleNextSession = useCallback(() => {
-    if (nextSessionPath) navigate(nextSessionPath);
-  }, [navigate, nextSessionPath]);
+    if (isNextSessionPending) return;
+
+    if (nextSessionPath) {
+      navigate(
+        nextSessionPath,
+        nextSessionPath === "/"
+          ? { state: { skipSetup: true } }
+          : undefined
+      );
+      return;
+    }
+
+    navigate("/recovery-session");
+  }, [isNextSessionPending, navigate, nextSessionPath]);
 
   // 현재 세션이 진행되는 동안, 다음 세션에 필요한 MediaPipe 모델을 백그라운드에서 미리 로드해둔다.
   // "다음 세션" 버튼을 눌렀을 때 모델 초기화 대기 없이 즉시 카메라가 뜨도록 하기 위함.

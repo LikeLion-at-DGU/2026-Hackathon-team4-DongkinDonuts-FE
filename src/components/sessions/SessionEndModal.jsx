@@ -2,7 +2,6 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, ModalTitle, ModalDescription, ModalButtons, CloseButton, ConfirmButton } from "./Modal.styled";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
-import SetupModal from "../common/SetupModal";
 
 const SessionEndModal = ({
   isMissionComplete,
@@ -19,19 +18,24 @@ const SessionEndModal = ({
   const finished = isMissionComplete && !isTerminated;
   const isFinalSession = finished && nextSessionPath === "/";
 
-  if (finished && !nextSessionPath) {
-    return <SetupModal mode="complete" onClose={onClose} />;
-  }
-
   const handleConfirm = () => {
     if (isNextSessionPending) return;
 
     if (finished) {
       if (nextSessionPath) {
-        navigate(nextSessionPath);
+        navigate(
+          nextSessionPath,
+          nextSessionPath === "/"
+            ? { state: { skipSetup: true } }
+            : undefined
+        );
         return;
       }
+
+      navigate("/recovery-session");
+      return;
     }
+
     onRestart?.();
   };
 

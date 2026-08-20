@@ -9,7 +9,7 @@ const QuitConfirmModal = ({ isOpen, onClose, onConfirm, navigateOnConfirm = true
 
   const handleConfirm = () => {
     onConfirm?.();
-    if (navigateOnConfirm) navigate("/");
+    if (navigateOnConfirm) navigate("/", { state: { skipSetup: true } });
   };
 
   return (

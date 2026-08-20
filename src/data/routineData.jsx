@@ -1,6 +1,7 @@
 export const routineData = [
     {
         id: 1,
+        stageType: "BRAIN_WAKE",
         title: "가볍게 깨우기",
         description: (
             <>
@@ -9,11 +10,12 @@ export const routineData = [
                 흐트러진 감각과 주의를 천천히 깨워보세요.
             </>
         ),
-        status: "완료",
+        status: "미완료",
         image: "/images/brain-reset.png",
     },
     {
         id: 2,
+        stageType: "BRAIN_SHIFT",
         title: "맞춤 리프레시",
         description: (
             <>
@@ -30,6 +32,7 @@ export const routineData = [
     },
     {
         id: 3,
+        stageType: "BRAIN_RESET",
         title: "마무리하기",
         description: (
             <>
@@ -38,7 +41,7 @@ export const routineData = [
                 긴장을 내려놓아보세요.
             </>
         ),
-        status: "완료",
+        status: "미완료",
         image: "/images/brain-reset.png",
     },
 ];

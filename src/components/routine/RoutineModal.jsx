@@ -1,7 +1,17 @@
 import Warning from "../../assets/icons/Warning.svg";
 import * as S from "./RoutineModal.styled";
 
-function RoutineModal({ onClose }) {
+function RoutineModal({
+    onClose,
+    title = (
+        <>
+            이전 루틴을
+            <br />
+            먼저 완료해주세요
+        </>
+    ),
+    description = "이전 루틴을 완료한 후 이용해주세요",
+}) {
     return (
         <S.ModalOverlay onClick={onClose}>
             <S.ModalBox onClick={(e) => e.stopPropagation()}>
@@ -9,13 +19,11 @@ function RoutineModal({ onClose }) {
                     <img src={Warning} alt="경고" />
                 </S.ModalIcon>
                 <S.ModalTitle>
-                    이전 루틴을
-                    <br />
-                    먼저 완료해주세요
+                    {title}
                 </S.ModalTitle>
 
                 <S.ModalDescription>
-                    이전 루틴을 완료한 후 이용해주세요
+                    {description}
                 </S.ModalDescription>
 
                 <S.ModalButton onClick={onClose}>

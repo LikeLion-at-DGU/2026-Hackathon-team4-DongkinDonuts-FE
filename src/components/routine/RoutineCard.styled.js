@@ -12,6 +12,7 @@ export const Card = styled.article`
   border-radius: 18px;
   overflow: hidden;
   color: #ffffff;
+  opacity: ${({ $locked }) => ($locked ? 0.78 : 1)};
 
   transition:
     flex-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
@@ -133,12 +134,15 @@ export const ArrowButton = styled.button`
 
   box-sizing: border-box;
 
-  border: 2px solid #fff;
+  border: 2px solid ${({ $locked, $completed }) =>
+    $locked || $completed ? "rgba(255, 255, 255, 0.72)" : "#fff"};
   border-radius: 50%;
 
-  background: #ffffff;
+  background: ${({ $locked, $completed }) =>
+    $locked || $completed ? "rgba(255, 255, 255, 0.68)" : "#ffffff"};
 
-  cursor: pointer;
+  cursor: ${({ $locked, $completed }) =>
+    $locked || $completed ? "default" : "pointer"};
 
   opacity: 0;
   visibility: hidden;
@@ -184,7 +188,8 @@ export const Status = styled.span`
 
   border-radius: 30px;
 
-  background: rgba(255, 255, 255, 0.2);
+  background: ${({ $completed }) =>
+    $completed ? "rgba(255, 255, 255, 0.28)" : "rgba(255, 255, 255, 0.2)"};
 
   box-shadow: 0 4px 8px 0 rgba(27, 27, 27, 0.16);
   backdrop-filter: blur(10px);

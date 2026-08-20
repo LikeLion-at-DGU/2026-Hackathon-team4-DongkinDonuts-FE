@@ -110,7 +110,7 @@ function formatCountdown(ms) {
 // GET /plans/recovery-slots/next-reset-time/ 가 404(오늘 예정된 슬롯 없음)면
 // hasPlan=false로 내려주고, 화면은 "아직 계획이 없어요" 같은 안내를 보여주면 된다.
 // onAlertClick: 카운트다운 종료 알림(브라우저 알림 팝업)을 클릭했을 때 실행할 콜백.
-// 보통 회복 루틴 시작 페이지로 이동시키는 용도로 넘긴다(예: () => navigate("/handroutine")).
+// 보통 회복 루틴 시작 페이지로 이동시키는 용도로 넘긴다(예: () => navigate("/recovery-session")).
 export function useNextReset(onAlertClick) {
     const [nextResetAt, setNextResetAt] = useState(null);
     const [recoverySlotId, setRecoverySlotId] = useState(null);

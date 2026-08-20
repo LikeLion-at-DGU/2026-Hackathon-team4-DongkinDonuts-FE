@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import RoutineCard from "../components/routine/RoutineCard.jsx";
@@ -13,11 +13,20 @@ import { useNextReset } from "../hooks/useNextReset";
 import { usePushSubscription } from "../hooks/usePushSubscription";
 import {
   cancelSnapshotRecoverySlotsBefore,
-  generateAIRecoveryPlan,
+  generateRecoveryPlan,
+  getNextRecoverySlot,
   getTodayRecoverySlots,
   updateRecoverySlotNotification,
   updateRecoverySlotSchedule,
 } from "../api/plans";
+import {
+  arePreviousStagesComplete,
+  buildRecoveryRoutinePath,
+  findRunnableRoutineForStage,
+  isStageComplete,
+  selectHomeRoutineSlot,
+  stageStatusLabel,
+} from "../config/recoveryRouting";
 
 import * as S from "./LandingPage.styled";
 
@@ -34,6 +43,9 @@ function LandingPage() {
   const [generatingPlan, setGeneratingPlan] = useState(false);
   const [todayRecoverySlots, setTodayRecoverySlots] = useState([]);
   const [loadingRecoverySlots, setLoadingRecoverySlots] = useState(false);
+  const [routineSlot, setRoutineSlot] = useState(null);
+  const [loadingRoutineSlot, setLoadingRoutineSlot] = useState(false);
+  const [routineModalContent, setRoutineModalContent] = useState(null);
 
   const {
     hasPlan,
@@ -41,25 +53,55 @@ function LandingPage() {
     resetTimeLabel,
     countdownLabel,
     refresh: refreshNextReset,
-  } = useNextReset(() => navigate("/handroutine"));
+  } = useNextReset(() => navigate("/recovery-session"));
 
   // 탭이 닫혀있거나 오래 백그라운드에 있어도 회복 타이머 알림이 오도록 진짜 Web
   // Push를 구독한다(권한 이미 거부/미지원이면 조용히 스킵).
   usePushSubscription();
 
   // 상태 점검 흐름이 끝나면 방금 만든 현재 스냅샷과, 재사용하거나 새로 만든 이후
-  // 활동 계획을 명시적으로 넘겨 AI 회복 계획을 만든다. LLM 호출이라 30~50초 정도
-  // 걸릴 수 있어서 모달은 먼저 닫고 카드 쪽에 로딩 상태만 보여준다.
+  // 활동 계획을 명시적으로 넘겨 오늘의 회복 계획을 만든다.
+  const loadRoutineSlot = useCallback(async () => {
+    setLoadingRoutineSlot(true);
+
+    try {
+      const slots = await getTodayRecoverySlots();
+      const normalizedSlots = Array.isArray(slots) ? slots : [];
+      const slot = selectHomeRoutineSlot(normalizedSlots);
+      setTodayRecoverySlots(normalizedSlots);
+      setRoutineSlot(slot);
+      return slot;
+    } catch (error) {
+      try {
+        const slot = await getNextRecoverySlot();
+        setRoutineSlot(slot);
+        return slot;
+      } catch (fallbackError) {
+        console.error("오늘 회복 루틴 조회 실패:", fallbackError);
+        setRoutineSlot(null);
+        return null;
+      }
+    } finally {
+      setLoadingRoutineSlot(false);
+    }
+  }, []);
+
   const handleGenerateRecoveryPlan = (setupResult = {}) => {
     setGeneratingPlan(true);
-    generateAIRecoveryPlan({
+    generateRecoveryPlan({
       contextSnapshot: setupResult.contextSnapshotId,
       nextActivityPlan: setupResult.nextActivityPlanId,
       notificationEnabled: true,
     })
-      .then(() => refreshNextReset())
+      .then(async () => {
+        await Promise.all([
+          refreshNextReset(),
+          loadRoutineSlot(),
+          loadTodayRecoverySlots(),
+        ]);
+      })
       .catch((error) => {
-        console.error("AI 회복 계획 생성 실패:", error);
+        console.error("회복 계획 생성 실패:", error);
       })
       .finally(() => setGeneratingPlan(false));
   };
@@ -90,13 +132,44 @@ function LandingPage() {
 
   const routineRef = useRef(null);
   const digitalRef = useRef(null);
+  const skipInitialSetupRef = useRef(Boolean(location.state?.skipSetup));
+
+  useEffect(() => {
+    loadRoutineSlot();
+  }, [loadRoutineSlot]);
+
+  useEffect(() => {
+    const refreshRoutineSlot = () => {
+      if (document.visibilityState === "visible") {
+        loadRoutineSlot();
+      }
+    };
+
+    window.addEventListener("focus", loadRoutineSlot);
+    document.addEventListener("visibilitychange", refreshRoutineSlot);
+
+    return () => {
+      window.removeEventListener("focus", loadRoutineSlot);
+      document.removeEventListener("visibilitychange", refreshRoutineSlot);
+    };
+  }, [loadRoutineSlot]);
 
   // 서비스 진입은 곧 현재 상태 점검으로 간주한다. 같은 페이지에 머무르는 동안은
   // 사용자가 닫을 수 있지만, 홈 화면에 새로 진입하면 다시 상태를 확인한다.
   useEffect(() => {
     setForceNextActivityInput(false);
+
+    if (skipInitialSetupRef.current) {
+      setShowSetupModal(false);
+      navigate(location.pathname, {
+        replace: true,
+        state: null,
+      });
+      return;
+    }
+
     setShowSetupModal(true);
-  }, []);
+  }, [location.pathname, navigate]);
 
 
   // Header에서 들어온 scrollTo 처리
@@ -132,23 +205,56 @@ function LandingPage() {
     });
   }, [location.state, location.pathname, navigate]);
 
-  // 테스트용: 아직 모든 루틴 미완료라고 가정
-  const completedRoutines = [false, false, false];
+  const openRoutineModal = (content = null) => {
+    setRoutineModalContent(content);
+    setShowRoutineModal(true);
+  };
 
-  const handleRoutineStart = (index) => {
-    // 첫 번째 루틴은 바로 시작 가능
-    if (index === 0) {
+  const handleRoutineStart = (routine) => {
+    if (!routineSlot) {
       navigate("/recovery-session");
       return;
     }
 
-    // 이전 루틴이 완료되지 않았다면 모달
-    if (!completedRoutines[index - 1]) {
-      setShowRoutineModal(true);
+    if (isStageComplete(routineSlot, routine.stageType)) {
+      openRoutineModal({
+        title: (
+          <>
+            이미 완료한
+            <br />
+            루틴이에요
+          </>
+        ),
+        description: "아직 남은 루틴을 이어서 진행해주세요",
+      });
       return;
     }
 
-    console.log(`${index + 1}번째 루틴 시작`);
+    if (!arePreviousStagesComplete(routineSlot, routine.stageType)) {
+      openRoutineModal();
+      return;
+    }
+
+    const runnableRoutine = findRunnableRoutineForStage(
+      routineSlot,
+      routine.stageType
+    );
+
+    if (!runnableRoutine) {
+      openRoutineModal({
+        title: (
+          <>
+            지금 시작할
+            <br />
+            루틴이 없어요
+          </>
+        ),
+        description: "회복 루틴 시작하기로 현재 상태를 확인해주세요",
+      });
+      return;
+    }
+
+    navigate(buildRecoveryRoutinePath(routineSlot, runnableRoutine));
   };
 
 
@@ -206,9 +312,9 @@ function LandingPage() {
 
             <S.ReportDescription>
               {generatingPlan
-                ? "AI가 회복 계획을 만들고 있어요. 최대 1분 정도 걸려요."
+                ? "입력한 상태에 맞춰 회복 계획을 설정하고 있어요."
                 : hasPlan
-                ? "입력한 정보를 바탕으로 AI가 리셋 시간을 추천했어요"
+                ? "입력한 상태와 사용 패턴에 맞춰 리셋 시간이 설정됐어요"
                 : "\"내 계획 다시 설정\"으로 오늘의 리셋 시간을 만들어보세요"}
             </S.ReportDescription>
 
@@ -279,15 +385,35 @@ function LandingPage() {
             </S.SectionHeader>
 
             <S.RoutineCards>
-              {routineData.map((routine, index) => (
+              {routineData.map((routine) => {
+                const isCompleted = Boolean(
+                  routineSlot &&
+                  isStageComplete(routineSlot, routine.stageType)
+                );
+                const isLocked = Boolean(
+                  routineSlot &&
+                  !isCompleted &&
+                  !arePreviousStagesComplete(routineSlot, routine.stageType)
+                );
+                const status = loadingRoutineSlot
+                  ? "확인 중"
+                  : routineSlot
+                  ? stageStatusLabel(routineSlot, routine.stageType)
+                  : routine.status;
+
+                return (
                 <RoutineCard
                   key={routine.id}
                   {...routine}
+                  status={status}
+                  isCompleted={isCompleted}
+                  isLocked={isLocked}
                   onStart={() =>
-                    handleRoutineStart(index)
+                    handleRoutineStart(routine)
                   }
                 />
-              ))}
+                );
+              })}
             </S.RoutineCards>
           </S.RoutineSection>
         )}
@@ -310,8 +436,12 @@ function LandingPage() {
       {/* ROUTINE MODAL */}
       {showRoutineModal && (
         <RoutineModal
+          {...(routineModalContent ?? {})}
           onClose={() =>
-            setShowRoutineModal(false)
+            {
+              setShowRoutineModal(false);
+              setRoutineModalContent(null);
+            }
           }
         />
       )}
