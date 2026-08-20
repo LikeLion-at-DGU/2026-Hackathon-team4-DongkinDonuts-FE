@@ -105,6 +105,23 @@ export function updateRecoverySlotNotification(
 }
 
 /**
+ * 활성 활동 구간에 서비스로 재진입했을 때 즉시 수행할 회복 슬롯 생성.
+ * 알림은 만들지 않고, 백엔드에서 가장 가까운 미래 상태 기반 알림 1개만 취소한다.
+ */
+export function createReentryRecoverySlot({
+  contextSnapshot,
+  nextActivityPlan,
+} = {}) {
+  return apiClient.post(
+    "/plans/recovery-slots/reentry/",
+    {
+      context_snapshot: contextSnapshot,
+      next_activity_plan: nextActivityPlan,
+    }
+  );
+}
+
+/**
  * PushManager.subscribe()에 넘길 applicationServerKey(VAPID 공개키) 조회.
  * 공개키라 노출돼도 문제없음 — 개인정보 아님.
  */

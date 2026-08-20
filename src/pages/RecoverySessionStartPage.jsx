@@ -15,6 +15,7 @@ import {
   SessionGlobalStyle,
   RoutineContainer,
 } from "./SessionPage.styled";
+import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const pageStyle = {
     minHeight: "calc(100vh - 160px)",
@@ -159,7 +160,7 @@ function RecoverySessionStartPage() {
             <button
               type="button"
               style={buttonStyle}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/", { state: SKIP_SETUP_HOME_STATE })}
             >
               홈으로
             </button>

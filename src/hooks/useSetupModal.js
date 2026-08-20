@@ -89,35 +89,78 @@ export const useSetupModal = () => {
     // 반복해도 AI 생성이 "오늘의 상태 스냅샷이 필요합니다"로 매번 실패하는 버그가 있었다.
     // 그래서 reset 모드에선 완료 직전에 오늘 스냅샷 존재 여부를 확인하고, 없으면 중립
     // 상태("아직 괜찮아요")로 하나 만들어서 AI 생성이 항상 성공하도록 한다.
-    const completeSetup = async (mode) => {
-        console.log("completeSetup 호출됨");
-        console.log("mode:", mode);
-        console.log("selectedCondition:", selectedCondition);
+    const createSelectedConditionSnapshot = async () => {
+        const stateCode =
+            CONDITION_LABEL_TO_STATE_CODE[
+            selectedCondition
+            ];
+
+        if (!stateCode) {
+            return null;
+        }
+
+        return createContextSnapshot([
+            stateCode,
+        ]);
+    };
+
+    const completeConditionOnly = async () => {
         setIsSubmitting(true);
         setSubmitError(null);
 
         try {
+            const snapshot =
+                await createSelectedConditionSnapshot();
+
+            if (!snapshot) {
+                return {
+                    errorMessage:
+                        "현재 상태를 저장하지 못했습니다.",
+                };
+            }
+
+            return {
+                contextSnapshot:
+                    snapshot,
+                contextSnapshotId:
+                    snapshot.id,
+            };
+        } catch (error) {
+            console.error(
+                "현재 상태 저장 실패:",
+                error
+            );
+
+            const message =
+                error?.message ??
+                "현재 상태를 저장하지 못했습니다.";
+
+            setSubmitError(message);
+
+            return {
+                errorMessage:
+                    message,
+            };
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const completeSetup = async (mode) => {
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            let contextSnapshot = null;
             let contextSnapshotId = null;
 
             // 상태가 선택돼 있으면 mode와 상관없이 오늘 상태 스냅샷 생성
             if (selectedCondition) {
-                const stateCode =
-                    CONDITION_LABEL_TO_STATE_CODE[
-                    selectedCondition
-                    ];
+                contextSnapshot =
+                    await createSelectedConditionSnapshot();
 
-                console.log("선택 상태:", selectedCondition);
-                console.log("변환 상태 코드:", stateCode);
-
-                if (stateCode) {
-                    const snapshot =
-                        await createContextSnapshot([
-                            stateCode,
-                        ]);
-
-                    contextSnapshotId =
-                        snapshot.id;
-                }
+                contextSnapshotId =
+                    contextSnapshot?.id ?? null;
             } else if (mode === "reset") {
                 const todaySnapshot = await getTodayContextSnapshot();
                 if (!todaySnapshot) {
@@ -133,26 +176,38 @@ export const useSetupModal = () => {
                 selectedActivity ||
                 selectedTime
             ) {
-                await createNextActivityPlan({
-                    activityTags:
-                        selectedActivity
-                            ? [
-                                activityLabelToCode(
-                                    selectedActivity
-                                ),
-                            ]
-                            : [],
+                const nextActivityPlan =
+                    await createNextActivityPlan({
+                        activityTags:
+                            selectedActivity
+                                ? [
+                                    activityLabelToCode(
+                                        selectedActivity
+                                    ),
+                                ]
+                                : [],
 
-                    expectedActivityMinutes:
-                        timeLabelToMinutes(
-                            selectedTime
-                        ),
+                        expectedActivityMinutes:
+                            timeLabelToMinutes(
+                                selectedTime
+                            ),
 
+                        contextSnapshotId,
+                    });
+
+                return {
+                    contextSnapshot,
                     contextSnapshotId,
-                });
+                    nextActivityPlan,
+                    nextActivityPlanId:
+                        nextActivityPlan?.id ?? null,
+                };
             }
 
-            return null;
+            return {
+                contextSnapshot,
+                contextSnapshotId,
+            };
         } catch (error) {
             console.error(
                 "설정 저장 실패:",
@@ -165,7 +220,10 @@ export const useSetupModal = () => {
 
             setSubmitError(message);
 
-            return message;
+            return {
+                errorMessage:
+                    message,
+            };
         } finally {
             setIsSubmitting(false);
         }
@@ -199,6 +257,7 @@ export const useSetupModal = () => {
 
         isSubmitting,
         submitError,
+        completeConditionOnly,
         completeSetup,
     };
 };

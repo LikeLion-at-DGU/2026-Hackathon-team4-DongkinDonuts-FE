@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalOverlay, ModalContent, ModalTitle, ModalDescription, ModalButtons, CloseButton, ConfirmButton } from "./Modal.styled";
 import WarningIcon from "../../assets/icons/Warning.svg";
+import { SKIP_SETUP_HOME_STATE } from "../../utils/initialSetupState";
 
 const QuitConfirmModal = ({ isOpen, onClose, onConfirm, navigateOnConfirm = true, remainingCount = 0 }) => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const QuitConfirmModal = ({ isOpen, onClose, onConfirm, navigateOnConfirm = true
 
   const handleConfirm = () => {
     onConfirm?.();
-    if (navigateOnConfirm) navigate("/");
+    if (navigateOnConfirm) navigate("/", { state: SKIP_SETUP_HOME_STATE });
   };
 
   return (
