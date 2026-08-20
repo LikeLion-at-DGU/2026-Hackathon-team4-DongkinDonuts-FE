@@ -73,8 +73,10 @@ export const drawBall = (ctx, ball, width, height) => {
   }
 };
 
-// 목표 영역 그리기
-export const drawTarget = (ctx, target, width, height, label) => {
+// 목표 영역 그리기 — 텍스트 라벨 없이, 웰니스 앱의 "숨쉬는 원"처럼
+// 은은한 글로우 + 얇은 링 + 부드러운 브리딩(breathing) 애니메이션만으로
+// 절제되고 고급스럽게 목표 지점을 표현한다.
+export const drawTarget = (ctx, target, width, height) => {
   if (!target) return;
 
   const x = target.x * width;
@@ -82,28 +84,39 @@ export const drawTarget = (ctx, target, width, height, label) => {
   // target 객체의 radius 속성을 활용하도록 수정 (기본값 0.11 비율 대응)
   const radius = target.radius ? target.radius * height : 65;
 
+  // sin 파형으로 끊김 없이 부드럽게 오가는 브리딩 값 (0~1), 4초 주기
+  const breath = (Math.sin((performance.now() / 4000) * Math.PI * 2) + 1) / 2;
+  const breathScale = radius * (1 + breath * 0.05);
+
   ctx.save();
+
+  // 1. 은은하게 번지는 외곽 글로우
+  ctx.beginPath();
+  ctx.arc(x, y, breathScale, 0, Math.PI * 2);
+  ctx.shadowColor = target.color;
+  ctx.shadowBlur = 28 + breath * 10;
+  ctx.fillStyle = target.color;
+  ctx.globalAlpha = 0.06;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // 2. 유리 같은 은은한 내부 채움
+  const fill = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  fill.addColorStop(0, "rgba(255,255,255,0.18)");
+  fill.addColorStop(1, `${target.color}22`);
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
-
-  ctx.globalAlpha = 0.33;
-  ctx.fillStyle = target.color;
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = fill;
   ctx.fill();
 
-  ctx.globalAlpha = 1;
+  // 3. 얇고 단정한 테두리 링 (브리딩에 맞춰 살짝 밝아졌다 옅어짐)
+  ctx.beginPath();
+  ctx.arc(x, y, breathScale, 0, Math.PI * 2);
   ctx.strokeStyle = target.color;
-  ctx.lineWidth = 3;
-  ctx.setLineDash([7, 6]);
+  ctx.globalAlpha = 0.55 + breath * 0.25;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.setLineDash([]);
-
-  if (label) {
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.font = "12px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, x, y);
-  }
 
   ctx.restore();
 };
@@ -200,10 +213,10 @@ export const renderSession = ({
 
   // 1. 목표 영역 그리기
   if (mission.type === "MOVING_TARGET") {
-    drawTarget(ctx, movingTarget, width, height, movingTarget?.label);
+    drawTarget(ctx, movingTarget, width, height);
   } else if (mission.type !== "SEQUENCE") {
     staticTargets.forEach((target) => {
-      drawTarget(ctx, target, width, height, target.label);
+      drawTarget(ctx, target, width, height);
     });
   }
 
