@@ -9,7 +9,6 @@ export const routineData = [
                 흐트러진 감각과 주의를 천천히 깨워보세요.
             </>
         ),
-        status: "완료",
         image: "/images/brain-reset.png",
     },
     {
@@ -24,7 +23,6 @@ export const routineData = [
                 주의를 전환해보세요.
             </>
         ),
-        status: "미완료",
         image: "/images/brain-reset.png",
         featured: true,
     },
@@ -38,7 +36,6 @@ export const routineData = [
                 긴장을 내려놓아보세요.
             </>
         ),
-        status: "완료",
         image: "/images/brain-reset.png",
     },
 ];

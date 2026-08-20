@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import DigitalUsage from "./DigitalUsage";
-import HistoryTable from "../History/HistoryTable";
+import HistoryTable from "../history/HistoryTable";
 import { historyPreviewData } from "../../data/historyPreviewData";
 
 import LockIcon from "../../assets/icons/LockIcon.svg";
