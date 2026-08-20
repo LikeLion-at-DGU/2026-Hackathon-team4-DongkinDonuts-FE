@@ -24,6 +24,7 @@ function LandingPage() {
   const location = useLocation();
 
 
+  const [routineInstances, setRoutineInstances] = useState([]);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [setupModalMode, setSetupModalMode] = useState("initial");
 
@@ -117,25 +118,32 @@ function LandingPage() {
     });
   }, [location.state, location.pathname, navigate]);
 
-  // 테스트용: 아직 모든 루틴 미완료라고 가정
-  const completedRoutines = [false, false, false];
+  const handleRoutineStart = (
+    index,
+    instance
+  ) => {
+    if (!instance) return;
 
-  const handleRoutineStart = (index) => {
-    // 첫 번째 루틴은 바로 시작 가능
-    if (index === 0) {
-      navigate("/handroutine");
-      return;
-    }
-
-    // 이전 루틴이 완료되지 않았다면 모달
-    if (!completedRoutines[index - 1]) {
+    if (instance.status === "LOCKED") {
       setShowRoutineModal(true);
       return;
     }
 
-    console.log(`${index + 1}번째 루틴 시작`);
-  };
+    if (instance.status === "COMPLETED") {
+      // 완료한 루틴을 다시 실행시킬지
+      // 정책에 따라 처리
+      return;
+    }
 
+    if (instance.status === "AVAILABLE") {
+      navigate("/handroutine", {
+        state: {
+          routineInstanceId:
+            instance.id,
+        },
+      });
+    }
+  };
 
 
   return (
@@ -255,15 +263,27 @@ function LandingPage() {
             </S.SectionHeader>
 
             <S.RoutineCards>
-              {routineData.map((routine, index) => (
-                <RoutineCard
-                  key={routine.id}
-                  {...routine}
-                  onStart={() =>
-                    handleRoutineStart(index)
-                  }
-                />
-              ))}
+              {routineData.map((routine, index) => {
+                const instance =
+                  routineInstances?.[index];
+
+                return (
+                  <RoutineCard
+                    key={routine.id}
+                    {...routine}
+                    status={
+                      instance?.status ??
+                      "LOCKED"
+                    }
+                    onStart={() =>
+                      handleRoutineStart(
+                        index,
+                        instance
+                      )
+                    }
+                  />
+                );
+              })}
             </S.RoutineCards>
           </S.RoutineSection>
         )}
