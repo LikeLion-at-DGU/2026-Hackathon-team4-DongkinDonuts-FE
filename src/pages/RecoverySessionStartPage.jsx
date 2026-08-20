@@ -151,7 +151,7 @@ function RecoverySessionStartPage() {
 
   return (
     <>
-      <HandRoutineGlobalStyle />
+      <SessionGlobalStyle />
       <RoutineContainer>
         <div style={pageStyle}>
           <div>
