@@ -43,9 +43,6 @@ function RecoveryFlowModals({
                     onClose={
                         flow.closeReady
                     }
-                    onStart={
-                        flow.startSession
-                    }
                 />
             )}
         </>

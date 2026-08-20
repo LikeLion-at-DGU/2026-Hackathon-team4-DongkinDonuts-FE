@@ -85,6 +85,10 @@ export const LockedUsageWrapper = styled.div`
     position: relative;
 
     width: 100%;
+
+    overflow: hidden;
+
+    border-radius: 31px;
 `;
 
 export const LockedBlur = styled.div`
@@ -93,14 +97,26 @@ export const LockedBlur = styled.div`
 
     z-index: 20;
 
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(6px);
+    background: rgba(
+        255,
+        255,
+        255,
+        0.35
+    );
 
-    pointer-events: none;
-    user-select: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
     border-radius: 31px;
 
-    pointer-events: none;
+    /*
+     * 핵심
+     * 휠/마우스 이벤트를 여기서 먹어서
+     * 아래 UsageTable로 안 내려가게
+     */
+    pointer-events: auto;
+
+    user-select: none;
 `;
 
 export const LockContent = styled.div`
@@ -109,7 +125,10 @@ export const LockContent = styled.div`
     left: 50%;
     top: 50%;
 
-    transform: translate(-50%, -50%);
+    transform: translate(
+        -50%,
+        -50%
+    );
 
     z-index: 30;
 
@@ -118,6 +137,8 @@ export const LockContent = styled.div`
     align-items: center;
 
     text-align: center;
+
+    pointer-events: auto;
 `;
 
 export const LockIcon = styled.div`

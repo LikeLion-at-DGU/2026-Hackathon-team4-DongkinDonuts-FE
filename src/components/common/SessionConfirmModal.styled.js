@@ -31,6 +31,8 @@ export const Modal = styled.div`
     text-align: center;
 
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+    transform: scale(1.4);
+    transform-origin: center;
 `;
 
 export const Icon = styled.div`
@@ -54,8 +56,8 @@ export const Icon = styled.div`
 `;
 
 export const CheckIcon = styled.div`
-    width: 38px;
-    height: 38px;
+    width: 70px;
+    height: 70px;
 
     display: flex;
     align-items: center;
@@ -63,14 +65,20 @@ export const CheckIcon = styled.div`
 
     margin-bottom: 20px;
 
-    border-radius: 50%;
+    flex-shrink: 0;
 
-    background: #d8d8d8;
     color: #ffffff;
 
     font-family: Poppins;
     font-size: 23px;
     font-weight: 700;
+
+    img {
+        width: 65px;
+        height: 65px;
+        object-fit: contain;
+        display: block;
+    }
 `;
 
 export const Title = styled.h3`
@@ -148,5 +156,15 @@ export const StartButton = styled.button`
 
     &:hover {
         background: #111111;
+    }
+`;
+
+export const SingleButtonRow = styled.div`
+    width: 100%;
+
+    margin-top: 25px;
+
+    ${StartButton} {
+        width: 100%;
     }
 `;

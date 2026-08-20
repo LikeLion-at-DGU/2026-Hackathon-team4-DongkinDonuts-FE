@@ -1,14 +1,18 @@
+import CheckIcon from "../../assets/icons/CheckIcon.png";
+
 import * as S from "./SessionConfirmModal.styled";
 
 function RoutineReadyModal({
     onClose,
-    onStart,
 }) {
     return (
         <S.Overlay>
             <S.Modal>
                 <S.CheckIcon>
-                    ✓
+                    <img
+                        src={CheckIcon}
+                        alt="완료"
+                    />
                 </S.CheckIcon>
 
                 <S.Title>
@@ -18,7 +22,7 @@ function RoutineReadyModal({
                 </S.Title>
 
                 <S.Description>
-                    바로 시작할까요?
+                    예정된 시간에 맞춰 알려드릴게요
                 </S.Description>
 
                 <S.ButtonRow>
@@ -31,9 +35,9 @@ function RoutineReadyModal({
 
                     <S.StartButton
                         type="button"
-                        onClick={onStart}
+                        onClick={onClose}
                     >
-                        세션 시작
+                        확인
                     </S.StartButton>
                 </S.ButtonRow>
             </S.Modal>
