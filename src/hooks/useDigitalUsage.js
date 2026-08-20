@@ -1,5 +1,4 @@
 import {
-    useMemo,
     useState,
 } from "react";
 
@@ -7,11 +6,11 @@ import { DAYS } from "../config/usageTableConfig";
 import { getDigitalPatterns, saveDigitalPatterns } from "../api/digitalState";
 import { ensureTodayGenerationInputs } from "../api/context";
 import { useDigitalUsageSession } from "./useDigitalUsageSession";
+import { notifyUpcomingScheduleChanged } from "./useUpcomingSchedule";
 
 import {
     generateAIRecoveryPlan,
     getTodayRecoverySlots,
-    updateRecoverySlotNotification,
 } from "../api/plans";
 
 // 프론트 표 순서: 일 월 화 수 목 금 토 (Date.getDay()와 동일한 순서라 인덱스로 바로 씀)
@@ -56,12 +55,6 @@ export function useDigitalUsage({
         useState(false);
 
     const {
-        schedules,
-        setSchedules,
-
-        alarmStates,
-        setAlarmStates,
-
         hasGeneratedResult,
         setHasGeneratedResult,
 
@@ -71,49 +64,6 @@ export function useDigitalUsage({
 
     const isResult =
         mode === "result";
-
-    // 시간 포맷
-    const formatScheduleTime = (
-        dateTime
-    ) => {
-        if (!dateTime) {
-            return null;
-        }
-
-        const date =
-            new Date(dateTime);
-
-        return date.toLocaleTimeString(
-            "ko-KR",
-            {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            }
-        );
-    };
-
-    // 자동 알림이 켜진 추천 시간
-    const activeRecommendedTimes =
-        useMemo(() => {
-            return schedules
-                .filter(
-                    (schedule) =>
-                        alarmStates?.[
-                            schedule.id
-                        ] === true
-                )
-                .map(
-                    (schedule) =>
-                        formatScheduleTime(
-                            schedule.effective_time
-                        )
-                )
-                .filter(Boolean);
-        }, [
-            schedules,
-            alarmStates,
-        ]);
 
     // 개별 칸 선택
     const toggleCell = (
@@ -208,7 +158,7 @@ export function useDigitalUsage({
                 return {
                     day_of_week:
                         DAY_CODE_MAP[
-                            colIndex
+                        colIndex
                         ],
                     hour: rowIndex,
                     is_used: true,
@@ -264,7 +214,7 @@ export function useDigitalUsage({
 
                 const todayDayCode =
                     DAY_CODE_MAP[
-                        new Date().getDay()
+                    new Date().getDay()
                     ];
 
                 // 1. 선택한 PC 패턴 변환
@@ -310,9 +260,6 @@ export function useDigitalUsage({
                     ? existingSlotsResult
                     : existingSlotsResult?.results ?? [];
 
-                let slots;
-                let recoveryPlan;
-
                 if (
                     !todayPatternChanged &&
                     existingSlots.length > 0
@@ -322,13 +269,12 @@ export function useDigitalUsage({
                     console.log(
                         "오늘 요일 패턴 변경 없음 — 기존 오늘 계획 재사용"
                     );
-                    slots = existingSlots;
                 } else {
                     // 5. AI 생성에 필요한 오늘 상태/활동 데이터 보장
                     await ensureTodayGenerationInputs();
 
                     // 6. AI 회복 계획 생성
-                    recoveryPlan =
+                    const recoveryPlan =
                         await generateAIRecoveryPlan({
                             notificationEnabled:
                                 true,
@@ -338,43 +284,23 @@ export function useDigitalUsage({
                         "AI 오늘 회복 계획:",
                         recoveryPlan
                     );
-
-                    slots =
-                        recoveryPlan?.slots ??
-                        [];
                 }
 
-                setSchedules(slots);
+                notifyUpcomingScheduleChanged();
 
-                // 8. 슬롯의 알림 상태 반영
-                const initialAlarmStates =
-                    Object.fromEntries(
-                        slots.map(
-                            (slot) => [
-                                slot.id,
-                                slot.notification_enabled ??
-                                    false,
-                            ]
-                        )
-                    );
-
-                setAlarmStates(
-                    initialAlarmStates
-                );
-
-                // 9. 결과가 존재한다고 표시
+                // 8. 결과가 존재한다고 표시
                 setHasGeneratedResult(
                     true
                 );
 
-                // 10. 분석 카드가
+                // 9. 분석 카드가
                 // 새로운 패턴 분석을 다시 조회하도록 버전 증가
                 setResultVersion(
                     (prev) =>
                         prev + 1
                 );
 
-                // 11. 결과 화면으로 전환
+                // 10. 결과 화면으로 전환
                 onCreate();
             } catch (error) {
                 console.error(
@@ -386,68 +312,6 @@ export function useDigitalUsage({
             }
         };
 
-    // 자동 알림 ON/OFF
-    const toggleAlarm =
-        async (slotId) => {
-            const current =
-                alarmStates[
-                    slotId
-                ] ?? false;
-
-            const next =
-                !current;
-
-            // UI 먼저 변경
-            setAlarmStates(
-                (prev) => ({
-                    ...prev,
-                    [slotId]:
-                        next,
-                })
-            );
-
-            try {
-                const slot =
-                    schedules.find(
-                        (item) =>
-                            item.id ===
-                            slotId
-                    );
-
-                await updateRecoverySlotNotification(
-                    slotId,
-                    {
-                        notificationEnabled:
-                            next,
-
-                        repeatRule:
-                            slot?.repeat_rule ??
-                            "",
-                    }
-                );
-
-                console.log(
-                    "알림 설정 변경 성공:",
-                    slotId,
-                    next
-                );
-            } catch (error) {
-                console.error(
-                    "알림 설정 변경 실패:",
-                    error
-                );
-
-                // 실패 시 롤백
-                setAlarmStates(
-                    (prev) => ({
-                        ...prev,
-                        [slotId]:
-                            current,
-                    })
-                );
-            }
-        };
-
     return {
         isResult,
         isSaving,
@@ -455,15 +319,9 @@ export function useDigitalUsage({
         hasGeneratedResult,
         resultVersion,
 
-        schedules,
-        alarmStates,
-
-        activeRecommendedTimes,
-
         toggleCell,
         toggleRow,
         resetAll,
-        toggleAlarm,
 
         handleTemporarySave,
         handleCreate,

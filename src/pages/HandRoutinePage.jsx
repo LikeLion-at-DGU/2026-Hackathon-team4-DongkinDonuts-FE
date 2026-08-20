@@ -4,6 +4,7 @@ import { getTargetZone, handleBallRelease, completeMission } from "../engine/mis
 import { updateMovingTarget, updateGrabbedBalls, grabNearestBall } from "../engine/ballManager";
 import { renderSession } from "../engine/canvasRenderer";
 import { CONFIG } from "../config/handRoutineConfig";
+import handImage from "../assets/images/handImage.png";
 
 import { useHandTracking } from "../hooks/useHandTracking";
 import { useRecoveryRoutineSession } from "../hooks/useRecoveryRoutineSession";
@@ -223,7 +224,7 @@ const HandRoutinePage = () => {
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, handCount, screenDistance }),
+    () => ({ elapsedTime, successCount, handCount, screenDistance, sessionImage: handImage }),
     [elapsedTime, successCount, handCount, screenDistance]
   );
   const instructionProps = useMemo(

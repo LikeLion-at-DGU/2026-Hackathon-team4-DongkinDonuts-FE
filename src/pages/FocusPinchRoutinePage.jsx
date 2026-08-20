@@ -7,6 +7,7 @@ import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawPinchRings } from "../engine/sessionVisuals";
+import handImage from "../assets/images/handImage.png";
 
 const BASE_ID = "focus-pinch";
 
@@ -117,7 +118,7 @@ export default function FocusPinchRoutinePage({ difficulty = DEFAULT_DIFFICULTY 
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: pinchCount, difficulty, screenDistance }),
+    () => ({ elapsedTime, successCount: pinchCount, difficulty, screenDistance, sessionImage: handImage }),
     [elapsedTime, pinchCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(

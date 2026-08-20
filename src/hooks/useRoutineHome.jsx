@@ -136,16 +136,34 @@ export function useRoutineHome({
         setRoutineModalContent(null);
     };
 
-    const handleRoutineStart = (
-        routine
-    ) => {
+    const handleRoutineStart = (routine) => {
+        // AI 계획 없음 = 자율 진행 모드
         if (!routineSlot) {
-            navigate(
-                "/recovery-session"
-            );
+            // 첫 번째 카드만 바로 진입 가능
+            if (routine.id === 1) {
+                navigate("/recovery-session", {
+                    state: {
+                        autonomous: true,
+                        stageType:
+                            routine.stageType,
+                    },
+                });
+
+                return;
+            }
+
+            // 2, 3번째는 이전 세션 완료 필요
+            openRoutineModal({
+                title:
+                    "이전 세션을 완료해주세요",
+                description:
+                    "앞선 루틴을 완료한 후 다음 루틴을 진행할 수 있어요.",
+            });
+
             return;
         }
 
+        // 이미 완료한 단계
         if (
             isStageComplete(
                 routineSlot,
@@ -153,30 +171,33 @@ export function useRoutineHome({
             )
         ) {
             openRoutineModal({
-                title: (
-                    <>
-                        이미 완료한
-                        <br />
-                        루틴이에요
-                    </>
-                ),
+                title:
+                    "이미 완료한 루틴이에요",
                 description:
-                    "아직 남은 루틴을 이어서 진행해주세요",
+                    "아직 남은 루틴을 이어서 진행해주세요.",
             });
 
             return;
         }
 
+        // 앞 단계가 아직 완료되지 않음
         if (
             !arePreviousStagesComplete(
                 routineSlot,
                 routine.stageType
             )
         ) {
-            openRoutineModal();
+            openRoutineModal({
+                title:
+                    "이전 세션을 완료해주세요",
+                description:
+                    "앞선 루틴을 완료한 후 다음 루틴을 진행할 수 있어요.",
+            });
+
             return;
         }
 
+        // 현재 실행 가능한 루틴 찾기
         const runnableRoutine =
             findRunnableRoutineForStage(
                 routineSlot,
@@ -185,15 +206,10 @@ export function useRoutineHome({
 
         if (!runnableRoutine) {
             openRoutineModal({
-                title: (
-                    <>
-                        지금 시작할
-                        <br />
-                        루틴이 없어요
-                    </>
-                ),
+                title:
+                    "지금 시작할 루틴이 없어요",
                 description:
-                    "회복 루틴 시작하기로 현재 상태를 확인해주세요",
+                    "회복 루틴 시작하기로 현재 상태를 확인해주세요.",
             });
 
             return;

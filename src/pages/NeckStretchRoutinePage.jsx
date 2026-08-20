@@ -8,6 +8,7 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawTiltIndicator } from "../engine/sessionVisuals";
 import { lerp } from "../utils/handUtils";
+import NeckImage from "../assets/images/NeckImage.png";
 
 const BASE_ID = "neck-stretch";
 const BURST_MS = 700;
@@ -201,7 +202,7 @@ export default function NeckStretchRoutinePage({ difficulty = DEFAULT_DIFFICULTY
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount, difficulty, screenDistance }),
+    () => ({ elapsedTime, successCount, difficulty, screenDistance, sessionImage: NeckImage }),
     [elapsedTime, successCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(

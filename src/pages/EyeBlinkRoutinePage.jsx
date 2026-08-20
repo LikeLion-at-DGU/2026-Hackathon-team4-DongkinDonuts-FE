@@ -6,6 +6,7 @@ import { useMultiTracking } from "../hooks/useMultiTracking";
 import { ROUTINE_SESSIONS, sessionIdFor } from "../config/sessionData";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawEyeBlinkPulse } from "../engine/sessionVisuals";
+import eyeBlinkImage from "../assets/images/eyeBlinkImage.png";
 
 const BASE_ID = "eye-blink";
 const POP_MS = 900;
@@ -158,7 +159,7 @@ export default function EyeBlinkRoutinePage({ difficulty = DEFAULT_DIFFICULTY })
     [videoRef, cameraReady, isTerminated]
   );
   const dataPanelProps = useMemo(
-    () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance }),
+    () => ({ elapsedTime, successCount: blinkCount, difficulty, screenDistance, sessionImage: eyeBlinkImage }),
     [elapsedTime, blinkCount, difficulty, screenDistance]
   );
   const instructionProps = useMemo(
