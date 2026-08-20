@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import RoutineCard from "../components/landingpage/RoutineCard.jsx";
-import RoutineModal from "../components/landingpage/RoutineModal.jsx";
+import RoutineCard from "../components/routine/RoutineCard.jsx";
+import RoutineModal from "../components/routine/RoutineModal.jsx";
 import { routineData } from "../data/routineData.jsx";
-import WhyBrainfit from "../components/landingpage/WhyBrainfit.jsx";
-import YourHistory from "../components/landingpage/YourHistory.jsx";
-import DigitalState from "../components/landingpage/DigitalState.jsx";
-import SetupModal from "../components/SetupModal";
-import TimeChangeModal from "../components/landingpage/TimeChangeModal.jsx";
+import WhyBrainfit from "../components/whyBrainfit/WhyBrainfit.jsx";
+import YourHistory from "../components/history/YourHistory.jsx";
+import DigitalState from "../components/digitalState/DigitalState.jsx";
+import SetupModal from "../components/common/SetupModal.jsx";
+import TimeChangeModal from "../components/digitalState/TimeChangeModal.jsx";
 import { useNextReset } from "../hooks/useNextReset";
+import { usePushSubscription } from "../hooks/usePushSubscription";
 import {
   generateAIRecoveryPlan,
   updateRecoverySlotNotification,
@@ -36,7 +37,11 @@ function LandingPage() {
     resetTimeLabel,
     countdownLabel,
     refresh: refreshNextReset,
-  } = useNextReset();
+  } = useNextReset(() => navigate("/handroutine"));
+
+  // 탭이 닫혀있거나 오래 백그라운드에 있어도 회복 타이머 알림이 오도록 진짜 Web
+  // Push를 구독한다(권한 이미 거부/미지원이면 조용히 스킵).
+  usePushSubscription();
 
   // "내 계획 다시 설정"/온보딩이 끝나면 방금 저장한 상태/활동을 바탕으로 AI 회복
   // 계획을 새로 생성한다. LLM 호출이라 30~50초 정도 걸릴 수 있어서 모달은 먼저
@@ -137,13 +142,13 @@ function LandingPage() {
         <S.HeroContent>
           <S.HeroText>
             <S.Title>
-              디지털 피로를 위한
+              나를 위한
               <br />
-              짧은 회복 루틴, Brainfit
+              맞춤 회복 루틴, Brainfit
             </S.Title>
 
             <S.Description>
-              AI가 필요한 순간을 찾아
+              지친 순간을 알아채고
               <br />
               짧은 움직임으로 나를 다시 깨워요
             </S.Description>
@@ -154,15 +159,6 @@ function LandingPage() {
               >
                 회복 루틴 시작하기
               </S.StartButton>
-
-              <S.ResetButton
-                onClick={() => {
-                  setSetupModalMode("reset");
-                  setShowSetupModal(true);
-                }}
-              >
-                내 계획 다시 설정
-              </S.ResetButton>
             </S.ButtonGroup>
           </S.HeroText>
 
@@ -173,7 +169,7 @@ function LandingPage() {
               </S.ReportLabel>
 
               <S.AiBadge>
-                AI 추천
+                Brainfit 추천
               </S.AiBadge>
             </S.ReportTop>
 
@@ -198,12 +194,12 @@ function LandingPage() {
                 </S.ReportBottomLabel>
 
                 <S.ReportBottomDescription>
-                  지금이 되면 알림을 보내드려요
+                  시간이 되면 알림을 보내드려요
                 </S.ReportBottomDescription>
               </S.ReportBottomText>
 
               <S.Countdown>
-                {hasPlan ? countdownLabel : "--:--"}
+                {!generatingPlan && hasPlan ? countdownLabel : "--:--"}
               </S.Countdown>
             </S.ReportBottom>
 

@@ -9,6 +9,7 @@ import NeckStretchRoutinePage from "../pages/NeckStretchRoutinePage";
 import ShoulderPmrRoutinePage from "../pages/ShoulderPmrRoutinePage";
 import FocusPinchRoutinePage from "../pages/FocusPinchRoutinePage";
 import SunriseRoutinePage from "../pages/SunriseRoutinePage";
+import SettingsPage from "../pages/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
       {
         path: "/wakeup-sunrise",
         element: <SunriseRoutinePage key="/wakeup-sunrise" />,
+      },
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPage />,
       },
     ],
   },

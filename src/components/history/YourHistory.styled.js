@@ -16,7 +16,7 @@ export const Header = styled.div`
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    margin-bottom: 60px;
+    margin-bottom: 30px;
 `;
 
 export const Label = styled.p`
@@ -52,6 +52,7 @@ export const TableTop = styled.div`
 
 export const DateSelector = styled.div`
     height: 44px;
+    margin-bottom: 20px;
 
     display: flex;
     align-items: center;
@@ -251,6 +252,7 @@ export const Table = styled.table`
     gap: 19px;
 
     background: #ffffff;
+    transform: scale(1.1);
 `;
 
 export const TableHead = styled.thead`
@@ -310,7 +312,7 @@ export const TimeCell = styled.td`
 
     text-align: center;
     font-family: Inter;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 400;
     color: #24272A;
     line-height: 150%;
@@ -320,7 +322,7 @@ export const ActivityCell = styled.td`
     padding: 16px;
     font-family: Inter;
     line-height: 150%;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 400;
     color: #444444;
 `;
@@ -330,7 +332,7 @@ export const RoutineCell = styled.td`
     align-items: center;
     align-self: stretch;
 
-    font-size: 13px;
+    font-size: 17px;
     color: #24272A;
     font-style: normal;
     font-weight: 500;
@@ -339,7 +341,7 @@ export const RoutineCell = styled.td`
 `;
 
 export const StatusCell = styled.td`
-    padding: 16px;
+    padding: 17px;
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -351,7 +353,7 @@ export const NoteCell = styled.td`
     align-items: flex-start;
     align-self: stretch;
 
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 400;
     color: #24272A;
     line-height: 150%;
@@ -366,15 +368,15 @@ export const RoutineBadge = styled.span`
     align-items: center;
     justify-content: center;
 
-    height: 36px;
+    height: 35px;
 
-    padding: 8px 14px;
+    padding: 3px 12px;
 
     border-radius: 20px;
 
     background: #f0f0f0;
 
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
     color: #24272A;
     font-family: Poppins;
@@ -391,7 +393,7 @@ export const StatusBadge = styled.span`
     align-items: center;
     justify-content: center;
 
-    min-width: 40px;
+    min-width: 45px;
     height: 22px;
 
     padding: 2px 8px;
@@ -399,7 +401,7 @@ export const StatusBadge = styled.span`
     border-radius: 16px;
     background: #EFF8FF;
 
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 400;
     line-height: 140%;
 

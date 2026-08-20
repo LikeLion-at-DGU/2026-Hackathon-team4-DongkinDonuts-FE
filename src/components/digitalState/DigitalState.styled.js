@@ -15,7 +15,7 @@ export const DigitalHeader = styled.div`
     align-items: flex-start;
     height: 145px;
     align-items: flex-end;
-    gap: 54px;
+    gap: 40px;
     align-self: stretch;
 `;
 
@@ -167,7 +167,7 @@ export const ResultDescription = styled.p`
     margin: 20px 0 0;
     position: relative;
     z-index: 2;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 400;
     line-height: 32px; 
     letter-spacing: -0.24px;

@@ -14,6 +14,10 @@ export const UsageCard = styled.div`
     border-radius: 31px;
 
     background: rgba(217, 217, 217, 0.15);
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.03);
 `;
 
 export const CardRow = styled.div`
@@ -41,6 +45,9 @@ export const InfoCard = styled.div`
     border-radius: 31.7px;
 
     background: #ffffff;
+    box-shadow: 
+        0 10px 28px rgba(0, 0, 0, 0.07),
+        0 3px 8px rgba(0, 0, 0, 0.04);
 `;
 
 export const CardTitle = styled.h3`
@@ -71,7 +78,7 @@ export const CardTitle = styled.h3`
 export const EmptyContent = styled.div`
     position: absolute;
 
-    top: 105px;
+    top: 145px;
     left: 32px;
     right: 32px;
     bottom: 40px;
@@ -79,7 +86,7 @@ export const EmptyContent = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 
     text-align: center;
 `;
@@ -95,7 +102,11 @@ export const EmptyIcon = styled.div`
     align-items: center;
     justify-content: center;
 
-    margin-bottom: 44px;
+    margin-top: ${({ $schedule }) =>
+        $schedule ? "9px" : "0"};
+
+    margin-bottom: ${({ $schedule }) =>
+        $schedule ? "50px" : "44px"};
 
     border: ${({ $circle }) =>
         $circle
@@ -116,7 +127,7 @@ export const EmptyTitle = styled.p`
     margin: 0;
 
     font-family: Poppins;
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 600;
     line-height: 29.247px;
     letter-spacing: -0.2px;
@@ -130,12 +141,12 @@ export const EmptyDescription = styled.p`
     margin: 28px 0 0;
 
     font-family: Poppins;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
     line-height: 23px;
     letter-spacing: -0.14px;
 
-    color: #aaaaaa;
+    color: #9e9e9e;
 `;
 
 /* =========================
@@ -183,7 +194,7 @@ export const StatBox = styled.div`
         margin: 0;
 
         font-family: Poppins;
-        font-size: 27px;
+        font-size: 22px;
         font-weight: 500;
         line-height: 32px;
 
@@ -191,7 +202,7 @@ export const StatBox = styled.div`
     }
 
     span {
-        margin: 0;
+        margin: 8px 0 0;
 
         font-family: Poppins;
         font-size: 16px;
@@ -268,31 +279,54 @@ export const ScheduleList = styled.div`
     gap: 56px;
 
     padding-left: 50px;
+    padding-right: 4px;
 
-    &::before {
-        content: "";
+    max-height: 245px;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-        position: absolute;
+    box-sizing: border-box;
 
-        left: 55px;
-        top: 10px;
-        bottom: 10px;
-
-        width: 1px;
-
-        background: #d5d5d5;
+    &::-webkit-scrollbar {
+        display: none;
     }
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 `;
 
 export const ScheduleItem = styled.div`
     position: relative;
-    z-index: 1;
 
     display: flex;
     align-items: center;
-    justify-content: space-between;
+
+    gap: 256px;
 
     width: 100%;
+    flex-shrink: 0;
+
+    /* 마지막 알람 제외하고 다음 알람까지 선 연결 */
+    &:not(:last-child)::before {
+        content: "";
+
+        position: absolute;
+
+        left: 8px;
+        top: 50%;
+
+        width: 1px;
+
+        /*
+         * 현재 아이템 중심부터
+         * 다음 아이템 중심까지 연결
+         */
+        height: calc(100% + 56px);
+
+        background: #d5d5d5;
+
+        z-index: 0;
+    }
 `;
 
 export const TimeArea = styled.div`
@@ -310,6 +344,9 @@ export const TimeArea = styled.div`
 `;
 
 export const Circle = styled.span`
+    position: relative;
+    z-index: 2;
+
     width: 17px;
     height: 17px;
 
@@ -329,7 +366,7 @@ export const AlarmArea = styled.div`
     gap: 10px;
 
     font-family: Poppins;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 400;
 
     color: #7b7878;
@@ -338,26 +375,26 @@ export const AlarmArea = styled.div`
 export const Toggle = styled.div`
     position: relative;
 
-    width: 42px;
-    height: 22px;
+    width: 59px;
+    height: 31px;
 
     flex-shrink: 0;
 
     border-radius: 999px;
 
     background: ${({ $active }) =>
-    $active ? "#76ee59" : "#d4d4d4"};
+        $active ? "#76ee59" : "#d4d4d4"};
 `;
 
 export const ToggleCircle = styled.span`
     position: absolute;
 
-    top: 3px;
+    top: 4px;
     left: ${({ $active }) =>
-    $active ? "23px" : "3px"};
+        $active ? "32px" : "4px"};
 
-    width: 16px;
-    height: 16px;
+    width: 23px;
+    height: 23px;
 
     border-radius: 50%;
 
@@ -377,9 +414,9 @@ export const Caption = styled.p`
     margin: 0;
 
     font-family: Poppins;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: normal;
 
     color: #868383;
 `;

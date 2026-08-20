@@ -82,3 +82,32 @@ export function updateRecoverySlotNotification(
     }
   );
 }
+
+/**
+ * PushManager.subscribe()에 넘길 applicationServerKey(VAPID 공개키) 조회.
+ * 공개키라 노출돼도 문제없음 — 개인정보 아님.
+ */
+export function getVapidPublicKey() {
+  return apiClient.get("/plans/notification-subscriptions/vapid-public-key/");
+}
+
+/**
+ * 브라우저 Web Push 구독 등록. subscription.toJSON()의 endpoint/keys를 그대로 보낸다.
+ */
+export function createWebPushSubscription({ endpoint, keys, userAgent = "" }) {
+  return apiClient.post("/plans/notification-subscriptions/", {
+    endpoint,
+    keys,
+    user_agent: userAgent,
+  });
+}
+
+/**
+ * 특정 날짜의 회복 슬롯 기록("Your History" 표) 조회.
+ * date는 "YYYY-MM-DD" 문자열이어야 한다.
+ */
+export function getRecoverySlotHistory(date) {
+  return apiClient.get("/plans/recovery-slots/history/", {
+    params: { date },
+  });
+}

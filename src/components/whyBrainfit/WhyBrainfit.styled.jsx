@@ -17,6 +17,7 @@ export const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    transform: translateX(-35px);
 
     gap: 20px;
 `;
@@ -62,6 +63,8 @@ export const SlideArea = styled.div`
 export const TextArea = styled.div`
     width: 464px;
     height: 245px;
+    position: relative;
+    left: -40px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -94,14 +97,14 @@ export const SlideTitle = styled.h3`
 `;
 
 export const Description = styled.p`
-    margin: 20px 0 0;
+    margin: 15px 0 0;
 
     color: #7e7e7e;
 
     font-family: Poppins;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 500;
-    line-height: 26px;
+    line-height: 32px;
 
     word-break: keep-all;
 `;
@@ -153,7 +156,7 @@ export const CardCategory = styled.span`
 `;
 
 export const CardTitle = styled.h4`
-    margin: 4px 0 0;
+    margin: 8px 0 0;
 
     color: #000;
 

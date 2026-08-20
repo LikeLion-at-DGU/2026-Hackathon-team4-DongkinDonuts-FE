@@ -3,7 +3,7 @@ import ClockIcon from "../../assets/icons/ClockIcon.svg";
 import * as S from "./DigitalUsage.styled";
 
 function DigitalScheduleCard({
-    isResult,
+    showResult,
     schedules = [],
     alarmStates,
     onToggleAlarm,
@@ -37,9 +37,9 @@ function DigitalScheduleCard({
                 오늘의 추천 휴식 일정
             </S.CardTitle>
 
-            {!isResult ? (
+            {!showResult ? (
                 <S.EmptyContent>
-                    <S.EmptyIcon>
+                    <S.EmptyIcon $schedule>
                         <img
                             src={ClockIcon}
                             alt=""
@@ -94,7 +94,7 @@ function DigitalScheduleCard({
                                                 type="button"
                                                 $active={
                                                     alarmStates?.[
-                                                        schedule.id
+                                                    schedule.id
                                                     ] ??
                                                     false
                                                 }
@@ -107,7 +107,7 @@ function DigitalScheduleCard({
                                                 <S.ToggleCircle
                                                     $active={
                                                         alarmStates?.[
-                                                            schedule.id
+                                                        schedule.id
                                                         ] ??
                                                         false
                                                     }

@@ -7,7 +7,7 @@ import {
 
 export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) => {
     const [selectedTime, setSelectedTime] = useState(currentTime);
-    const [repeat, setRepeat] = useState(currentRepeat);
+    const [repeat, setRepeat] = useState(false);
 
     const hourRef = useRef(null);
     const minuteRef = useRef(null);
@@ -38,16 +38,6 @@ export const useTimeChangeModal = (currentTime, currentRepeat, onSave, onClose) 
             }
         });
     }, [currentTime]);
-
-    useEffect(() => {
-        const originalOverflow = document.body.style.overflow;
-
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            document.body.style.overflow = originalOverflow;
-        };
-    }, []);
 
     // smooth scroll 애니메이션이 끝나는 시점(scrollend 지원 브라우저는 그 이벤트,
     // 아니면 애니메이션이 끝날 만한 시간 뒤)에 억제 플래그를 해제한다.
