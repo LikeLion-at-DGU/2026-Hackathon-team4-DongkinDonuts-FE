@@ -64,7 +64,7 @@ export const HeroText = styled.div`
 
 export const Title = styled.h1`
     margin: 0;
-    color: #FFF;
+    color: #ffffff;
     font-family: Poppins;
     font-size: 55px;
     font-style: normal;
@@ -80,7 +80,7 @@ export const Description = styled.p`
     font-family: Poppins;
     font-style: normal;
     font-weight: 400;
-    color: #FFF;
+    color: #ffffff;
 `;
 
 

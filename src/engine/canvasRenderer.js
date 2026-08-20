@@ -42,7 +42,7 @@ export const drawBall = (ctx, ball, width, height) => {
     radius
   );
 
-  gradient.addColorStop(0, "#FFFFFF");
+  gradient.addColorStop(0, "#ffffff");
   gradient.addColorStop(0.18, type.color);
   gradient.addColorStop(0.75, type.color);
   gradient.addColorStop(1, darkenColor(type.color));
@@ -138,7 +138,7 @@ export const drawHands = (ctx, width, height, hands, balls) => {
     // 중앙 점
     ctx.beginPath();
     ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = hand.fist ? "#E99B9B" : "#FFFFFF";
+    ctx.fillStyle = hand.fist ? "#E99B9B" : "#ffffff";
     ctx.fill();
 
     // 테두리

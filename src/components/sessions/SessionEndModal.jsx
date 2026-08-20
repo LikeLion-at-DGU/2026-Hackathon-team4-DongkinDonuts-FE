@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ModalOverlay, ModalContent, ModalTitle, ModalDescription, ModalButtons, CloseButton, ConfirmButton } from "./Modal.styled";
+import * as S from "../common/SessionConfirmModal.styled";
 import StreamLineIcon from "../../assets/icons/streamLine.svg";
 
 const SessionEndModal = ({
@@ -40,28 +40,30 @@ const SessionEndModal = ({
   };
 
   return (
-    <ModalOverlay>
-      <ModalContent onClick={(event) => event.stopPropagation()}>
-        <img src={StreamLineIcon} alt="세션 완료 아이콘" width={77} />
-        <ModalTitle>
+    <S.Overlay>
+      <S.Modal onClick={(event) => event.stopPropagation()}>
+        <S.CheckIcon>
+          <img src={StreamLineIcon} alt="세션 완료 아이콘" />
+        </S.CheckIcon>
+        <S.Title>
           {isFinalSession
             ? <>회복 세션을 모두 완료했어요.<br />홈으로 돌아갈까요?</>
             : finished
               ? <>이번 세션을 완료했어요.<br />다음 세션으로 이어갈까요?</>
               : "세션이 종료됐어요."}
-        </ModalTitle>
-        <ModalDescription>
+        </S.Title>
+        <S.Description>
           {isFinalSession
             ? "오늘의 흐름에 맞춘 루틴을 마쳤어요."
             : finished
               ? "지금 바로 다음 루틴을 시작할 수 있어요."
               : "지금 상태를 초기화하고 다시 시작할 수 있어요."}
-        </ModalDescription>
-        <ModalButtons>
-          <CloseButton onClick={finished ? onClose : () => navigate("/")}>
+        </S.Description>
+        <S.ButtonRow>
+          <S.CancelButton onClick={finished ? onClose : () => navigate("/")}>
             {finished ? "취소" : "홈으로"}
-          </CloseButton>
-          <ConfirmButton
+          </S.CancelButton>
+          <S.StartButton
             onClick={handleConfirm}
             disabled={isNextSessionPending}
           >
@@ -72,10 +74,10 @@ const SessionEndModal = ({
                 : finished
                   ? "확인"
                   : "다시 시작"}
-          </ConfirmButton>
-        </ModalButtons>
-      </ModalContent>
-    </ModalOverlay>
+          </S.StartButton>
+        </S.ButtonRow>
+      </S.Modal>
+    </S.Overlay>
   );
 };
 
