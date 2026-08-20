@@ -63,9 +63,15 @@ export const createBall = (id, type, x, y) => {
 // ======================================================
 export const getSafeBallPosition = (existing = []) => {
   const MIN_DISTANCE = 0.18;
+  // The camera preview occupies the upper-left corner through roughly x=0.33.
+  // Keep every spawned ball to its right with a visible safety margin.
+  const BALL_SPAWN_X_MIN = 0.20;
+  const BALL_SPAWN_X_MAX = 0.86;
+  const BALL_SPAWN_Y_MIN = 0.45;
+  const BALL_SPAWN_Y_MAX = 0.72;
   const randomCandidate = () => ({
-    x: 0.20 + Math.random() * 0.60,
-    y: 0.35 + Math.random() * 0.20,
+    x: BALL_SPAWN_X_MIN + Math.random() * (BALL_SPAWN_X_MAX - BALL_SPAWN_X_MIN),
+    y: BALL_SPAWN_Y_MIN + Math.random() * (BALL_SPAWN_Y_MAX - BALL_SPAWN_Y_MIN),
   });
 
   for (let attempt = 0; attempt < 40; attempt += 1) {
