@@ -61,7 +61,7 @@ export function useRoutineHome({
                 setRoutineSlot(slot);
 
                 return slot;
-            } catch (error) {
+            } catch {
                 try {
                     const slot =
                         await getNextRecoverySlot();

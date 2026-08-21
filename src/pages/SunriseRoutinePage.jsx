@@ -175,10 +175,6 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
-  const nextSessionPath = recoverySession.isBackendRoutine
-    ? recoverySession.nextSessionPath
-    : SESSION?.nextSessionPath;
-
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}

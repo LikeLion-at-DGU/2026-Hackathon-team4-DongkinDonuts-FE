@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 2026-Hackathon-team4-DongkinDonuts-BE/
+
+# 로컬 작업 메모(Claude 세션용, 레포에 올라가면 안 됨)
+.claude/

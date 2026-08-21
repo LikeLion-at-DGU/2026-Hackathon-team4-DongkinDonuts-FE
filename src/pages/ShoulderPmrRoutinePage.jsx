@@ -7,7 +7,6 @@ import { TRACKING_CONFIG } from "../config/trackingConfig";
 import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from "../config/difficultyConfig";
 import { prepareCanvas, drawShoulderCircle } from "../engine/sessionVisuals";
 import ShoulderImage from "../assets/images/ShoulderImage.png";
-import { SKIP_SETUP_HOME_STATE } from "../utils/initialSetupState";
 
 const BASE_ID = "shoulder-pmr";
 const SQUEEZE_RELEASE_MS = 1000; // 어깨를 내렸을 때 원이 원래 크기/색으로 되돌아가는 시간 (수축과 동일한 속도로 선형 왕복)

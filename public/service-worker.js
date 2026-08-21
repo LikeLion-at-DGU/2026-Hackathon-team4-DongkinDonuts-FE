@@ -10,7 +10,7 @@ self.addEventListener("push", (event) => {
   if (event.data) {
     try {
       payload = event.data.json();
-    } catch (_error) {
+    } catch {
       payload = { title: "Brainfit", body: event.data.text() };
     }
   }

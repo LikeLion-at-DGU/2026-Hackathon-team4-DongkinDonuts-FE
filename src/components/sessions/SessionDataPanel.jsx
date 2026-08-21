@@ -4,7 +4,7 @@ import { DIFFICULTY_LABELS } from "../../config/difficultyConfig";
 import { LiveTime, LiveDot, StageLabel, DataArea, DataCard, DataTitle, DataRow, DistanceCard, DistanceHeader, DistanceBar, DistanceMarker, SessionImageWrap, SessionImageCaption } from "./SessionDataPanel.styled";
 
 // 세션 흐름상 현재 위치를 나타내는 단계 라벨. "custom" 단계는 (현재 단계/총 세션 개수)를 덧붙인다.
-const getStageLabel = (sessionStage, stepInfo) => {
+const getStageLabel = (sessionStage) => {
   if (sessionStage === "custom") {
     return "맞춤세션";
   }
@@ -13,10 +13,10 @@ const getStageLabel = (sessionStage, stepInfo) => {
   return null;
 };
 
-const SessionDataPanel = ({ elapsedTime = 0, successCount, handCount, difficulty, screenDistance, sessionImage, sessionStage, stepInfo }) => {
+const SessionDataPanel = ({ elapsedTime = 0, successCount, handCount, difficulty, screenDistance, sessionImage, sessionStage }) => {
   const hasHandMetrics = successCount !== undefined || handCount !== undefined || difficulty !== undefined;
   const distanceStatus = screenDistance?.status ?? "인식되지 않음";
-  const stageLabel = getStageLabel(sessionStage, stepInfo);
+  const stageLabel = getStageLabel(sessionStage);
 
   return (
     <>
