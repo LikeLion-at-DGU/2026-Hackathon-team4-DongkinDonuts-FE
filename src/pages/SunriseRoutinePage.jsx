@@ -175,6 +175,7 @@ export default function SunriseRoutinePage({ difficulty = DEFAULT_DIFFICULTY }) 
     },
     localRemainingCount: remainingSessionsAfter(BASE_ID),
   });
+
   return (
     <SessionPage
       isQuitModalOpen={isQuitModalOpen}
