@@ -29,6 +29,8 @@ function DigitalUsage({
         selected,
         setSelected,
         onCreate,
+        onTemporarySave,
+
     });
 
     return (

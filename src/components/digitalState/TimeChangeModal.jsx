@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
 import CloseButton from "../../assets/icons/CloseButton.svg";
 
 import { useTimeChangeModal } from "../../hooks/useTimeChangeModal";
+import { useModalScrollLimit } from "../../hooks/useModalScrollLimit";
+
 import {
     RECOMMENDED_TIMES,
     HOURS,
@@ -17,9 +18,8 @@ function TimeChangeModal({
     onClose,
     onSave,
 }) {
-    const modalFrameRef = useRef(null);
-    const maxScrollRef = useRef(null);
 
+    const modalFrameRef = useModalScrollLimit();
     const {
         selectedTime,
         selectedHour,
@@ -58,74 +58,6 @@ function TimeChangeModal({
         ]),
     ];
 
-    useEffect(() => {
-        const calculateMaxScroll = () => {
-            const modal = modalFrameRef.current;
-
-            if (!modal) return;
-
-            const rect =
-                modal.getBoundingClientRect();
-
-            const modalBottom =
-                rect.bottom + window.scrollY;
-
-            const bottomGap = 20;
-
-            const maxScroll =
-                modalBottom -
-                window.innerHeight +
-                bottomGap;
-
-            maxScrollRef.current =
-                Math.max(
-                    window.scrollY,
-                    maxScroll
-                );
-        };
-
-        const handleWindowScroll = () => {
-            const maxScroll =
-                maxScrollRef.current;
-
-            if (maxScroll === null) return;
-
-            if (window.scrollY > maxScroll) {
-                window.scrollTo({
-                    top: maxScroll,
-                    behavior: "auto",
-                });
-            }
-        };
-
-        requestAnimationFrame(
-            calculateMaxScroll
-        );
-
-        window.addEventListener(
-            "scroll",
-            handleWindowScroll,
-            { passive: true }
-        );
-
-        window.addEventListener(
-            "resize",
-            calculateMaxScroll
-        );
-
-        return () => {
-            window.removeEventListener(
-                "scroll",
-                handleWindowScroll
-            );
-
-            window.removeEventListener(
-                "resize",
-                calculateMaxScroll
-            );
-        };
-    }, []);
-
     return (
         <S.Overlay onClick={onClose}>
             <S.ModalPositioner>
@@ -151,7 +83,7 @@ function TimeChangeModal({
                         </S.Title>
 
                         <S.Description>
-                            원하는 리셋 시간을 선택하거나 직접 설정할 수 있어요.
+                            원하는 휴식 시간을 선택하거나 직접 설정할 수 있어요.
                         </S.Description>
 
                         <S.Divider />
